@@ -2,6 +2,9 @@
 目前支持的第三方平台有：
 * [云通讯](http:http://www.yuntongxun.com)
 
+##安装
+
+
 ##快速上手
 1.生成sms默认表
 ```php
@@ -43,7 +46,7 @@
 
 
 ##自助二次开发
-1.修改model
+1.继承model
    请继承model类(Toplan\Sms\Sms)
 ```php
   class MySmsModel extends Toplan\Sms\Sms {
