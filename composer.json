@@ -1,0 +1,25 @@
+{
+    "name": "toplan/laravel-sms",
+    "description": "",
+    "version": "dev-master",
+    "keywords": ["sms"],
+    "authors": [
+        {
+            "name": "toplan",
+            "email": "toplan710@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.4.0",
+        "illuminate/support": "4.2.*"
+    },
+    "autoload": {
+        "classmap": [
+            "src/"
+        ],
+        "psr-0": {
+            "Toplan\\Sms": "src/"
+        }
+    },
+    "minimum-stability": "stable"
+}
