@@ -3,7 +3,10 @@
 * [云通讯](http:http://www.yuntongxun.com)
 
 ##安装
-
+可以再项目更目录下运行如下composer命令
+```
+   composer require 'toplan/laravel-sms:dev-master'
+```
 
 ##快速上手
 1.生成sms默认表
@@ -19,14 +22,15 @@
 
 3.在app/config/app.php文件中的aliases数组里加入
 ```php
-    'SmsManager' => 'Toplan\Sms\Facades\SmsManager',
+   'SmsManager' => 'Toplan\Sms\Facades\SmsManager',
 ```
-4.修改配置文件
+4.参数配置
+   请先运行如下命令生成配置文件：
 ```php
    php artisan config:publish --path='/vendor/toplan/sms/src/Sms/config/' toplan/sms
 ```
    运行以上命令成功后，然后在app/config/package/toplan/sms/config.php中修改配置。
-   如果你使用的是云通讯，请按照提示填写以下信息：
+   如果你使用的是云通讯，请在数组'YunTongXun'中按照提示填写配置信息
 ```php
    //主帐号,对应开官网发者主账号下的 ACCOUNT SID
    'accountSid' => 'your account sid',
@@ -37,6 +41,8 @@
    //应用Id，在官网应用列表中点击应用，对应应用详情中的APP ID
    //在开发调试的时候，可以使用官网自动为您分配的测试Demo的APP ID
    'appId' => 'your app id',
+
+   ...
 ```
 
 5.使用Sms模型发送短信
