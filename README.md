@@ -1,6 +1,6 @@
 # laravel-sms v1.0 for laravel 4.2
 目前支持的第三方平台有：
-* (云通讯)[http:http://www.yuntongxun.com]
+* [云通讯](http:http://www.yuntongxun.com)
 
 ##快速上手
 1. 生成sms默认表
