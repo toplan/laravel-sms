@@ -6,9 +6,6 @@ class YunTongXunAgent extends Agent{
 
     public function sendTemplateSms($tempId, $to, Array $data)
     {
-        echo 'yun tong xun agent send the template sms.<br>';
-        //dd($this->config);
-
         // 初始化REST SDK
         $rest = new REST(
             $this->config["serverIP"],
