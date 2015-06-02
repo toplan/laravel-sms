@@ -3,8 +3,8 @@
 * [云通讯](http:http://www.yuntongxun.com)
 
 ##安装
-可以再项目更目录下运行如下composer命令
-```
+在项目根目录下运行如下composer命令:
+```php
    composer require 'toplan/laravel-sms:dev-master'
 ```
 
