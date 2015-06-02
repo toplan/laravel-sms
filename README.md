@@ -18,20 +18,32 @@
 ```php
     'SmsManager' => 'Toplan\Sms\Facades\SmsManager',
 ```
-
-4.使用Sms模型发送短信
-```php
-    Toplan\Sms\Sms::make($tempId)->to('1828****349')->data(['99999', 1])->send();
-```
-
-##自助二次开发
-1.修改配置文件
+4.修改配置文件
 ```php
    php artisan config:publish --path='/vendor/toplan/sms/src/Sms/config/' toplan/sms
 ```
    运行以上命令成功后，然后在app/config/package/toplan/sms/config.php中修改配置。
+   如果你使用的是云通讯，请按照提示填写以下信息：
+```php
+   //主帐号,对应开官网发者主账号下的 ACCOUNT SID
+   'accountSid' => 'your account sid',
 
-2.修改model
+   //主帐号令牌,对应官网开发者主账号下的 AUTH TOKEN
+   'accountToken' => 'your auth token',
+
+   //应用Id，在官网应用列表中点击应用，对应应用详情中的APP ID
+   //在开发调试的时候，可以使用官网自动为您分配的测试Demo的APP ID
+   'appId' => 'your app id',
+```
+
+5.使用Sms模型发送短信
+```php
+    Toplan\Sms\Sms::make($tempId)->to('1828****349')->data(['99999', 1])->send();
+```
+
+
+##自助二次开发
+1.修改model
    请继承model类(Toplan\Sms\Sms)
 ```php
   class MySmsModel extends Toplan\Sms\Sms {
@@ -41,7 +53,7 @@
         {
             //发送过程
         }
-        
+
   }
 ```
 
