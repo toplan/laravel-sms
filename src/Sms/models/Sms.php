@@ -76,6 +76,12 @@ class Sms extends Model implements Sender{
         return $sms;
     }
 
+    /**
+     * set template id
+     * @param $tempId
+     *
+     * @return $this
+     */
     public function template($tempId)
     {
         $this->temp_id = $tempId;
@@ -107,7 +113,7 @@ class Sms extends Model implements Sender{
     }
 
     /**
-     * 发送短信
+     * 发送短信入口
      * @return bool|mixed
      */
     public function send()
@@ -137,7 +143,7 @@ class Sms extends Model implements Sender{
     }
 
     /**
-     * 短信发送过程
+     * 短信发送过程 send process
      * @return bool
      */
     public function sendProcess()
@@ -156,17 +162,30 @@ class Sms extends Model implements Sender{
         return $result['success'];
     }
 
-
+    /**
+     * get template id
+     * @return mixed
+     */
     public function getTempId()
     {
         return $this->temp_id;
     }
 
+    /**
+     * get mobile
+     * @return mixed
+     */
     public function getTo()
     {
         return $this->to;
     }
 
+    /**
+     * get data
+     * @param bool $getArray
+     *
+     * @return mixed
+     */
     public function getData($getArray = false)
     {
         return $getArray ? json_decode($this->data) : $this->data;

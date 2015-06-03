@@ -12,7 +12,9 @@
 ```
 
 ##快速上手
-####1.生成sms默认表
+####1.在数据库中生成sms表
+
+   存储短信发送记录，方便管理。
 ```php
    php artisan migrate --path="/vendor/toplan/laravel-sms/src/migrations" --package="toplan/sms"
 ```
@@ -62,6 +64,21 @@
   你还可以在自己的控制器中发送其他模板短信
 ```php
   Toplan\Sms\Sms::make($tempId)->to('1828****349')->data(['99999', 1])->send();
+```
+
+##服务端检测手机验证码
+
+  如果你使用toplan/laravel-sms包集成的验证码发送模块（如：通过ajax访问 /sms/send-code?mobile=xxx），
+  那么在提交数据到服务器端时，需要验证手机号和验证码是否正确，你只需要加上如下代码即可：
+```php
+   //验证手机验证码
+   $validator = Validator::make(Input::all(), [
+        'mobile'     => 'required|mobile_changed',
+        'verifyCode' => 'required|verify_code',
+   ]);
+   if ($validator->fails()) {
+       return Redirect::back()->withInput()->withErrors($validator);
+   }
 ```
 
 ##自助二次开发

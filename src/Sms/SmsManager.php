@@ -18,6 +18,10 @@ class SmsManager {
      */
     protected $agents;
 
+    /**
+     * sms data
+     * @var
+     */
     protected $smsData;
 
     /**
@@ -65,6 +69,10 @@ class SmsManager {
         $this->smsData = $data;
     }
 
+    /**
+     * put sms data to session
+     * @param array $data
+     */
     public function storeSmsDataToSession(Array $data = [])
     {
         $data = $data ?: $this->smsData;
@@ -72,9 +80,21 @@ class SmsManager {
         Session::put($this->getSessionKey(), $data);
     }
 
+    /**
+     * get sms data from session
+     * @return mixed
+     */
     public function getSmsDataFromSession()
     {
         return Session::get($this->getSessionKey(), []);
+    }
+
+    /**
+     * remove sms data from session
+     */
+    public function forgetSmsDataFromSession()
+    {
+        Session::forget($this->getSessionKey());
     }
 
     /**
@@ -105,12 +125,6 @@ class SmsManager {
         return $data;
     }
 
-    public function getChooseRule($name)
-    {
-        $data = $this->getSmsData();
-        return $data['rules']["$name"]['choose_rule'];
-    }
-
     /**
      * is verify
      * @param string $name
@@ -123,6 +137,10 @@ class SmsManager {
         return $data['rules']["$name"]['is_check'];
     }
 
+    /**
+     * get template sms id
+     * @return mixed
+     */
     public function getTempIdForVerifySms()
     {
         $tempId = Config::get('sms::templateIdForVerifySms');
@@ -132,6 +150,13 @@ class SmsManager {
         throw new \InvalidArgumentException("config key [templateIdForVerifySms] empty. Please set 'templateIdForVerifySms' in config file");
     }
 
+    /**
+     * generate verify code
+     * @param null $length
+     * @param null $characters
+     *
+     * @return string
+     */
     public function generateCode($length = null, $characters = null)
     {
         $length = $length ?: (int) Config::get('sms::codeLength');
@@ -144,6 +169,10 @@ class SmsManager {
         return $randomString;
     }
 
+    /**
+     * get code valid time (minutes)
+     * @return mixed
+     */
     public function getCodeValidTime()
     {
         return Config::get('sms::codeValidTime');//minutes
