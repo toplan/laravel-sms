@@ -9,13 +9,13 @@
 ```
 
 ##快速上手
-1.生成sms默认表
+####1.生成sms默认表
 ```php
    php artisan migrate --path="/vendor/toplan/laravel-sms/src/migrations" --package="toplan/sms"
 ```
    如果你想更改短信表结构和相应model请参看自助开发里面的介绍。
 
-2.在app/config/app.php文件中providers数组里加入：
+####2.在app/config/app.php文件中providers数组里加入：
 ```php
    'Toplan\Sms\SmsManagerServiceProvider'
 ```
@@ -24,7 +24,7 @@
 ```php
    'SmsManager' => 'Toplan\Sms\Facades\SmsManager',
 ```
-3.参数配置
+####3.参数配置
    请先运行如下命令生成配置文件：
 ```php
    php artisan config:publish --path='/vendor/toplan/laravel-sms/src/Sms/config/' toplan/sms
@@ -50,19 +50,19 @@
    'templateIdForVerifySms' => 'your template id',
 ```
 
-5.使用Sms模型发送短信
+####4.Join it! 使用Sms模型发送短信
 
   发送验证码短信，直接访问如下地址,返回json格式数据
 ```html
   www.example.com/sms/send-code?mobile=13811111111
 ```
-  你还可以自己的控制器中发送其他模板短信
+  你还可以在自己的控制器中发送其他模板短信
 ```php
-    Toplan\Sms\Sms::make($tempId)->to('1828****349')->data(['99999', 1])->send();
+  Toplan\Sms\Sms::make($tempId)->to('1828****349')->data(['99999', 1])->send();
 ```
 
 ##自助二次开发
-1.继承model
+####1.继承model
    请继承model类(Toplan\Sms\Sms)
 ```php
   class MySmsModel extends Toplan\Sms\Sms {
@@ -77,5 +77,5 @@
 ```
  修改model类后需要在配置文件中，修改key为'smsModel'的值，
 ```php
-    'smsModel' => 'Toplan\Sms\Sms',
+   'smsModel' => 'Toplan\Sms\Sms',
 ```
