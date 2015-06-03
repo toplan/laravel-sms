@@ -1,6 +1,7 @@
 {
     "name": "toplan/laravel-sms",
     "description": "",
+    "license": "MIT",
     "version": "dev-master",
     "keywords": ["sms"],
     "authors": [
