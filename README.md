@@ -1,4 +1,7 @@
 # laravel-sms v1.0 for laravel 4.2
+
+支持数据库记录短信发送情况；支持短信队列。
+
 目前支持的第三方平台有：
 * [云通讯](http:http://www.yuntongxun.com)
 
@@ -50,7 +53,7 @@
    'templateIdForVerifySms' => 'your template id',
 ```
 
-####4.Join it! 使用Sms模型发送短信
+####4.Enjoy it! 使用Sms模型发送短信
 
   发送验证码短信，直接访问如下地址,返回json格式数据
 ```html
@@ -62,10 +65,17 @@
 ```
 
 ##自助二次开发
-####1.继承model
-   请继承model类(Toplan\Sms\Sms)
+####1.自定义Model
+
+   继承model类(Toplan\Sms\Sms)
 ```php
   class MySmsModel extends Toplan\Sms\Sms {
+
+        //override
+        public function send()
+        {
+            //发送入口
+        }
 
         //override
         public function sendProcess()
