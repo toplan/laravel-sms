@@ -20,11 +20,11 @@
    'Toplan\Sms\SmsManagerServiceProvider'
 ```
 
-3.在app/config/app.php文件中的aliases数组里加入
+ 在app/config/app.php文件中的aliases数组里加入
 ```php
    'SmsManager' => 'Toplan\Sms\Facades\SmsManager',
 ```
-4.参数配置
+3.参数配置
    请先运行如下命令生成配置文件：
 ```php
    php artisan config:publish --path='/vendor/toplan/laravel-sms/src/Sms/config/' toplan/sms
@@ -44,12 +44,22 @@
 
    ...
 ```
+  填写你验证码短信模板标示符/ID
+```php
+   //模板/项目标示符/ID
+   'templateIdForVerifySms' => 'your template id',
+```
 
 5.使用Sms模型发送短信
+
+  发送验证码短信，直接访问如下地址,返回json格式数据
+```html
+  www.example.com/sms/send-code?mobile=13811111111
+```
+  你还可以自己的控制器中发送其他模板短信
 ```php
     Toplan\Sms\Sms::make($tempId)->to('1828****349')->data(['99999', 1])->send();
 ```
-
 
 ##自助二次开发
 1.继承model
@@ -65,4 +75,7 @@
 
   }
 ```
-
+ 修改model类后需要在配置文件中，修改key为'smsModel'的值，
+```php
+    'smsModel' => 'Toplan\Sms\Sms',
+```
