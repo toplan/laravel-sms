@@ -57,19 +57,24 @@
 
 ####4.Enjoy it! 使用Sms模型发送短信
 
-  发送验证码短信，直接访问如下地址,返回json格式数据
-```html
-  www.example.com/sms/send-code?mobile=13811111111
-```
-  你还可以在自己的控制器中发送其他模板短信
+  在控制器中发送模板短信，如：
 ```php
   Toplan\Sms\Sms::make($tempId)->to('1828****349')->data(['99999', 1])->send();
 ```
+##验证码短信发送模块
 
+ 你除了可以自己写验证码发送相关功能外，你还能使用该包集成的验证码发送模块来发送验证码，使用方法下：
+```html
+  <script src="/assets/js/jquery.toplan_sms.js"></script>
+  <script>
+     var mobile = '18280345***';
+     var selector = '#sendVerifySmsButton';
+     sendVerifySms(mobile, selector);
+  </script>
+```
 ##服务端检测手机验证码
 
-  如果你使用toplan/laravel-sms包集成的验证码发送模块（如：通过ajax访问 /sms/send-code?mobile=xxx），
-  那么在提交数据到服务器端时，需要验证手机号和验证码是否正确，你只需要加上如下代码即可：
+  如果你使用toplan/laravel-sms包集成的验证码发送模块（如：通过ajax访问 /sms/send-code?mobile=xxx）,那么在用户填写完成验证码并提交form表单的数据到服务器端时，在控制器中需要验证手机号和验证码是否正确，你只需要加上如下代码即可：
 ```php
    //验证手机验证码
    $validator = Validator::make(Input::all(), [

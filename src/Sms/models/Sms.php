@@ -22,20 +22,20 @@ class Sms extends Model implements Sender{
     protected $softDelete = true;
 
     /**
-     * data rules
-     * @var array
-     */
-    protected $rules =  [
-            'temp_id' => 'required',
-            'to'      => 'required',
-            'data'    => 'required',
-        ];
-
-    /**
      * 短信发送代理器
      * @var
      */
     protected $agent;
+
+    /**
+     * data rules
+     * @var array
+     */
+    public $rules =  [
+            'temp_id' => 'required',
+            'to'      => 'required',
+            'data'    => 'required',
+        ];
 
     /**
      * create instance
