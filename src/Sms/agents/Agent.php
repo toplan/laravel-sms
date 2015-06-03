@@ -45,6 +45,10 @@ Abstract class Agent {
         return $this->config['smsSendQueue'];
     }
 
+    /**
+     * 是否重复发送队列任务中失败的短信
+     * @return mixed
+     */
     public function isResendFailedSmsInQueue()
     {
         return $this->config['isResendFailedSmsInQueue'];

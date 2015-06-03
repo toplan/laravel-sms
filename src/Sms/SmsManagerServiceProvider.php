@@ -12,6 +12,7 @@ class SmsManagerServiceProvider extends ServiceProvider{
     {
         $this->package('toplan/sms', null, __DIR__);
         require __DIR__ . '/routes.php';
+        require __DIR__ . '/validations.php';
     }
 
     /**

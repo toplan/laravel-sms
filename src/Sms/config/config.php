@@ -7,9 +7,21 @@ return array(
      */
     'agent' => 'YunTongXun',
 
+    /**
+     * 以下三个为发送验证码短信相关配置
+     */
+    //模板/项目标示符
+    'templateIdForVerifySms' => '',
+
+    //验证码长度
+    'codeLength' => 5,
+
+    //验证码有效时间长度，单位为分钟
+    'codeValidTime' => 5,//minutes
 
     /**
      * 指定Toplan\Sms\SmsController中的模型
+     * 如果你继承并修改了Sms模型,需要在这里指定你的模型类
      */
     'smsModel' => 'Toplan\Sms\Sms',
 
@@ -25,6 +37,22 @@ return array(
      */
     'smsWorker' => 'Toplan\Sms\SmsWorker',
 
+    /**
+     * 短信发送规则
+     */
+    'rules' => [
+        'mobile' => [
+            //发送前是否检测手机号合法性
+            'is_check' => true,
+            //选择手机号检测规则
+            'choose_rule' => 'check_mobile_unique',//default value is check_mobile_unique
+            //唯一性检测规则
+            'check_mobile_unique' => 'unique:users,mobile',//适用于注册
+            //存在性检测规则
+            'check_mobile_exists' => 'exists:users',//使用于找回密码和系统内业务验证
+            //more rules..
+        ]
+    ],
 
     /**
      * 云通讯代理器配置
@@ -56,4 +84,5 @@ return array(
         'softVersion'   => '2013-12-26',
     ],
 
+    'sessionKey' => 'toplan_sms_sent_info_v1'
 );

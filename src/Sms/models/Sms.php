@@ -7,7 +7,7 @@ use Queue;
 use Validator;
 use SmsManager;
 
-class Sms extends Model {
+class Sms extends Model implements Sender{
 
     /**
      * table name
@@ -76,6 +76,12 @@ class Sms extends Model {
         return $sms;
     }
 
+    public function template($tempId)
+    {
+        $this->temp_id = $tempId;
+        return $this;
+    }
+
     /**
      * set the mobile number
      * @param $mobile
@@ -107,9 +113,9 @@ class Sms extends Model {
     public function send()
     {
         $validator = Validator::make([
-            'temp_id' => $this->temp_id,
-            'to'      => $this->to,
-            'data'    => $this->data,
+            'temp_id' => $this->getTempId(),
+            'to'      => $this->getTo(),
+            'data'    => $this->getData(),
         ], $this->rules);
         if ( ! $validator->fails()) {
             if ( ! $this->created_at) {
@@ -136,7 +142,7 @@ class Sms extends Model {
      */
     public function sendProcess()
     {
-        $result = $this->agent->sendTemplateSms($this->temp_id, $this->to, json_decode($this->data));
+        $result = $this->agent->sendTemplateSms($this->getTempId(), $this->getTo(), json_decode($this->getData()));
         if ($result['success']) {
             $this->sent_time = time();
             $this->result_info = $result['info'];
@@ -150,4 +156,19 @@ class Sms extends Model {
         return $result['success'];
     }
 
+
+    public function getTempId()
+    {
+        return $this->temp_id;
+    }
+
+    public function getTo()
+    {
+        return $this->to;
+    }
+
+    public function getData($getArray = false)
+    {
+        return $getArray ? json_decode($this->data) : $this->data;
+    }
 }
