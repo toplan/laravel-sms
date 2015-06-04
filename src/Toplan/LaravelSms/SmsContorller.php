@@ -13,7 +13,7 @@ class SmsController extends Controller {
 
     public function __construct()
     {
-        $this->smsModel = Config::get('sms::smsModel', 'Toplan/Sms/Sms');
+        $this->smsModel = Config::get('laravel-sms::smsModel', 'Toplan/Sms/Sms');
     }
 
     public function getSendCode()

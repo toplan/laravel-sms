@@ -44,7 +44,7 @@ class SmsManager {
                 'mobile' => '',
                 'code' => '',
                 'deadline_time' => 0,
-                'rules' => Config::get('sms::rules'),
+                'rules' => Config::get('laravel-sms::rules'),
             ];
         $this->smsData = $data;
     }
@@ -143,7 +143,7 @@ class SmsManager {
      */
     public function getTempIdForVerifySms()
     {
-        $tempId = Config::get('sms::templateIdForVerifySms');
+        $tempId = Config::get('laravel-sms::templateIdForVerifySms');
         if ($tempId) {
             return $tempId;
         }
@@ -159,7 +159,7 @@ class SmsManager {
      */
     public function generateCode($length = null, $characters = null)
     {
-        $length = $length ?: (int) Config::get('sms::codeLength');
+        $length = $length ?: (int) Config::get('laravel-sms::codeLength');
         $characters = $characters ?: '123456789';
         $charLength = strlen($characters);
         $randomString = '';
@@ -175,7 +175,7 @@ class SmsManager {
      */
     public function getCodeValidTime()
     {
-        return Config::get('sms::codeValidTime');//minutes
+        return Config::get('laravel-sms::codeValidTime');//minutes
     }
 
     /**
@@ -184,7 +184,7 @@ class SmsManager {
      */
     public function getSessionKey()
     {
-        return Config::get('sms::sessionKey');
+        return Config::get('laravel-sms::sessionKey');
     }
 
     /**
@@ -193,7 +193,7 @@ class SmsManager {
      */
     public function getDefaultAgent()
     {
-        return Config::get('sms::agent');
+        return Config::get('laravel-sms::agent');
     }
 
     /**
@@ -203,8 +203,8 @@ class SmsManager {
      */
     public function setDefaultAgent($name)
     {
-        Config::set('sms::agent', $name);
-        return Config::get('sms::agent', $name);
+        Config::set('laravel-sms::agent', $name);
+        return Config::get('laravel-sms::agent', $name);
     }
 
     /**
@@ -246,9 +246,9 @@ class SmsManager {
      */
     public function getAgentConfig($agentName)
     {
-        $config = Config::get("sms::$agentName") ?: [];
-        $config['smsSendQueue'] = Config::get('sms::smsSendQueue');
-        $config['smsWorker'] = Config::get('sms::smsWorker', 'Toplan\Sms\SmsWorker');
+        $config = Config::get("laravel-sms::$agentName") ?: [];
+        $config['smsSendQueue'] = Config::get('laravel-sms::smsSendQueue');
+        $config['smsWorker'] = Config::get('laravel-sms::smsWorker', 'Toplan\Sms\SmsWorker');
         if ( ! class_exists($config['smsWorker'])) {
             throw new \InvalidArgumentException("Worker [" . $config['worker'] . "] not support.");
         }
