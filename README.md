@@ -49,11 +49,6 @@
 
    ...
 ```
-  填写你验证码短信模板标示符/ID
-```php
-   //模板/项目标示符/ID
-   'templateIdForVerifySms' => 'your template id',
-```
 
 ####4.Enjoy it! 使用Sms模型发送短信
 
@@ -74,7 +69,13 @@
 ```
 ##服务端检测手机验证码
 
-  如果你使用toplan/laravel-sms包集成的验证码发送模块（如：通过ajax访问 /sms/send-code?mobile=xxx）,那么在用户填写完成验证码并提交form表单的数据到服务器端时，在控制器中需要验证手机号和验证码是否正确，你只需要加上如下代码即可：
+####1.先填写你验证码短信模板标示符/ID
+```php
+   //模板/项目标示符/ID
+   'templateIdForVerifySms' => 'your template id',
+```
+
+####2.如果你使用toplan/laravel-sms包集成的验证码发送模块（如：通过ajax访问 /sms/send-code?mobile=xxx）,那么在用户填写验证码并提交表单到服务器时，在你的控制器中需要验证手机号和验证码是否正确，你只需要加上如下代码即可：
 ```php
    //验证手机验证码
    $validator = Validator::make(Input::all(), [
@@ -85,6 +86,10 @@
        return Redirect::back()->withInput()->withErrors($validator);
    }
 ```
+   PS:
+   mobile_changed 验证的是用户手机号是否合法。
+   verify_code 验证的是验证码是否合法(包括是否正确，是否超时无效)
+   请在语言包中做好翻译。
 
 ##自助二次开发
 ####1.自定义Model

@@ -15,6 +15,7 @@ function sendVerifySms(mobileNumber, elementSelector) {
     var buttonText = elem.text();
     elem.on('click', function(){
         elem.prop('disabled', true);
+        elem.text('短信发送中...');
         if ( ! mobileNumber || mobileNumber == undefined) {
             mobileNumber = $('input[name="mobile"]').val();
         }
