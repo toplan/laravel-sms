@@ -55,10 +55,14 @@
 
 ####4.Enjoy it! 使用Sms模型发送短信
 
+  验证是否安装成功：
+  在浏览器访问链接example.com/sms/info。如果显示'hello, welcome to laravel-sms'则表示安装成功。
+
   在控制器中发送模板短信，如：
 ```php
   Toplan\Sms\Sms::make($tempId)->to('1828****349')->data(['99999', 1])->send();
 ```
+
 
 ##验证码短信发送模块
 
@@ -73,6 +77,9 @@
      sendVerifySms(mobile, selector);
   </script>
 ```
+
+ [Test]你还可以快速检测该模块是否可用：
+ 在浏览器访问链接example.com/sms/send-code?mobile=xxxxx
 
 ####2.[服务器端]配置模板id
 
