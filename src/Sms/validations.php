@@ -1,7 +1,5 @@
 <?php
 
-use SmsManager;
-
 $smsData = SmsManager::getSmsDataFromSession();
 
 Validator::extend('mobile', function($attribute, $value, $parameters) {
