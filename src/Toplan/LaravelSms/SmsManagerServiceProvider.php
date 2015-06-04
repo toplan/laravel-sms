@@ -10,7 +10,7 @@ class SmsManagerServiceProvider extends ServiceProvider{
      */
     public function boot()
     {
-        $this->package('toplan/sms', null, __DIR__);
+        $this->package('toplan/laravel-sms');
         require __DIR__ . '/routes.php';
         require __DIR__ . '/validations.php';
     }
