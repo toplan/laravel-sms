@@ -7,17 +7,17 @@ Validator::extend('mobile', function($attribute, $value, $parameters) {
 });
 
 Validator::extend('mobile_changed', function ($attribute, $value, $parameters) use ($smsData) {
+    SmsManager::forgetSmsDataFromSession();
     if ($smsData && $smsData['mobile'] == $value) {
-        SmsManager::forgetSmsDataFromSession();
         return true;
     }
     return false;
 });
 
 Validator::extend('verify_code', function ($attribute, $value, $parameters) use ($smsData) {
+    SmsManager::forgetSmsDataFromSession();
     if ($smsData && $smsData['deadline_time'] >= time()) {
         if ($smsData['code'] == $value) {
-            SmsManager::forgetSmsDataFromSession();
             return true;
         }
         return false;
