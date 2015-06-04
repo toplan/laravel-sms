@@ -1,9 +1,11 @@
 # laravel-sms v1.0 for laravel 4.2
 
-支持数据库记录短信发送情况；支持短信队列。
-
-目前支持的第三方平台有：
-* [云通讯](http:http://www.yuntongxun.com)
+特点
+1.支持数据库记录短信发送情况。
+2.支持短信队列。
+3.集成验证码短信发送模块，告别写验证码短信发送和验证代码。
+3.集成第三方短信发送服务，目前支持的第三方平台有：
+  * [云通讯](http:http://www.yuntongxun.com)
 
 ##安装
 在项目根目录下运行如下composer命令:
@@ -69,13 +71,17 @@
 ```
 ##服务端检测手机验证码
 
-####1.先填写你验证码短信模板标示符/ID
+####1.配置模板id
+
+先填写你验证码短信模板标示符/ID
 ```php
    //模板/项目标示符/ID
    'templateIdForVerifySms' => 'your template id',
 ```
 
-####2.如果你使用toplan/laravel-sms包集成的验证码发送模块（如：通过ajax访问 /sms/send-code?mobile=xxx）,那么在用户填写验证码并提交表单到服务器时，在你的控制器中需要验证手机号和验证码是否正确，你只需要加上如下代码即可：
+####2.合法性验证
+
+如果你使用toplan/laravel-sms包集成的验证码发送模块（如：通过ajax访问 /sms/send-code?mobile=xxx）,那么在用户填写验证码并提交表单到服务器时，在你的控制器中需要验证手机号和验证码是否正确，你只需要加上如下代码即可：
 ```php
    //验证手机验证码
    $validator = Validator::make(Input::all(), [
@@ -88,7 +94,7 @@
 ```
    PS:
    mobile_changed 验证的是用户手机号是否合法。
-   verify_code 验证的是验证码是否合法(包括是否正确，是否超时无效)
+   verify_code 验证的是验证码是否合法(包括是否正确，是否超时无效)。
    请在语言包中做好翻译。
 
 ##自助二次开发
