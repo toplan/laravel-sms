@@ -1,11 +1,11 @@
 <?php namespace Toplan\Sms;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletingTrait;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
-use Queue;
-use Validator;
-use SmsManager;
+use \Queue;
+use \Validator;
+use \SmsManager;
 
 class Sms extends Model implements Sender{
 
@@ -22,7 +22,7 @@ class Sms extends Model implements Sender{
     /**
      * support soft delete
      */
-    use SoftDeletingTrait;
+    use SoftDeletes;
     protected $softDelete = true;
 
     /**

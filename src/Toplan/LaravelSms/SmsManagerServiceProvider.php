@@ -10,8 +10,20 @@ class SmsManagerServiceProvider extends ServiceProvider{
      */
     public function boot()
     {
-        $this->package('toplan/laravel-sms');
+        //publish a config file
+        $this->publishes([
+            __DIR__ . '/../../config/laravel-sms.php' => config_path('laravel-sms.php')
+        ], 'config');
+
+        //publish migrations
+        $this->publishes([
+            __DIR__ . '/../../migrations/' => database_path('/migrations')
+        ], 'migrations');
+
+        //route file
         require __DIR__ . '/routes.php';
+
+        //validations file
         require __DIR__ . '/validations.php';
     }
 
@@ -20,6 +32,11 @@ class SmsManagerServiceProvider extends ServiceProvider{
      */
     public function register()
     {
+        // Merge configs
+        $this->mergeConfigFrom(
+            __DIR__ . '/../../config/laravel-sms.php', 'laravel-sms'
+        );
+
         $this->app->singleton('SmsManager', function(){
             return new SmsManager($this->app);
         });
