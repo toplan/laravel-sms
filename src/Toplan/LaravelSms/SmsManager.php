@@ -1,7 +1,6 @@
 <?php namespace Toplan\Sms;
 
 use Config;
-use Doctrine\Instantiator\Exception\InvalidArgumentException;
 use Session;
 
 class SmsManager {

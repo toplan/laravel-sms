@@ -39,9 +39,15 @@ class SmsController extends Controller {
                 'mobile' => SmsManager::getRule('mobile')
             ]);
             if ($validator->fails()) {
-                $vars['msg'] = '手机号码已存在';
+                if ($rule == 'check_mobile_unique') {
+                    $vars['msg'] = '该手机号码已存在';
+                } elseif ($rule == 'check_mobile_exists') {
+                    $vars['msg'] = '不存在此手机号码';
+                } else {
+                    $vars['msg'] = '出错啦，你的手机号不合法';
+                }
                 $vars['type'] = 'mobile_error';
-                return Response::json($vars);
+                return response()->json($vars);
             }
         }
         //------------------------------------------
@@ -66,12 +72,12 @@ class SmsController extends Controller {
             $vars['msg'] = '短信发送失败，请重新获取';
             $vars['type'] = 'sent_failed';
         }
-        return Response::json($vars);
+        return response()->json($vars);
     }
 
     public function getInfo()
     {
-        echo ('<p>hello, welcome to laravel-sms v1.0, support laravel 4. time:'.time().'</p><hr><p style="color: green;">sms data in session:</p> <br>');
+        echo ('<p>hello, welcome to laravel-sms for l5.  current time:'.time().'</p><hr><p style="color: green;">sms data in session:</p> <br>');
         dd(SmsManager::getSmsDataFromSession());
     }
 }

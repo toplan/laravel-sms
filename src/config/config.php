@@ -38,21 +38,22 @@ return array(
     'smsWorker' => 'Toplan\Sms\SmsWorker',
 
     /**
-     * 短信发送规则
+     * 验证码短信发送规则
      */
     'rules' => [
+        //手机号检测规则
         'mobile' => [
             //发送前是否检测手机号合法性
             'is_check' => true,
-            //选择手机号检测规则
-            'choose_rule' => 'check_mobile_unique',//default value is check_mobile_unique
-
+            //默认规则
+            'choose_rule' => 'check_mobile_unique',
+            //可选规则
             'rules' => [
                 //唯一性检测规则
                 'check_mobile_unique' => 'unique:users,mobile',//适用于注册
                 //存在性检测规则
-                'check_mobile_exists' => 'exists:users',//使用于找回密码和系统内业务验证
-                //more rules..
+                'check_mobile_exists' => 'exists:users',//适用于找回密码和系统内业务验证
+                //add more mobile rules here
             ]
         ]
     ],

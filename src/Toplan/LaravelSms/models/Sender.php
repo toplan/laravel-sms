@@ -2,6 +2,12 @@
 
 interface Sender {
 
+    public function template($tempId);
+
+    public function to($mobile);
+
+    public function data(Array $data);
+
     /**
      * 发送短信入口
      * @return mixed

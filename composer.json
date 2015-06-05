@@ -1,9 +1,9 @@
 {
     "name": "toplan/laravel-sms",
-    "description": "",
+    "description": "sms send package for laravel",
     "license": "MIT",
     "version": "dev-master",
-    "keywords": ["sms"],
+    "keywords": ["sms", "laravel sms", "云通讯"],
     "authors": [
         {
             "name": "toplan",
@@ -12,7 +12,7 @@
     ],
     "require": {
         "php": ">=5.4.0",
-        "illuminate/support": "4.2.*"
+        "illuminate/support": "5.0.*"
     },
     "autoload": {
         "classmap": [
