@@ -1,10 +1,8 @@
 <?php namespace Toplan\Sms;
 
-use Config;
-use Input;
-use SmsManager;
-use Validator;
-use Response;
+use \Input;
+use \SmsManager;
+use \Validator;
 use Illuminate\Routing\Controller;
 
 class SmsController extends Controller {
@@ -13,10 +11,10 @@ class SmsController extends Controller {
 
     public function __construct()
     {
-        $this->smsModel = Config::get('laravel-sms::smsModel', 'Toplan/Sms/Sms');
+        $this->smsModel = config('laravel-sms.smsModel', 'Toplan/Sms/Sms');
     }
 
-    public function getSendCode($rule, $mobile)
+    public function getSendCode($rule, $mobile = '')
     {
         $vars = [];
         $input = ['mobile' => $mobile];
@@ -44,7 +42,7 @@ class SmsController extends Controller {
                 } elseif ($rule == 'check_mobile_exists') {
                     $vars['msg'] = '不存在此手机号码';
                 } else {
-                    $vars['msg'] = '出错啦，你的手机号不合法';
+                    $vars['msg'] = '抱歉，你的手机号未通过合法性检测';
                 }
                 $vars['type'] = 'mobile_error';
                 return response()->json($vars);
@@ -80,4 +78,5 @@ class SmsController extends Controller {
         echo ('<p>hello, welcome to laravel-sms for l5.  current time:'.time().'</p><hr><p style="color: green;">sms data in session:</p> <br>');
         dd(SmsManager::getSmsDataFromSession());
     }
+
 }

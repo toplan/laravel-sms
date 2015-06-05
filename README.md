@@ -15,15 +15,8 @@
 ```
 
 ##快速上手
-####1.在数据库中生成sms表
 
-   存储短信发送记录，方便管理。
-```php
-   php artisan migrate --package="toplan/laravel-sms"
-```
-   如果你想更改短信表结构和相应model请参看自助开发里面的介绍。
-
-####2.注册服务提供器
+####1.注册服务提供器
 
 在config/app.php文件中providers数组里加入：
 ```php
@@ -34,12 +27,20 @@
 ```php
    'SmsManager' => 'Toplan\Sms\Facades\SmsManager',
 ```
-####3.参数配置
-   请先运行如下命令生成配置文件：
+
+####2.migration生成 & 参数配置
+
+   请先运行如下命令生成配置文件和migration文件：
 ```php
-   php artisan config:publish toplan/laravel-sms
+   php artisan vendor:publish
 ```
-   运行以上命令成功后，然后在config/package/toplan/laravel-sms/config.php中修改配置。
+
+   在数据库中生成sms表：
+```php
+   php artisan migrate
+```
+
+   在config/laravel-sms.php中修改配置。
    如果你使用的是云通讯，请在数组'YunTongXun'中按照提示填写配置信息
 ```php
    //主帐号,对应开官网发者主账号下的 ACCOUNT SID
@@ -73,7 +74,7 @@
  你除了可以自己写验证码发送相关功能外，你也可以使用该包集成的验证码发送模块来发送验证码，使用方法下：
 ```html
   //引入jquery插件
-  <script src="/assets/js/jquery.toplan_sms.js"></script>
+  <script src="/assets/js/jquery.toplan_sms.js"></script>//该js文件在laravel-sms包的根目录中，请自行复制
   <script>
      //为发送按钮添加sms(发送短信)事件
      $('#sendVerifySmsButton').sms({
@@ -93,7 +94,7 @@
 
 ####2.[服务器端]配置模板id
 
-在config/packages/toplan/laravel-sms/config.php中先填写你验证码短信模板标示符/ID
+在config/laravel-sms.php中先填写你验证码短信模板标示符/ID
 ```php
    //模板/项目标示符/ID
    'templateIdForVerifySms' => 'your template id',
@@ -109,6 +110,11 @@
         'verifyCode' => 'required|verify_code|verify_rule:check_mobile_unique',
         //more...
    ]);
+   //验证失败的话需要清除session数据，防止用户多次试错
+   if ($validator->fails()) {
+       SmsManager::forgetSmsDataFromSession();
+       redirect()->back()->withErrors($validator);
+   }
 ```
    PS:
 
@@ -143,5 +149,5 @@
 ```
  修改model类后需要在配置文件中，修改key为'smsModel'的值，
 ```php
-   'smsModel' => 'Toplan\Sms\Sms',
+   'smsModel' => 'Toplan\Sms\MySmsModel',
 ```
