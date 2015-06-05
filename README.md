@@ -11,7 +11,7 @@
 ##安装
 在项目根目录下运行如下composer命令:
 ```php
-   composer require 'toplan/laravel-sms:dev-master'
+   composer require 'toplan/laravel-sms:dev-l4'
 ```
 
 ##快速上手
