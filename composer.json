@@ -3,7 +3,7 @@
     "description": "sms send package for laravel",
     "license": "MIT",
     "version": "dev-master",
-    "keywords": ["sms", "laravel sms", "云通讯"],
+    "keywords": ["sms", "laravel sms", "laravel-sms"],
     "authors": [
         {
             "name": "toplan",
