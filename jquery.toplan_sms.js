@@ -34,7 +34,7 @@
     function sendSms(opts, elem) {
         var mobile = $(opts.mobileSelector).val();
         $.ajax({
-            url  : '/sms/verify-code/rule/' + opts.rule + '/mobile/' + mobile,
+            url  : '/sms/verify-code/rule/' + opts.mobileRule + '/mobile/' + mobile,
             //url  : '/sms/send-code?mobile=' + mobile,
             type : 'get'
         }).success(function (data) {
@@ -69,7 +69,7 @@
     }
 
     $.fn.sms.default = {
-        rule           : 'check_mobile_unique',
+        mobileRule     : 'check_mobile_unique',
         mobileSelector : '',
         seconds        : 60,
         btnContent     : '',

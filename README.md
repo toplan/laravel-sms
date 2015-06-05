@@ -77,11 +77,15 @@
      //为发送按钮添加sms(发送短信)事件
      $('#sendVerifySmsButton').sms({
         //定义如何获取mobile的值
-        mobileSelector : 'input[name="mobile"]'
+        mobileSelector : 'input[name="mobile"]',
+        //定义手机号的检测规则
+        //check_mobile_unique可用于注册,check_mobile_exists可用于找回密码
+        //当然你还可以到配置文件中自定义你想要的任何规则
+        mobileRule     : 'check_mobile_unique',
         //定义服务器有消息返回时，如何展示，默认为alert
-        alertMsg       : function (msg) {
+        alertMsg       :  function (msg) {
             alert(msg);
-         }
+        }
      });
   </script>
 ```
