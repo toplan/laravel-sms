@@ -1,4 +1,4 @@
-# laravel-sms v1.0 for laravel 4.2
+# laravel-sms for laravel 5
 
 特点
 
@@ -6,7 +6,7 @@
 2. 支持短信队列。
 3. 集成验证码短信发送模块，告别写验证码短信发送和验证代码。
 3. 集成第三方短信发送服务，目前支持的第三方平台有：
-  * [云通讯](http:http://www.yuntongxun.com)
+  * [云通讯](http://www.yuntongxun.com)
 
 ##安装
 在项目根目录下运行如下composer命令:
@@ -25,12 +25,12 @@
 
 ####2.注册服务提供器
 
-在app/config/app.php文件中providers数组里加入：
+在config/app.php文件中providers数组里加入：
 ```php
    'Toplan\Sms\SmsManagerServiceProvider'
 ```
 
- 在app/config/app.php文件中的aliases数组里加入
+在config/app.php文件中的aliases数组里加入
 ```php
    'SmsManager' => 'Toplan\Sms\Facades\SmsManager',
 ```
@@ -39,7 +39,7 @@
 ```php
    php artisan config:publish toplan/laravel-sms
 ```
-   运行以上命令成功后，然后在app/config/package/toplan/sms/config.php中修改配置。
+   运行以上命令成功后，然后在config/package/toplan/laravel-sms/config.php中修改配置。
    如果你使用的是云通讯，请在数组'YunTongXun'中按照提示填写配置信息
 ```php
    //主帐号,对应开官网发者主账号下的 ACCOUNT SID
@@ -72,6 +72,7 @@
 
  你除了可以自己写验证码发送相关功能外，你也可以使用该包集成的验证码发送模块来发送验证码，使用方法下：
 ```html
+  //引入jquery插件
   <script src="/assets/js/jquery.toplan_sms.js"></script>
   <script>
      //为发送按钮添加sms(发送短信)事件
@@ -92,7 +93,7 @@
 
 ####2.[服务器端]配置模板id
 
-在app/config/packages/toplan/laravel-sms/config.php中先填写你验证码短信模板标示符/ID
+在config/packages/toplan/laravel-sms/config.php中先填写你验证码短信模板标示符/ID
 ```php
    //模板/项目标示符/ID
    'templateIdForVerifySms' => 'your template id',
@@ -106,10 +107,8 @@
    $validator = Validator::make(Input::all(), [
         'mobile'     => 'required|mobile_changed',
         'verifyCode' => 'required|verify_code|verify_rule:check_mobile_unique',
+        //more...
    ]);
-   if ($validator->fails()) {
-       return Redirect::back()->withInput()->withErrors($validator);
-   }
 ```
    PS:
 
@@ -117,7 +116,7 @@
 
    verify_code 验证的是验证码是否合法(包括是否正确，是否超时无效)。
 
-   verify_rule:{$ruleName} 用于防止非法请求,后面的第一值必须填写你的手机号使用的检测规则。
+   verify_rule:{$mobileRule} 用于防止非法请求,后面的第一值为手机号检测规则，必须和你在浏览器端js插件中填写的mobileRule的值一致。
 
    请在语言包中做好翻译。
 

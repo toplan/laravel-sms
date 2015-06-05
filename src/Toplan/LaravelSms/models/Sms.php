@@ -15,6 +15,10 @@ class Sms extends Model implements Sender{
      */
     protected $table = "sms";
 
+    protected $guarded = ['id'];
+
+    protected $dates = ['deleted_at','updated_at','created_at'];
+
     /**
      * support soft delete
      */
