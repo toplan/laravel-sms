@@ -46,11 +46,14 @@ return array(
             'is_check' => true,
             //选择手机号检测规则
             'choose_rule' => 'check_mobile_unique',//default value is check_mobile_unique
-            //唯一性检测规则
-            'check_mobile_unique' => 'unique:users,mobile',//适用于注册
-            //存在性检测规则
-            'check_mobile_exists' => 'exists:users',//使用于找回密码和系统内业务验证
-            //more rules..
+
+            'rules' => [
+                //唯一性检测规则
+                'check_mobile_unique' => 'unique:users,mobile',//适用于注册
+                //存在性检测规则
+                'check_mobile_exists' => 'exists:users',//使用于找回密码和系统内业务验证
+                //more rules..
+            ]
         ]
     ],
 

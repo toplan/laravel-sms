@@ -97,6 +97,12 @@ class SmsManager {
         Session::forget($this->getSessionKey());
     }
 
+    public function hasRule($name, $ruleName)
+    {
+        $data = $this->getSmsData();
+        return isset($data['rules']["$name"]['rules']["$ruleName"]);
+    }
+
     /**
      * get rule by name
      * @param $name
@@ -107,7 +113,7 @@ class SmsManager {
     {
         $data = $this->getSmsData();
         $ruleName = $data['rules']["$name"]['choose_rule'];
-        return $data['rules']["$name"]["$ruleName"];
+        return $data['rules']["$name"]['rules']["$ruleName"];
     }
 
     /**

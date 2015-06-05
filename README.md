@@ -23,7 +23,9 @@
 ```
    如果你想更改短信表结构和相应model请参看自助开发里面的介绍。
 
-####2.在app/config/app.php文件中providers数组里加入：
+####2.注册服务提供器
+
+在app/config/app.php文件中providers数组里加入：
 ```php
    'Toplan\Sms\SmsManagerServiceProvider'
 ```
@@ -72,18 +74,21 @@
 ```html
   <script src="/assets/js/jquery.toplan_sms.js"></script>
   <script>
-     var mobile = '18280345***';
-     var selector = '#sendVerifySmsButton';
-     sendVerifySms(mobile, selector);
+     //为发送按钮添加sms(发送短信)事件
+     $('#sendVerifySmsButton').sms({
+        //定义如何获取mobile的值
+        mobileSelector : 'input[name="mobile"]'
+        //定义服务器有消息返回时，如何展示，默认为alert
+        alertMsg       : function (msg) {
+            alert(msg);
+         }
+     });
   </script>
 ```
 
- [Test]你还可以快速检测该模块是否可用：
- 在浏览器访问链接example.com/sms/send-code?mobile=xxxxx
-
 ####2.[服务器端]配置模板id
 
-在app/config/packages/toplan/sms/config.php中先填写你验证码短信模板标示符/ID
+在app/config/packages/toplan/laravel-sms/config.php中先填写你验证码短信模板标示符/ID
 ```php
    //模板/项目标示符/ID
    'templateIdForVerifySms' => 'your template id',
@@ -96,15 +101,20 @@
    //验证手机验证码
    $validator = Validator::make(Input::all(), [
         'mobile'     => 'required|mobile_changed',
-        'verifyCode' => 'required|verify_code',
+        'verifyCode' => 'required|verify_code|verify_rule:check_mobile_unique',
    ]);
    if ($validator->fails()) {
        return Redirect::back()->withInput()->withErrors($validator);
    }
 ```
    PS:
+
    mobile_changed 验证的是用户手机号是否合法。
+
    verify_code 验证的是验证码是否合法(包括是否正确，是否超时无效)。
+
+   verify_rule:{$ruleName} 用于防止非法请求,后面的第一值必须填写你的手机号使用的检测规则。
+
    请在语言包中做好翻译。
 
 ##自助二次开发

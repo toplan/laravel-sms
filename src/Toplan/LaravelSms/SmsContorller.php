@@ -16,14 +16,17 @@ class SmsController extends Controller {
         $this->smsModel = Config::get('laravel-sms::smsModel', 'Toplan/Sms/Sms');
     }
 
-    public function getSendCode()
+    public function getSendCode($rule, $mobile)
     {
         $vars = [];
+        $input = ['mobile' => $mobile];
         $vars['success'] = false;
         //验证手机号合法性-------------------------------
         //设置手机号验证规则
-        SmsManager::rule('mobile','check_mobile_unique');
-        $validator = Validator::make(Input::all(), [
+        if (SmsManager::hasRule('mobile', $rule)) {
+            SmsManager::rule('mobile', $rule);
+        }
+        $validator = Validator::make($input, [
             'mobile' => 'required|mobile'
         ]);
         if ($validator->fails()) {
@@ -32,7 +35,7 @@ class SmsController extends Controller {
             return Response::json($vars);
         }
         if (SmsManager::isCheck('mobile')) {
-            $validator = Validator::make(Input::all(), [
+            $validator = Validator::make($input, [
                 'mobile' => SmsManager::getRule('mobile')
             ]);
             if ($validator->fails()) {
@@ -44,7 +47,6 @@ class SmsController extends Controller {
         //------------------------------------------
 
         // 发送短信----------------------------------
-        $mobile = Input::get('mobile');
         $code = SmsManager::generateCode();
         $minutes = SmsManager::getCodeValidTime();
         $tempId = SmsManager::getTempIdForVerifySms();

@@ -1,56 +1,81 @@
-//
+/*
+ * toplan/laravel-sms package
+ * js file for send sms with verify code
+ *---------------------------
+ * author top lan <toplan710@gmail.com>
+ * --------------------------
+ * 2015/06/05
+ *
+ * example usage:
+ *   $('#sendVerifySmsButton').sms({
+ *       mobileSelector : 'input[name="mobile"]'
+ *       alertMsg       : function (msg) {
+ *           alert(msg);
+ *        }
+ *   });
+ */
+(function($){
 
-var defaultSendSmsButtonSelector = '#sendVerifySmsButton';
+    $.fn.sms = function(options){
+        var opts = $.extend(
+            $.fn.sms.default,
+            options,
+            {btnContent: this.html()}
+        );
+        this.click(function(){
+            //开始发送
+            var _this = $(this);
+            _this.html('短信发送中...');
+            _this.prop('disabled', true);
+            sendSms(opts, _this)
+        });
+    };
 
-function sendVerifySms(mobileNumber, elementSelector) {
-    if ( ! elementSelector || elementSelector == undefined) {
-        elementSelector = defaultSendSmsButtonSelector;
-    }
-    var elem = $(elementSelector);
-    if (elem.length != 1) {
-        console.log('send verify sms error!请指定发送控件.');
-        alert('请指定发送控件');
-        return false;
-    }
-    var buttonText = elem.text();
-    elem.on('click', function(){
-        elem.prop('disabled', true);
-        elem.text('短信发送中...');
-        if ( ! mobileNumber || mobileNumber == undefined) {
-            mobileNumber = $('input[name="mobile"]').val();
-        }
+    function sendSms(opts, elem) {
+        var mobile = $(opts.mobileSelector).val();
         $.ajax({
-            url  : '/sms/send-code',
-            type : 'get',
-            data : {mobile:mobileNumber}
+            url  : '/sms/verify-code/rule/' + opts.rule + '/mobile/' + mobile,
+            //url  : '/sms/send-code?mobile=' + mobile,
+            type : 'get'
         }).success(function (data) {
             console.log(data);
-               if (data.success) {
-                   sendVerifyCodeTimer(60, elementSelector, buttonText);
-               } else {
-                   elem.text(buttonText);
-                   elem.prop('disabled', false);
-                   alert(data.msg);
-               }
+           if (data.success) {
+               timer(elem, opts.seconds, opts.btnContent)
+           } else {
+               elem.html(opts.btnContent);
+               elem.prop('disabled', false);
+               opts.alertMsg(data.msg);
+           }
         }).fail(function () {
+            opts.alertMsg('请求失败，请重试');
+            elem.html(opts.btnContent);
             elem.prop('disabled', false);
         });
-    });
-}
+    }
 
-function sendVerifyCodeTimer(all_seconds, elementSelector, buttonText){
-    if(all_seconds == undefined){
-        all_seconds = 60;
+    function timer(elem, seconds, btnContent){
+        if(seconds >= 0){
+            setTimeout(function(){
+                //显示倒计时
+                elem.html(seconds + ' 秒后再次发送');
+                //递归
+                seconds -= 1;
+                timer(elem, seconds, btnContent);
+            }, 1000);
+        }else{
+            elem.html(btnContent);
+            elem.prop('disabled', false);
+        }
     }
-    if(all_seconds >= 0){
-        setTimeout(function(){
-            //显示倒计时
-            $(elementSelector).text(all_seconds + ' 秒后再次发送');
-            //递归
-            sendVerifyCodeTimer(all_seconds-1, elementSelector, buttonText)
-        }, 1000);
-    }else{
-        $(elementSelector).text(buttonText);
-        $(elementSelector).prop('disabled', false);
-    }
-}
+
+    $.fn.sms.default = {
+        rule           : 'check_mobile_unique',
+        mobileSelector : '',
+        seconds        : 60,
+        btnContent     : '',
+        alertMsg       : function (msg) {
+            alert(msg);
+        }
+    };
+
+})(jQuery);
