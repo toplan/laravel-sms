@@ -30,7 +30,7 @@ class SmsController extends Controller {
         if ($validator->fails()) {
             $vars['msg'] = '手机号格式错误，请输入正确的11位手机号';
             $vars['type'] = 'mobile_error';
-            return Response::json($vars);
+            return response()->json($vars);
         }
         if (SmsManager::isCheck('mobile')) {
             $validator = Validator::make($input, [
