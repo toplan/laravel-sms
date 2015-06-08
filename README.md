@@ -25,7 +25,7 @@
 
 在config/app.php文件中的aliases数组里加入
 ```php
-   'SmsManager' => 'Toplan\Sms\Facades\SmsManager',
+   'SmsManager' => 'Toplan\Sms\Facades\SmsManager'
 ```
 
 ####2.migration生成 & 参数配置
@@ -56,7 +56,7 @@
    ...
 ```
 
-####4.Enjoy it! 使用Sms模型发送短信
+####3.Enjoy it! 使用Sms模型发送短信
 
   验证是否安装成功：
   在浏览器访问链接example.com/sms/info。如果显示'hello, welcome to laravel-sms'则表示安装成功。
@@ -73,10 +73,12 @@
 
  你除了可以自己写验证码发送相关功能外，你也可以使用该包集成的验证码发送模块来发送验证码，使用方法下：
 ```html
-  //引入jquery插件
+  //如果你使用的是jquery,引入jquery插件
   <script src="/assets/js/jquery.laravel-sms.js"></script>//该js文件在laravel-sms包的根目录中，请自行复制
+  //或则引人zepto插件
+  //<script src="/assets/js/zepto.laravel-sms.js"></script>
   <script>
-     //为发送按钮添加sms(发送短信)事件
+     //为发送按钮添加sms方法,捕获点击事件
      $('#sendVerifySmsButton').sms({
         //定义如何获取mobile的值
         mobileSelector : 'input[name="mobile"]',
@@ -87,7 +89,9 @@
         //定义服务器有消息返回时，如何展示，默认为alert
         alertMsg       :  function (msg) {
             alert(msg);
-        }
+        },
+        //更多设置, 下次发送短信的等待时间
+        seconds        : 60 //单位秒，默认为60
      });
   </script>
 ```
