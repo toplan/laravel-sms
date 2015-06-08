@@ -73,8 +73,9 @@
 
  你除了可以自己写验证码发送相关功能外，你也可以使用该包集成的验证码发送模块来发送验证码，使用方法下：
 ```html
+  //js文件在laravel-sms包的js文件夹中，请自行复制
   //如果你使用的是jquery,引入jquery插件
-  <script src="/assets/js/jquery.laravel-sms.js"></script>//该js文件在laravel-sms包的根目录中，请自行复制
+  <script src="/assets/js/jquery.laravel-sms.js"></script>
   //或则引人zepto插件
   //<script src="/assets/js/zepto.laravel-sms.js"></script>
   <script>
