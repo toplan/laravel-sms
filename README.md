@@ -74,7 +74,7 @@
  你除了可以自己写验证码发送相关功能外，你也可以使用该包集成的验证码发送模块来发送验证码，使用方法下：
 ```html
   //引入jquery插件
-  <script src="/assets/js/jquery.toplan_sms.js"></script>//该js文件在laravel-sms包的根目录中，请自行复制
+  <script src="/assets/js/jquery.laravel-sms.js"></script>//该js文件在laravel-sms包的根目录中，请自行复制
   <script>
      //为发送按钮添加sms(发送短信)事件
      $('#sendVerifySmsButton').sms({
@@ -110,10 +110,10 @@
         'verifyCode' => 'required|verify_code|verify_rule:check_mobile_unique',
         //more...
    ]);
-   //验证失败的话需要清除session数据，防止用户多次试错
    if ($validator->fails()) {
+       //验证失败的话需要清除session数据，防止用户多次试错
        SmsManager::forgetSmsDataFromSession();
-       redirect()->back()->withErrors($validator);
+       return redirect()->back()->withErrors($validator);
    }
 ```
    PS:
