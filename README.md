@@ -2,9 +2,9 @@
 
 特点
 
-1. 支持数据库记录短信发送情况。
+1. 数据库记录/管理短信数据及其发送情况。
 2. 支持短信队列。
-3. 集成验证码短信发送模块，告别写验证码短信发送和验证代码。
+3. 集成[验证码短信发送/校验]模块，从此告别重复写验证码短信发送和验证码校验。
 3. 集成第三方短信发送服务，目前支持的第三方平台有：
   * [云通讯](http://www.yuntongxun.com)
 
@@ -76,8 +76,8 @@
   //js文件在laravel-sms包的js文件夹中，请自行复制
   //如果你使用的是jquery,引入jquery插件
   <script src="/assets/js/jquery.laravel-sms.js"></script>
-  //或则引人zepto插件
-  //<script src="/assets/js/zepto.laravel-sms.js"></script>
+  /* 如果你使用的是zepto，那么引人zepto插件 */
+  /* <script src="/assets/js/zepto.laravel-sms.js"></script> */
   <script>
      //为发送按钮添加sms方法,捕获点击事件
      $('#sendVerifySmsButton').sms({
@@ -136,6 +136,7 @@
 
    继承model类(Toplan\Sms\Sms)
 ```php
+  namespace App\Models;
   class MySmsModel extends Toplan\Sms\Sms {
 
         //override
@@ -150,9 +151,10 @@
             //发送过程
         }
 
+        //more functions...
   }
 ```
- 修改model类后需要在配置文件中，修改key为'smsModel'的值，
+ 修改model类后需要在配置文件中，修改key为'smsModel'的值：
 ```php
-   'smsModel' => 'Toplan\Sms\MySmsModel',
+   'smsModel' => 'App\Models\MySmsModel',
 ```

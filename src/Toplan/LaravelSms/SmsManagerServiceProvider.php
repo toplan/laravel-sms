@@ -1,6 +1,5 @@
 <?php namespace Toplan\Sms;
 
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\ServiceProvider;
 
 class SmsManagerServiceProvider extends ServiceProvider{
