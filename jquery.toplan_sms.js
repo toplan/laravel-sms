@@ -35,7 +35,6 @@
         var mobile = $(opts.mobileSelector).val();
         $.ajax({
             url  : '/sms/verify-code/rule/' + opts.mobileRule + '/mobile/' + mobile,
-            //url  : '/sms/send-code?mobile=' + mobile,
             type : 'get'
         }).success(function (data) {
             console.log(data);
