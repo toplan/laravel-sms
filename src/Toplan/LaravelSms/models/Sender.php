@@ -2,6 +2,8 @@
 
 interface Sender {
 
+    public function content($content);
+
     public function template($tempId);
 
     public function to($mobile);

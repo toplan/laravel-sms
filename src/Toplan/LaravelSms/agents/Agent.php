@@ -1,5 +1,7 @@
 <?php namespace Toplan\Sms;
 
+use \SmsManager;
+
 Abstract class Agent {
 
     /**
@@ -71,13 +73,109 @@ Abstract class Agent {
     }
 
     /**
-     * send a template sms
+     * sms send entry
+     * @param       $tempId
+     * @param       $to
+     * @param array $data
+     * @param       $content
+     *
+     * @return array|null
+     */
+    public function sms($tempId, $to, Array $data, $content)
+    {
+        $this->sendSms($tempId, $to, $data, $content);
+        if ($this->result['success']) {
+            return $this->result;
+        } elseif ($this->config['nextAgentEnable']) {
+            $result = $this->tryNextAgent($tempId, $to, $data, $content);
+            if ( ! $result) {
+                return $this->result;
+            } else {
+                $result['info'] = $this->result['info'] . "##" . $result['info'];
+                return $result;
+            }
+        }
+        return $this->result;
+    }
+
+    /**
+     * resend sms use next agent
+     * @param       $tempId
+     * @param       $to
+     * @param array $data
+     * @param       $content
+     *
+     * @return null
+     */
+    public function tryNextAgent($tempId, $to, Array $data, $content)
+    {
+        if ( ! $this->config['nextAgentName']) {
+            return null;
+        }
+        $agent = SmsManager::agent($this->config['nextAgentName']);
+        return $agent->sms($tempId, $to, $data, $content);
+    }
+
+    /**
+     * sms send process entry
+     * @param       $tempId
+     * @param       $to
+     * @param array $data
+     * @param       $content
+     *
+     * @return mixed
+     */
+    public abstract function sendSms($tempId, $to, Array $data, $content);
+
+    /**
+     * content sms send process
+     * @param $to
+     * @param $content
+     *
+     * @return mixed
+     */
+    public abstract function sendContentSms($to, $content);
+
+    /**
+     * template sms send process
      * @param       $tempId
      * @param       $to
      * @param array $data
      *
      * @return mixed
      */
-    public abstract function sendTemplateSMS($tempId, $to, Array $data);
+    public abstract function sendTemplateSms($tempId, $to, Array $data);
+
+    /**
+     * http post request
+     * @param       $url
+     * @param array $query
+     *
+     * @return mixed
+     */
+    function sockPost($url,$query){
+        $data = "";
+        $info=parse_url($url);
+        $fp=fsockopen($info["host"],80,$errno,$errstr,30);
+        if(!$fp){
+            return $data;
+        }
+        $head="POST ".$info['path']." HTTP/1.0\r\n";
+        $head.="Host: ".$info['host']."\r\n";
+        $head.="Referer: http://".$info['host'].$info['path']."\r\n";
+        $head.="Content-type: application/x-www-form-urlencoded\r\n";
+        $head.="Content-Length: ".strlen(trim($query))."\r\n";
+        $head.="\r\n";
+        $head.=trim($query);
+        $write=fputs($fp,$head);
+        $header = "";
+        while ($str = trim(fgets($fp,4096))) {
+            $header.=$str;
+        }
+        while (!feof($fp)) {
+            $data .= fgets($fp,4096);
+        }
+        return $data;
+    }
 
 }
