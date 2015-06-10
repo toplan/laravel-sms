@@ -36,9 +36,7 @@ class Sms extends Model implements Sender{
      * @var array
      */
     public $rules =  [
-            'temp_id' => 'required',
             'to'      => 'required',
-            'data'    => 'required',
         ];
 
     /**
@@ -47,6 +45,19 @@ class Sms extends Model implements Sender{
     public function __construct()
     {
         $this->agent = SmsManager::agent();
+    }
+
+    /**
+     * create a instance of sms
+     * @param $tempId
+     *
+     * @return Sms
+     */
+    public static function make($tempId = '')
+    {
+        $sms = new self;
+        $sms->temp_id = $tempId;
+        return $sms;
     }
 
     /**
@@ -68,16 +79,15 @@ class Sms extends Model implements Sender{
     }
 
     /**
-     * create a instance of sms
-     * @param $tempId
+     * set sms content
+     * @param $content
      *
-     * @return Sms
+     * @return $this
      */
-    public static function make($tempId)
+    public function content($content)
     {
-        $sms = new self;
-        $sms->temp_id = $tempId;
-        return $sms;
+        $this->content = $content;
+        return $this;
     }
 
     /**
@@ -126,6 +136,7 @@ class Sms extends Model implements Sender{
             'temp_id' => $this->getTempId(),
             'to'      => $this->getTo(),
             'data'    => $this->getData(),
+            'content' => $this->getContent()
         ], $this->rules);
         if ( ! $validator->fails()) {
             if ( ! $this->created_at) {
@@ -152,7 +163,7 @@ class Sms extends Model implements Sender{
      */
     public function sendProcess()
     {
-        $result = $this->agent->sendTemplateSms($this->getTempId(), $this->getTo(), json_decode($this->getData()));
+        $result = $this->agent->sms($this->getTempId(), $this->getTo(), $this->getData(true), $this->getContent());
         if ($result['success']) {
             $this->sent_time = time();
             $this->result_info = $result['info'];
@@ -194,4 +205,14 @@ class Sms extends Model implements Sender{
     {
         return $getArray ? json_decode($this->data) : $this->data;
     }
+
+    /**
+     * get content
+     * @return mixed
+     */
+    public function getContent()
+    {
+        return $this->content;
+    }
+
 }
