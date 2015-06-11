@@ -272,7 +272,7 @@ class SmsManager {
         $config = config("laravel-sms.$agentName", []);
         $config['smsSendQueue'] = config('laravel-sms.smsSendQueue');
         $config['smsWorker'] = config('laravel-sms.smsWorker', 'Toplan\Sms\SmsWorker');
-        $config['nextAgentEnable'] = config('laravel-sms.alternate.enable');
+        $config['nextAgentEnable'] = config('laravel-sms.alternate.enable', false);
         $config['nextAgentName'] = $this->getAlternateAgentNameByCurrentName($agentName);
         if ( ! class_exists($config['smsWorker'])) {
             throw new \InvalidArgumentException("Worker [" . $config['worker'] . "] not support.");
@@ -280,9 +280,15 @@ class SmsManager {
         return $config;
     }
 
+    /**
+     * get alternate agent name by current agent name
+     * @param $agentName
+     *
+     * @return null
+     */
     public function getAlternateAgentNameByCurrentName($agentName)
     {
-        $agents = config("laravel-sms.alternate.agents");
+        $agents = config("laravel-sms.alternate.agents", []);
         if ( ! count($agents)) {
             return null;
         }
