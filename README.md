@@ -1,12 +1,14 @@
 # laravel-sms for laravel 5
 
-特点
+laravel-sms特点:
 
 1. 数据库记录/管理短信数据及其发送情况。
 2. 支持短信队列。
 3. 集成[验证码短信发送/校验]模块，从此告别重复写验证码短信发送和验证码校验。
-3. 集成第三方短信发送服务，目前支持的第三方平台有：
+4. 集成第三方短信发送服务，目前支持的第三方平台有：
   * [云通讯](http://www.yuntongxun.com)
+  * [云片网络](http://www.yunpian.com)
+5. 备用代理器(服务商)机制。即:如果用一个服务商发送短信失败，将会自动尝试通过预先设置的备用服务商发送。
 
 ##安装
 在项目根目录下运行如下composer命令:
@@ -41,19 +43,27 @@
 ```
 
    在config/laravel-sms.php中修改配置。
+
+   如果你使用的是云片，请在数组'YunPian'中按照提示填写配置信息
+```php
+   'YunPian' => [
+        ...
+        'apikey' => 'your api key',
+   ]
+```
    如果你使用的是云通讯，请在数组'YunTongXun'中按照提示填写配置信息
 ```php
-   //主帐号,对应开官网发者主账号下的 ACCOUNT SID
-   'accountSid' => 'your account sid',
+   'YunTongXun' => [
+       ...
+       //主帐号,对应开官网发者主账号下的 ACCOUNT SID
+       'accountSid' => 'your account sid',
 
-   //主帐号令牌,对应官网开发者主账号下的 AUTH TOKEN
-   'accountToken' => 'your auth token',
+       //主帐号令牌,对应官网开发者主账号下的 AUTH TOKEN
+       'accountToken' => 'your auth token',
 
-   //应用Id，在官网应用列表中点击应用，对应应用详情中的APP ID
-   //在开发调试的时候，可以使用官网自动为您分配的测试Demo的APP ID
-   'appId' => 'your app id',
-
-   ...
+       //应用Id，在官网应用列表中点击应用，对应应用详情中的APP ID
+       'appId' => 'your app id',
+   ]
 ```
 
 ####3.Enjoy it! 使用Sms模型发送短信
@@ -63,7 +73,13 @@
 
   在控制器中发送模板短信，如：
 ```php
-  Toplan\Sms\Sms::make($tempId)->to('1828****349')->data(['99999', 1])->send();
+  //只希望使用模板方式发送短信,如你使用的服务商是云通讯
+  Toplan\Sms\Sms::make($tempId)->to('1828****349')->data(['12345', 5])->send();
+  //只希望使用内容方式放送,如你使用的服务商是云片
+  Toplan\Sms\Sms::make()->to('1828****349')->content('【Laravel SMS】亲爱的张三，欢迎访问，祝你工作愉快。')->send();
+  //同时确保能通过两种方式发送。这样做的好处是，可以兼顾到任何备用代理器(服务商)！
+  Toplan\Sms\Sms::make($tempId)->to('1828****349')->data(['张三'])
+                  ->content('【Laravel SMS】亲爱的张三，欢迎访问，祝你工作愉快。')->send();
 ```
 
 
@@ -97,12 +113,21 @@
   </script>
 ```
 
-####2.[服务器端]配置模板id
+####2.[服务器端]配置短信内容/模板
 
-在config/laravel-sms.php中先填写你验证码短信模板标示符/ID
+在config/laravel-sms.php中先填写你的验证码 短信内容 或 短信模板标示符
+
+如果你使用的是内容短信，则使用或修改'verifySmsContent'的值(如云片网络)
 ```php
-   //模板/项目标示符/ID
-   'templateIdForVerifySms' => 'your template id',
+   'verifySmsContent' => 'bla bla...'
+```
+
+如果你使用模板短信，需要到相应代理器中填写模板标示符(如云通讯)
+```php
+   'YunTongXun' => [
+       //模板标示符
+       'verifySmsTemplateId' => 'your template id',
+   ]
 ```
 
 ####3.[服务器端]合法性验证

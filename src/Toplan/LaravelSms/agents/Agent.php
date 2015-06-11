@@ -148,6 +148,7 @@ Abstract class Agent {
 
     /**
      * http post request
+     * this function`s code copy from http://www.yunpian.com/api/demo.html
      * @param       $url
      * @param array $query
      *
