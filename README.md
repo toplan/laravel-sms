@@ -4,7 +4,7 @@ laravel-sms特点:
 
 1. 数据库记录/管理短信数据及其发送情况。
 2. [支持短信队列](https://github.com/toplan/laravel-sms#短信队列)。
-3. 集成[验证码短信发送/校验模块](https://github.com/toplan/laravel-sms#验证码短信发送模块)，
+3. 集成[验证码短信发送/校验模块](https://github.com/toplan/laravel-sms#验证码短信发送/校验模块)，
    从此告别重复写验证码短信发送和验证码校验。
 4. 集成第三方短信服务商，[欢迎贡献更多的代理器](https://github.com/toplan/laravel-sms#开源贡献)。
    目前支持的第三方平台有：
