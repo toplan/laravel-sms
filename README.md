@@ -233,7 +233,7 @@ laravel-sms特点:
 
 在agents目录下添加代理器类,并继承Agent抽象类。如果使用到其他api，可以将api文件放入src/lib文件夹中。
 
-``php
+```php
    namespace Toplan\Sms;
    class FooAgent extends Agent {
         //override
