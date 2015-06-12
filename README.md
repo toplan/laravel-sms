@@ -85,16 +85,16 @@ laravel-sms特点:
                   ->content('【Laravel SMS】亲爱的张三，欢迎访问，祝你工作愉快。')->send();
 ```
 
-###4.常用方法
+####4.常用方法
 
-   * 发送给谁？
+   #####* 发送给谁？
 ```php
    $sms->to('1828*******');
 ```
 
-   * 设置模板ID
+   #####* 设置模板ID
 
-   如果你只使用了默认代理器，即没有开启备用代理器机制。你可以样设置模板id:
+   如果你只使用了默认代理器，即没有开启备用代理器机制。你只需要设置默认代理器的模板ID:
 ```php
    //静态方法设置，并返回sms实例
    $sms = Toplan\Sms\Sms::make('20001');//这是设置默认代理器的模板id
@@ -102,8 +102,8 @@ laravel-sms特点:
    $sms->template('20001');//这是设置默认代理器的模板id
 ```
 
-   如果你要开启备用代理器机制，那么你发送的每条短信需要设置代理商的模板ID，这样才能保证每个备用代理器正常使用。
-   你可以样设置模板id:
+   如果你要开启备用代理器机制，那么需要为默认/备用代理器设置相应模板ID，这样才能保证每个代理器正常使用。
+   你可以样设置:
 ```php
    //静态方法设置，并返回sms实例
    $sms = Toplan\Sms\Sms::make(['YunTongXun' => '20001', 'SubMail' => 'xxx', ...]);
@@ -113,7 +113,7 @@ laravel-sms特点:
    $sms->template(['YunTongXun' => '20001', 'SubMail' => 'xxx', ...]);//一次性设置多个服务商的模板id
 ```
 
-  * 设置模板短信的模板数据
+  #####* 设置模板短信的模板数据
 ```php
   $sms->data([
         'code' => $code,
@@ -121,13 +121,13 @@ laravel-sms特点:
       ]);//must be array
 ```
 
-  * 设置内容短信的内容
+  #####* 设置内容短信的内容
 
 ```php
   $sms->content('【Laravel SMS】亲爱的张三，欢迎访问，祝你工作愉快。');
 ```
 
-  * 发送短信
+  #####* 发送短信
 ```php
   $sms->send();
 ```
@@ -292,9 +292,6 @@ laravel-sms特点:
            //根据你使用的服务商的接口选择调用哪个方式发送短信
            $this->sendContentSms($to, $content);
            $this->sendTemplateSms($tempId, $to, Array $data);
-
-           //最后返回结果
-           return $this->result;
         }
 
         //override
