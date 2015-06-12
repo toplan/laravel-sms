@@ -53,13 +53,13 @@ class SmsController extends Controller {
         // 发送短信----------------------------------
         $code      = SmsManager::generateCode();
         $minutes   = SmsManager::getCodeValidTime();
-        $tempId    = SmsManager::getVerifySmsTemplateId();
+        $tempIdArray = SmsManager::getVerifySmsTemplateIdArray();
         $template  = SmsManager::getVerifySmsContent();
         $content   = vsprintf($template, [$code, $minutes]);
         $sms       = new $this->smsModel;
-        $result    = $sms->template($tempId)
+        $result    = $sms->template($tempIdArray)
                          ->to($mobile)
-                         ->data([$code, $minutes])
+                         ->data(['code' => $code,'minutes' => $minutes])
                          ->content($content)
                          ->send();
         if ($result) {

@@ -3,14 +3,15 @@
 laravel-sms特点:
 
 1. 数据库记录/管理短信数据及其发送情况。
-2. [支持短信队列](https://github.com/toplan/laravel-sms#短信队列)。
-3. 集成[验证码短信发送/校验模块](https://github.com/toplan/laravel-sms#验证码短信模块)，
+2. 兼容模板短信和内容短信。
+3. [支持短信队列](https://github.com/toplan/laravel-sms#短信队列)。
+4. 集成[验证码短信发送/校验模块](https://github.com/toplan/laravel-sms#验证码短信模块)，
    从此告别重复写验证码短信发送和验证码校验。
-4. 集成第三方短信服务商，[欢迎贡献更多的代理器](https://github.com/toplan/laravel-sms#开源贡献)。
+5. 集成第三方短信服务商，[欢迎贡献更多的代理器](https://github.com/toplan/laravel-sms#开源贡献)。
    目前支持的第三方平台有：
    * [云通讯](http://www.yuntongxun.com)
    * [云片网络](http://www.yunpian.com)
-5. [备用代理器机制](https://github.com/toplan/laravel-sms#备用代理器机制)。即:如果用一个服务商发送短信失败，将会自动尝试通过预先设置的备用服务商发送。
+6. [备用代理器机制](https://github.com/toplan/laravel-sms#备用代理器机制)。即:如果用一个服务商发送短信失败，将会自动尝试通过预先设置的备用服务商发送。
 
 ##安装
 在项目根目录下运行如下composer命令:
@@ -82,6 +83,53 @@ laravel-sms特点:
   //同时确保能通过两种方式发送。这样做的好处是，可以兼顾到任何备用代理器(服务商)！
   Toplan\Sms\Sms::make($tempId)->to('1828****349')->data(['张三'])
                   ->content('【Laravel SMS】亲爱的张三，欢迎访问，祝你工作愉快。')->send();
+```
+
+###4.常用方法
+
+   * 发送给谁？
+```php
+   $sms->to('1828*******');
+```
+
+   * 设置模板ID
+
+   如果你只使用了默认代理器，即没有开启备用代理器机制。你可以样设置模板id:
+```php
+   //静态方法设置，并返回sms实例
+   $sms = Toplan\Sms\Sms::make('20001');//这是设置默认代理器的模板id
+   //--或则--
+   $sms->template('20001');//这是设置默认代理器的模板id
+```
+
+   如果你要开启备用代理器机制，那么你发送的每条短信需要设置代理商的模板ID，这样才能保证每个备用代理器正常使用。
+   你可以样设置模板id:
+```php
+   //静态方法设置，并返回sms实例
+   $sms = Toplan\Sms\Sms::make(['YunTongXun' => '20001', 'SubMail' => 'xxx', ...]);
+   //--或则--
+   $sms->template('YunTongXun', '20001');//这是设置指定服务商的模板id
+   //--或则--
+   $sms->template(['YunTongXun' => '20001', 'SubMail' => 'xxx', ...]);//一次性设置多个服务商的模板id
+```
+
+  * 设置模板短信的模板数据
+```php
+  $sms->data([
+        'code' => $code,
+        'minutes' => $minutes
+      ]);//must be array
+```
+
+  * 设置内容短信的内容
+
+```php
+  $sms->content('【Laravel SMS】亲爱的张三，欢迎访问，祝你工作愉快。');
+```
+
+  * 发送短信
+```php
+  $sms->send();
 ```
 
 ##短信队列
@@ -227,6 +275,7 @@ laravel-sms特点:
         'isResendFailedSmsInQueue' => false,
 
         //more
+        'xxx' => 'some info',
         ...
    ]
 ```
@@ -244,7 +293,7 @@ laravel-sms特点:
            $this->sendContentSms($to, $content);
            $this->sendTemplateSms($tempId, $to, Array $data);
 
-           //最后切记返回结果, 作用是捕获结果判断是否自动启用备用代理器
+           //最后返回结果
            return $this->result;
         }
 
@@ -252,6 +301,8 @@ laravel-sms特点:
         //发送短信二级入口：发送内容短信
         public function sendContentSms($to, $content)
         {
+            //通过$this->config['key'],获取配置文件中的参数
+            $x = $this->config['xxx'];
             //在这里实现发送内容短信，即直接发送内容
             ...
             //切记将发送结果存入到$this->result
@@ -264,6 +315,8 @@ laravel-sms特点:
         //发送短信二级入口：发送模板短信
         public function sendTemplateSms($tempId, $to, Array $data)
         {
+            //通过$this->config['key'],获取配置文件中的参数
+            $x = $this->config['xxx'];
             //在这里实现发送模板短信
             ...
             //切记将发送结果存入到$this->result
@@ -272,5 +325,13 @@ laravel-sms特点:
             $this->result['code'] = $code;//发送结果代码
         }
    }
+```
+
+最后一步，在SmsManager.php中的最后一行添加方法, 至此, 新加代理器成功!
+```php
+    public function createFooAgent(Array $agentConfig)
+    {
+        return new FooAgent($agentConfig);
+    }
 ```
 

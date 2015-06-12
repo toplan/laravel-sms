@@ -5,7 +5,6 @@ class YunPianAgent extends Agent {
     public function sendSms($tempId, $to, Array $data, $content)
     {
         $this->sendContentSms($to, $content);
-        return $this->result;
     }
 
     public function sendContentSms($to, $content)
@@ -22,7 +21,7 @@ class YunPianAgent extends Agent {
         if ($data['code'] == 0) {
             $this->result['success'] = true;
         }
-        $this->result['info'] = 'yun pian agent:' . $data['msg'];
+        $this->result['info'] = $this->config['currentAgentName'] . ':' . $data['msg'];
         $this->result['code'] = $data['code'];
     }
 

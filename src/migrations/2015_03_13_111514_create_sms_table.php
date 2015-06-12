@@ -19,8 +19,8 @@ class CreateSmsTable extends Migration {
                 $table->increments('id');
                 //to:用于存储手机号
                 $table->string('to')->default('');
-                //temp_id:为模板标记/项目标记，用于存储任何第三方平台提供的短信模板标记/id
-                $table->string('temp_id')->default('');
+                //temp_id:存储模板标记，用于存储任何第三方服务商提供的短信模板标记/id
+                $table->text('temp_id')->default('');
                 //模板data:建议json格式
                 $table->text('data')->default('');
                 //内容

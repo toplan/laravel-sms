@@ -56,7 +56,14 @@ class Sms extends Model implements Sender{
     public static function make($tempId = '')
     {
         $sms = new self;
-        $sms->temp_id = $tempId;
+        $tempIdArray = [];
+        if (is_array($tempId)) {
+            $tempIdArray = $tempId;
+        } else {
+            $defaultAgentName = SmsManager::getDefaultAgent();
+            $tempIdArray["$defaultAgentName"] = (string) $tempId;
+        }
+        $sms->temp_id = json_encode($tempIdArray);
         return $sms;
     }
 
@@ -92,13 +99,25 @@ class Sms extends Model implements Sender{
 
     /**
      * set template id
+     * @param $agentName
      * @param $tempId
      *
      * @return $this
      */
-    public function template($tempId)
+    public function template($agentName, $tempId = null)
     {
-        $this->temp_id = $tempId;
+        $tempIdArray = $this->getTempId(true);
+        if ($tempId) {
+            $tempIdArray["$agentName"] = $tempId;
+        } else {
+            if (is_array($agentName)) {
+                $tempIdArray = $agentName;
+            } else {
+                $defaultAgentName = SmsManager::getDefaultAgent();
+                $tempIdArray["$defaultAgentName"] = $agentName;
+            }
+        }
+        $this->temp_id = json_encode($tempIdArray);
         return $this;
     }
 
@@ -163,7 +182,7 @@ class Sms extends Model implements Sender{
      */
     public function sendProcess()
     {
-        $result = $this->agent->sms($this->getTempId(), $this->getTo(), $this->getData(true), $this->getContent());
+        $result = $this->agent->sms($this->getTempId(true), $this->getTo(), $this->getData(true), $this->getContent());
         if ($result['success']) {
             $this->sent_time = time();
             $this->result_info = $result['info'];
@@ -179,11 +198,12 @@ class Sms extends Model implements Sender{
 
     /**
      * get template id
+     * @param bool $getArray
      * @return mixed
      */
-    public function getTempId()
+    public function getTempId($getArray = false)
     {
-        return $this->temp_id;
+        return $getArray ? json_decode($this->temp_id, true) : $this->temp_id;
     }
 
     /**
@@ -203,7 +223,7 @@ class Sms extends Model implements Sender{
      */
     public function getData($getArray = false)
     {
-        return $getArray ? json_decode($this->data) : $this->data;
+        return $getArray ? json_decode($this->data, true) : $this->data;
     }
 
     /**

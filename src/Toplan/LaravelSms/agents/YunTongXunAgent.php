@@ -8,7 +8,6 @@ class YunTongXunAgent extends Agent{
     {
         //云通讯目前只支持模板短信
         $this->sendTemplateSms($tempId, $to, $data);
-        return $this->result;
     }
 
     public function sendTemplateSms($tempId, $to, Array $data)
@@ -24,16 +23,16 @@ class YunTongXunAgent extends Agent{
         $rest->setAppId($this->config["appId"]);
 
         // 发送模板短信
-        $result = $rest->sendTemplateSMS($to, $data, $tempId);
+        $result = $rest->sendTemplateSMS($to, array_values($data), $tempId);
         if ($result == null || $result->statusCode != 0) {
             //sent failed
             $this->result['success'] = false;
-            $this->result['info'] = 'yun tong xun agent:' . $result->statusCode;
+            $this->result['info'] = $this->config['currentAgentName']. ':' . $result->statusCode;
             $this->result['code'] = $result->statusCode;
         } elseif ($result->statusCode == 0) {
             //sent success
             $this->result['success'] = true;
-            $this->result['info'] = 'yun tong xun agent:' . $result->statusCode;
+            $this->result['info'] = $this->config['currentAgentName']. ':' . $result->statusCode;
             $this->result['code'] = $result->statusCode;
         }
     }

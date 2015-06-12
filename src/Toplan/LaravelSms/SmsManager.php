@@ -150,6 +150,28 @@ class SmsManager {
     }
 
     /**
+     * get default and alternate agent`s verify sms template id
+     * 获得默认/备用代理器的验证码短信模板id
+     */
+    public function getVerifySmsTemplateIdArray()
+    {
+        if ($this->isAlternateAgentsEnable()) {
+            $agents = $this->getAlternateAgents();
+            $defaultAgentName = $this->getDefaultAgent();
+            if ( ! in_array($defaultAgentName, $agents)) {
+                array_push($agents, $defaultAgentName);
+            }
+        } else {
+            $agents[] = $this->getDefaultAgent();
+        }
+        $tempIdArray = [];
+        foreach ($agents as $agentName) {
+            $tempIdArray["$agentName"] = $this->getVerifySmsTemplateId($agentName);
+        }
+        return $tempIdArray;
+    }
+
+    /**
      * get verify sms template id
      * @param String $agentName
      * @return mixed
@@ -157,8 +179,8 @@ class SmsManager {
     public function getVerifySmsTemplateId($agentName = null)
     {
         $agentName = $agentName ?: $this->getDefaultAgent();
-        $agentConfig = config('laravel-sms.'.$agentName);
-        if ($agentConfig) {
+        $agentConfig = config('laravel-sms.'.$agentName, null);
+        if ($agentConfig && isset($agentConfig['verifySmsTemplateId'])) {
             return $agentConfig['verifySmsTemplateId'];
         }
         throw new \InvalidArgumentException("get verify sms template id failed, because agent [$agentName] not support");
@@ -270,10 +292,11 @@ class SmsManager {
     public function getAgentConfig($agentName)
     {
         $config = config("laravel-sms.$agentName", []);
-        $config['smsSendQueue'] = config('laravel-sms.smsSendQueue');
+        $config['smsSendQueue'] = config('laravel-sms.smsSendQueue', false);
         $config['smsWorker'] = config('laravel-sms.smsWorker', 'Toplan\Sms\SmsWorker');
-        $config['nextAgentEnable'] = config('laravel-sms.alternate.enable', false);
+        $config['nextAgentEnable'] = $this->isAlternateAgentsEnable();
         $config['nextAgentName'] = $this->getAlternateAgentNameByCurrentName($agentName);
+        $config['currentAgentName'] = $agentName;
         if ( ! class_exists($config['smsWorker'])) {
             throw new \InvalidArgumentException("Worker [" . $config['worker'] . "] not support.");
         }
@@ -281,19 +304,41 @@ class SmsManager {
     }
 
     /**
-     * get alternate agent name by current agent name
+     * is alternate agents enable
+     * return false or true
+     * @return mixed
+     */
+    public function isAlternateAgentsEnable()
+    {
+        return config('laravel-sms.alternate.enable', false);
+    }
+
+    /**
+     * get alternate agents name
+     * @return mixed
+     */
+    public function getAlternateAgents()
+    {
+        return config("laravel-sms.alternate.agents", []);
+    }
+
+    /**
+     * get alternate agent`s name
      * @param $agentName
      *
      * @return null
      */
     public function getAlternateAgentNameByCurrentName($agentName)
     {
-        $agents = config("laravel-sms.alternate.agents", []);
+        $agents = $this->getAlternateAgents();
         if ( ! count($agents)) {
             return null;
         }
         if ( ! in_array($agentName, $agents)) {
             return $agents[0];
+        }
+        if (in_array($agentName, $agents) && $agentName == $this->getDefaultAgent()) {
+            return null;
         }
         $currentKey = array_search($agentName, $agents);
         if (($currentKey + 1) < count($agents)) {

@@ -74,23 +74,23 @@ Abstract class Agent {
 
     /**
      * sms send entry
-     * @param       $tempId
+     * @param array $tempIds
      * @param       $to
      * @param array $data
      * @param       $content
      *
      * @return array|null
      */
-    public function sms($tempId, $to, Array $data, $content)
+    public function sms(Array $tempIds, $to, Array $data, $content)
     {
+        $tempId = '';
+        if (isset($tempIds[$this->config['currentAgentName']])) {
+            $tempId = $tempIds[$this->config['currentAgentName']];
+        }
         $this->sendSms($tempId, $to, $data, $content);
-        if ($this->result['success']) {
-            return $this->result;
-        } elseif ($this->config['nextAgentEnable']) {
-            $result = $this->tryNextAgent($tempId, $to, $data, $content);
-            if ( ! $result) {
-                return $this->result;
-            } else {
+        if ( ! $this->result['success'] && $this->config['nextAgentEnable']) {
+            $result = $this->tryNextAgent($tempIds, $to, $data, $content);
+            if ($result) {
                 $result['info'] = $this->result['info'] . "##" . $result['info'];
                 return $result;
             }
@@ -99,21 +99,22 @@ Abstract class Agent {
     }
 
     /**
-     * resend sms use next agent
-     * @param       $tempId
+     * resend sms by sub agent
+     * @param array $tempIds
      * @param       $to
      * @param array $data
      * @param       $content
      *
      * @return null
      */
-    public function tryNextAgent($tempId, $to, Array $data, $content)
+    public function tryNextAgent(Array $tempIds, $to, Array $data, $content)
     {
         if ( ! $this->config['nextAgentName']) {
             return null;
         }
         $agent = SmsManager::agent($this->config['nextAgentName']);
-        return $agent->sms($tempId, $to, $data, $content);
+        $agent->sms($tempIds, $to, $data, $content);
+        return $agent->result;
     }
 
     /**
@@ -148,7 +149,6 @@ Abstract class Agent {
 
     /**
      * http post request
-     * this function`s code copy from http://www.yunpian.com/api/demo.html
      * @param       $url
      * @param array $query
      *
