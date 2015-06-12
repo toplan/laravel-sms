@@ -113,7 +113,8 @@ return array(
 
     'YunPian' => [
         //验证码短信模板id
-        //云片网络不推荐使用模板短信，建议此处为空。内容会使用'verifySmsContent'
+        //如果服务商不推荐使用模板短信，建议此处为空。内容会使用'verifySmsContent'
+        //如果服务商只支持模板短信，此需要填写。
         'verifySmsTemplateId' => '',//not required,can be empty
 
         //是否重复发送队列任务中失败的短信(设置为false,可以拒绝再次发送失败的短信)
@@ -134,7 +135,8 @@ return array(
 
     'YunTongXun' => [
         //验证码短信模板id
-        //云通讯只支持模板短信,不会使用到'verifySmsContent'
+        //如果服务商不推荐使用模板短信，建议此处为空。内容会使用'verifySmsContent'
+        //如果服务商只支持模板短信，此需要填写。
         'verifySmsTemplateId' => 'your template id',//required
 
         //是否重复发送队列任务中失败的短信(设置为false,可以拒绝再次发送失败的短信)

@@ -3,12 +3,14 @@
 laravel-sms特点:
 
 1. 数据库记录/管理短信数据及其发送情况。
-2. 支持短信队列。
-3. 集成[验证码短信发送/校验]模块，从此告别重复写验证码短信发送和验证码校验。
-4. 集成第三方短信发送服务，目前支持的第三方平台有：
-  * [云通讯](http://www.yuntongxun.com)
-  * [云片网络](http://www.yunpian.com)
-5. 备用代理器(服务商)机制。即:如果用一个服务商发送短信失败，将会自动尝试通过预先设置的备用服务商发送。
+2. [支持短信队列](https://github.com/toplan/laravel-sms#短信队列)。
+3. 集成[验证码短信发送/校验模块](https://github.com/toplan/laravel-sms#验证码短信发送模块)，
+   从此告别重复写验证码短信发送和验证码校验。
+4. 集成第三方短信服务商，[欢迎贡献更多的代理器](https://github.com/toplan/laravel-sms#开源贡献)。
+   目前支持的第三方平台有：
+   * [云通讯](http://www.yuntongxun.com)
+   * [云片网络](http://www.yunpian.com)
+5. [备用代理器机制](https://github.com/toplan/laravel-sms#备用代理器机制)。即:如果用一个服务商发送短信失败，将会自动尝试通过预先设置的备用服务商发送。
 
 ##安装
 在项目根目录下运行如下composer命令:
@@ -82,8 +84,19 @@ laravel-sms特点:
                   ->content('【Laravel SMS】亲爱的张三，欢迎访问，祝你工作愉快。')->send();
 ```
 
+##短信队列
 
-##验证码短信发送模块
+  在config/laravel-sms中修改配置
+```php
+   //开启队列为true, 关闭队列为false
+   'smsSendQueue' => true,
+```
+  如果你开启了队列，需要运行如下命名监听队列
+```php
+   php artisan queue:listen
+```
+
+##验证码短信发送/校验模块
 
 ####1.[浏览器端]请求发送带验证码短信
 
@@ -92,15 +105,14 @@ laravel-sms特点:
   //js文件在laravel-sms包的js文件夹中，请自行复制
   //如果你使用的是jquery,引入jquery插件
   <script src="/assets/js/jquery.laravel-sms.js"></script>
-  /* 如果你使用的是zepto，那么引人zepto插件 */
-  /* <script src="/assets/js/zepto.laravel-sms.js"></script> */
+  //如果你使用的是zepto，那么引人zepto插件
+  <script src="/assets/js/zepto.laravel-sms.js"></script>
   <script>
      //为发送按钮添加sms方法,捕获点击事件
      $('#sendVerifySmsButton').sms({
         //定义如何获取mobile的值
         mobileSelector : 'input[name="mobile"]',
-        //定义手机号的检测规则
-        //check_mobile_unique可用于注册,check_mobile_exists可用于找回密码
+        //定义手机号的检测规则,check_mobile_unique可用于注册,check_mobile_exists可用于找回密码
         //当然你还可以到配置文件中自定义你想要的任何规则
         mobileRule     : 'check_mobile_unique',
         //定义服务器有消息返回时，如何展示，默认为alert
@@ -156,7 +168,21 @@ laravel-sms特点:
 
    请在语言包中做好翻译。
 
+##备用代理器机制
+
+  在config/laravel-sms.php中配置备用代理器
+```php
+  'alternate' => [
+      //关闭备用代理器机制为false,打开为true
+      'enable' => false,
+      //备用代理器组，排名分先后，越在前面的代理器会优先使用
+      //example: ['YunPian', ...]
+      'agents' => []
+  ],
+```
+
 ##自助二次开发
+
 ####1.自定义Model
 
    继承model类(Toplan\Sms\Sms)
@@ -183,3 +209,68 @@ laravel-sms特点:
 ```php
    'smsModel' => 'App\Models\MySmsModel',
 ```
+
+##开源贡献
+
+欢迎贡献更多的代理器。注意命名规范，foo为代理器(服务商)名称。
+
+配置项加入到src/config/laravel-sms.php中：
+
+```php
+   'Foo' => [
+        //验证码短信模板id
+        //如果服务商不推荐使用模板短信，建议此处为空。内容会使用'verifySmsContent'
+        //如果服务商只支持模板短信，此需要填写。
+        'verifySmsTemplateId' => '',
+
+        //是否重复发送队列任务中失败的短信(设置为false,可以拒绝再次发送失败的短信)
+        'isResendFailedSmsInQueue' => false,
+
+        //more
+        ...
+   ]
+```
+
+在agents目录下添加代理器类,并继承Agent抽象类。如果使用到其他api，可以将api文件放入src/lib文件夹中。
+
+``php
+   namespace Toplan\Sms;
+   class FooAgent extends Agent {
+        //override
+        //发送短信一级入口
+        public function sendSms($tempId, $to, Array $data, $content){
+           //在这个方法中调用二级入口
+           //根据你使用的服务商的接口选择调用哪个方式发送短信
+           $this->sendContentSms($to, $content);
+           $this->sendTemplateSms($tempId, $to, Array $data);
+
+           //最后切记返回结果, 作用是捕获结果判断是否自动启用备用代理器
+           return $this->result;
+        }
+
+        //override
+        //发送短信二级入口：发送内容短信
+        public function sendContentSms($to, $content)
+        {
+            //在这里实现发送内容短信，即直接发送内容
+            ...
+            //切记将发送结果存入到$this->result
+            $this->result['success'] = false;//是否发送成功
+            $this->result['info'] = 'foo agent:' . '发送结果说明';//发送结果信息说明
+            $this->result['code'] = $code;//发送结果代码
+        }
+
+        //override
+        //发送短信二级入口：发送模板短信
+        public function sendTemplateSms($tempId, $to, Array $data)
+        {
+            //在这里实现发送模板短信
+            ...
+            //切记将发送结果存入到$this->result
+            $this->result['success'] = false;//是否发送成功
+            $this->result['info'] = 'foo agent:' . '发送结果说明';//发送结果信息说明
+            $this->result['code'] = $code;//发送结果代码
+        }
+   }
+```
+
