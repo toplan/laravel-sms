@@ -21,7 +21,7 @@ laravel-sms特点:
 
 ##快速上手
 
-####1.注册服务提供器
+1. ####注册服务提供器
 
 在config/app.php文件中providers数组里加入：
 ```php
@@ -33,7 +33,7 @@ laravel-sms特点:
    'SmsManager' => 'Toplan\Sms\Facades\SmsManager'
 ```
 
-####2.migration生成 & 参数配置
+2.####migration生成 & 参数配置
 
    请先运行如下命令生成配置文件和migration文件：
 ```php
