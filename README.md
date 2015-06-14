@@ -21,7 +21,7 @@ laravel-sms特点:
 
 ##快速上手
 
-1. ####注册服务提供器
+####1.注册服务提供器
 
 在config/app.php文件中providers数组里加入：
 ```php
@@ -33,7 +33,7 @@ laravel-sms特点:
    'SmsManager' => 'Toplan\Sms\Facades\SmsManager'
 ```
 
-2.####migration生成 & 参数配置
+####2.migration生成 & 参数配置
 
    请先运行如下命令生成配置文件和migration文件：
 ```php
@@ -84,12 +84,12 @@ laravel-sms特点:
 
 ####4.常用方法
 
-   #####*发送给谁？
+   * #####发送给谁？
 ```php
    $sms = $sms->to('1828*******');
 ```
 
-   #####*设置模板ID
+   * #####设置模板ID
 
    如果你只使用了默认代理器，即没有开启备用代理器机制。你只需要设置默认代理器的模板ID:
 ```php
@@ -110,7 +110,7 @@ laravel-sms特点:
    $sms = $sms->template(['YunTongXun' => '20001', 'SubMail' => 'xxx', ...]);//一次性设置多个服务商的模板id
 ```
 
-  #####*设置模板短信的模板数据
+  * #####设置模板短信的模板数据
 ```php
   $sms = $sms->data([
         'code' => $code,
@@ -118,13 +118,13 @@ laravel-sms特点:
       ]);//must be array
 ```
 
-  #####*设置内容短信的内容
+  * #####设置内容短信的内容
 
 ```php
   $sms = $sms->content('【Laravel SMS】亲爱的张三，欢迎访问，祝你工作愉快。');
 ```
 
-  #####*发送短信
+  * #####发送短信
 ```php
   //return true or false;
   $result = $sms->send();
