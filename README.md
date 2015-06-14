@@ -71,9 +71,6 @@ laravel-sms特点:
 
 ####3.Enjoy it! 使用Sms模型发送短信
 
-  验证是否安装成功：
-  在浏览器访问链接example.com/sms/info。如果显示'hello, welcome to laravel-sms'则表示安装成功。
-
   在控制器中发送模板短信，如：
 ```php
   //只希望使用模板方式发送短信,如你使用的服务商是云通讯
@@ -87,19 +84,19 @@ laravel-sms特点:
 
 ####4.常用方法
 
-   #####* 发送给谁？
+   #####*发送给谁？
 ```php
-   $sms->to('1828*******');
+   $sms = $sms->to('1828*******');
 ```
 
-   #####* 设置模板ID
+   #####*设置模板ID
 
    如果你只使用了默认代理器，即没有开启备用代理器机制。你只需要设置默认代理器的模板ID:
 ```php
    //静态方法设置，并返回sms实例
    $sms = Toplan\Sms\Sms::make('20001');//这是设置默认代理器的模板id
    //--或则--
-   $sms->template('20001');//这是设置默认代理器的模板id
+   $sms = $sms->template('20001');//这是设置默认代理器的模板id
 ```
 
    如果你要开启备用代理器机制，那么需要为默认/备用代理器设置相应模板ID，这样才能保证每个代理器正常使用。
@@ -108,28 +105,29 @@ laravel-sms特点:
    //静态方法设置，并返回sms实例
    $sms = Toplan\Sms\Sms::make(['YunTongXun' => '20001', 'SubMail' => 'xxx', ...]);
    //--或则--
-   $sms->template('YunTongXun', '20001');//这是设置指定服务商的模板id
+   $sms = $sms->template('YunTongXun', '20001');//这是设置指定服务商的模板id
    //--或则--
-   $sms->template(['YunTongXun' => '20001', 'SubMail' => 'xxx', ...]);//一次性设置多个服务商的模板id
+   $sms = $sms->template(['YunTongXun' => '20001', 'SubMail' => 'xxx', ...]);//一次性设置多个服务商的模板id
 ```
 
-  #####* 设置模板短信的模板数据
+  #####*设置模板短信的模板数据
 ```php
-  $sms->data([
+  $sms = $sms->data([
         'code' => $code,
         'minutes' => $minutes
       ]);//must be array
 ```
 
-  #####* 设置内容短信的内容
+  #####*设置内容短信的内容
 
 ```php
-  $sms->content('【Laravel SMS】亲爱的张三，欢迎访问，祝你工作愉快。');
+  $sms = $sms->content('【Laravel SMS】亲爱的张三，欢迎访问，祝你工作愉快。');
 ```
 
-  #####* 发送短信
+  #####*发送短信
 ```php
-  $sms->send();
+  //return true or false;
+  $result = $sms->send();
 ```
 
 ##短信队列
@@ -148,27 +146,23 @@ laravel-sms特点:
 
 ####1.[浏览器端]请求发送带验证码短信
 
- 你除了可以自己写验证码发送相关功能外，你也可以使用该包集成的验证码发送模块来发送验证码，使用方法下：
+ 该包已经封装好浏览器端的jqury/zepto插件，只需要为发送按钮添加扩展方法即可实现发送短信。
 ```html
   //js文件在laravel-sms包的js文件夹中，请自行复制
-  //如果你使用的是jquery,引入jquery插件
-  <script src="/assets/js/jquery.laravel-sms.js"></script>
-  //如果你使用的是zepto，那么引人zepto插件
-  <script src="/assets/js/zepto.laravel-sms.js"></script>
+  <script src="/assets/js/jquery(zepto).laravel-sms.js"></script>
   <script>
      //为发送按钮添加sms方法,捕获点击事件
      $('#sendVerifySmsButton').sms({
         //定义如何获取mobile的值
         mobileSelector : 'input[name="mobile"]',
-        //定义手机号的检测规则,check_mobile_unique可用于注册,check_mobile_exists可用于找回密码
-        //当然你还可以到配置文件中自定义你想要的任何规则
+        //定义手机号的检测规则,当然你还可以到配置文件中自定义你想要的任何规则
         mobileRule     : 'check_mobile_unique',
-        //定义服务器有消息返回时，如何展示，默认为alert
+        //下次发送短信的等待时间
+        seconds        : 60 //单位秒，默认为60
+        //定义服务器有消息返回时如何展示，默认为alert
         alertMsg       :  function (msg) {
             alert(msg);
         },
-        //更多设置, 下次发送短信的等待时间
-        seconds        : 60 //单位秒，默认为60
      });
   </script>
 ```
@@ -266,15 +260,10 @@ laravel-sms特点:
 
 ```php
    'Foo' => [
-        //验证码短信模板id
-        //如果服务商不推荐使用模板短信，建议此处为空。内容会使用'verifySmsContent'
-        //如果服务商只支持模板短信，此需要填写。
         'verifySmsTemplateId' => '',
 
-        //是否重复发送队列任务中失败的短信(设置为false,可以拒绝再次发送失败的短信)
         'isResendFailedSmsInQueue' => false,
 
-        //more
         'xxx' => 'some info',
         ...
    ]
@@ -304,7 +293,7 @@ laravel-sms特点:
             ...
             //切记将发送结果存入到$this->result
             $this->result['success'] = false;//是否发送成功
-            $this->result['info'] = 'foo agent:' . '发送结果说明';//发送结果信息说明
+            $this->result['info'] = $this->config['currentAgentName'] . ':' . '发送结果说明';//发送结果信息说明
             $this->result['code'] = $code;//发送结果代码
         }
 
@@ -312,14 +301,7 @@ laravel-sms特点:
         //发送短信二级入口：发送模板短信
         public function sendTemplateSms($tempId, $to, Array $data)
         {
-            //通过$this->config['key'],获取配置文件中的参数
-            $x = $this->config['xxx'];
-            //在这里实现发送模板短信
-            ...
-            //切记将发送结果存入到$this->result
-            $this->result['success'] = false;//是否发送成功
-            $this->result['info'] = 'foo agent:' . '发送结果说明';//发送结果信息说明
-            $this->result['code'] = $code;//发送结果代码
+            //同上...
         }
    }
 ```
