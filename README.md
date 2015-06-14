@@ -124,7 +124,7 @@ laravel-sms特点:
   $sms = $sms->content('【Laravel SMS】亲爱的张三，欢迎访问，祝你工作愉快。');
 ```
 
-  * #####发送短信
+  * 发送短信
 ```php
   //return true or false;
   $result = $sms->send();
