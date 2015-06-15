@@ -42,7 +42,7 @@ class SmsManager {
                 'mobile' => '',
                 'code' => '',
                 'deadline_time' => 0,
-                'rules' => config('laravel-sms.rules'),
+                'verify' => config('laravel-sms.verify'),
             ];
         $this->smsData = $data;
     }
@@ -106,7 +106,7 @@ class SmsManager {
     public function hasRule($name, $ruleName)
     {
         $data = $this->getSmsData();
-        return isset($data['rules']["$name"]['rules']["$ruleName"]);
+        return isset($data['verify']["$name"]['rules']["$ruleName"]);
     }
 
     /**
@@ -118,8 +118,8 @@ class SmsManager {
     public function getRule($name)
     {
         $data = $this->getSmsData();
-        $ruleName = $data['rules']["$name"]['choose_rule'];
-        return $data['rules']["$name"]['rules']["$ruleName"];
+        $ruleName = $data['verify']["$name"]['choose_rule'];
+        return $data['verify']["$name"]['rules']["$ruleName"];
     }
 
     /**
@@ -132,7 +132,7 @@ class SmsManager {
     public function rule($name, $value)
     {
         $data = $this->getSmsData();
-        $data['rules']["$name"]['choose_rule'] = $value;
+        $data['verify']["$name"]['choose_rule'] = $value;
         $this->setSmsData($data);
         return $data;
     }
@@ -146,7 +146,7 @@ class SmsManager {
     public function isCheck($name = 'mobile')
     {
         $data = $this->getSmsData();
-        return $data['rules']["$name"]['is_check'];
+        return $data['verify']["$name"]['enable'];
     }
 
     /**
@@ -159,7 +159,7 @@ class SmsManager {
             $agents = $this->getAlternateAgents();
             $defaultAgentName = $this->getDefaultAgent();
             if ( ! in_array($defaultAgentName, $agents)) {
-                array_push($agents, $defaultAgentName);
+                array_unshift($agents, $defaultAgentName);
             }
         } else {
             $agents[] = $this->getDefaultAgent();

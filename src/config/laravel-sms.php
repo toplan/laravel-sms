@@ -41,30 +41,6 @@ return array(
 
     /*
      * -----------------------------------
-     * 验证码短信发送规则
-     * -----------------------------------
-     */
-
-    'rules' => [
-        //手机号检测规则
-        'mobile' => [
-            //发送前是否检测
-            'is_check' => true,
-            //默认规则
-            'choose_rule' => 'check_mobile_unique',
-            //可选规则
-            'rules' => [
-                //唯一性检测规则
-                'check_mobile_unique' => 'unique:users,mobile',//适用于注册
-                //存在性检测规则
-                'check_mobile_exists' => 'exists:users',//适用于找回密码和系统内业务验证
-                //add more mobile rules here
-            ]
-        ]
-    ],
-
-    /*
-     * -----------------------------------
      * 备用代理器
      * -----------------------------------
      * 使用默认或指定代理器发送失败后，系统可以启用其他代理器进行发送。
@@ -85,6 +61,48 @@ return array(
 
     /*
      * -----------------------------------
+     * 验证码短信发送前合法性验证
+     * -----------------------------------
+     */
+
+    'verify' => [
+        //手机号检测规则
+        'mobile' => [
+            //是否可用
+            'enable' => true,
+            //默认规则
+            'choose_rule' => 'check_mobile_unique',
+            //可选规则
+            'rules' => [
+                //唯一性检测规则
+                'check_mobile_unique' => 'unique:users,mobile',//适用于注册
+                //存在性检测规则
+                'check_mobile_exists' => 'exists:users',//适用于找回密码和系统内业务验证
+                //add more mobile rules here
+            ]
+        ]
+    ],
+
+    /*
+     * -----------------------------------
+     * 验证码短信相关配置
+     * -----------------------------------
+     */
+
+    // 验证码短信通用内容
+    'verifySmsContent' => "【your app name】亲爱的用户，您的验证码是%s。有效期为%s分钟，请尽快验证",
+
+    // 验证码长度
+    'codeLength' => 5,
+
+    // 验证码有效时间长度，单位为分钟(minutes)
+    'codeValidTime' => 5,
+
+
+#-------------------------- agents config ---------------------------
+
+    /*
+     * -----------------------------------
      * 云片代理器
      * -----------------------------------
      * 官方网站：http://www.yunpian.com
@@ -93,8 +111,8 @@ return array(
     'YunPian' => [
         //验证码短信模板id
         //如果服务商不推荐使用模板短信，建议此处为空。内容会使用'verifySmsContent'
-        //如果服务商只支持模板短信，此需要填写。
-        'verifySmsTemplateId' => '',//not required,can be empty
+        //如果服务商只支持模板短信，此处需要填写。
+        'verifySmsTemplateId' => '',//not required
 
         //是否重复发送队列任务中失败的短信(设置为false,可以拒绝再次发送失败的短信)
         'isResendFailedSmsInQueue' => false,
@@ -113,7 +131,7 @@ return array(
     'YunTongXun' => [
         //验证码短信模板id
         //如果服务商不推荐使用模板短信，建议此处为空。内容会使用'verifySmsContent'
-        //如果服务商只支持模板短信，此需要填写。
+        //如果服务商只支持模板短信，此处需要填写。
         'verifySmsTemplateId' => 'your template id',//required
 
         //是否重复发送队列任务中失败的短信(设置为false,可以拒绝再次发送失败的短信)
@@ -141,20 +159,7 @@ return array(
         'softVersion' => '2013-12-26',
     ],
 
-    /*
-     * -----------------------------------
-     * 验证码短信相关配置
-     * -----------------------------------
-     */
-
-    // 验证码短信通用内容
-    'verifySmsContent' => "【your app name】亲爱的用户，您的验证码是%s。有效期为%s分钟，请尽快验证",
-
-    // 验证码长度
-    'codeLength' => 5,
-
-    // 验证码有效时间长度，单位为分钟(minutes)
-    'codeValidTime' => 5,
+#--------------------------- end --------------------------------
 
     /*
      * -----------------------------------
