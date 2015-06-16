@@ -14,25 +14,25 @@ class YunTongXunAgent extends Agent{
     {
         // 初始化REST SDK
         $rest = new REST(
-            $this->config["serverIP"],
-            $this->config["serverPort"],
-            $this->config["softVersion"],
+            $this->serverIP,
+            $this->serverPort,
+            $this->softVersion,
             storage_path('logs/sms-log.txt')
         );
-        $rest->setAccount($this->config["accountSid"], $this->config["accountToken"]);
-        $rest->setAppId($this->config["appId"]);
+        $rest->setAccount($this->accountSid, $this->accountToken);
+        $rest->setAppId($this->appId);
 
         // 发送模板短信
         $result = $rest->sendTemplateSMS($to, array_values($data), $tempId);
         if ($result == null || $result->statusCode != 0) {
             //sent failed
             $this->result['success'] = false;
-            $this->result['info'] = $this->config['currentAgentName']. ':' . $result->statusCode;
+            $this->result['info'] = $this->currentAgentName . ':' . $result->statusCode;
             $this->result['code'] = $result->statusCode;
         } elseif ($result->statusCode == 0) {
             //sent success
             $this->result['success'] = true;
-            $this->result['info'] = $this->config['currentAgentName']. ':' . $result->statusCode;
+            $this->result['info'] = $this->currentAgentName . ':' . $result->statusCode;
             $this->result['code'] = $result->statusCode;
         }
     }

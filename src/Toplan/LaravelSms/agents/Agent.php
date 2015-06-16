@@ -113,8 +113,8 @@ Abstract class Agent {
             return null;
         }
         $agent = SmsManager::agent($this->config['nextAgentName']);
-        $agent->sms($tempIds, $to, $data, $content);
-        return $agent->result;
+        $result = $agent->sms($tempIds, $to, $data, $content);
+        return $result;
     }
 
     /**
@@ -151,32 +151,46 @@ Abstract class Agent {
      * http post request
      * @param       $url
      * @param array $query
+     * @param       $port
      *
      * @return mixed
      */
-    function sockPost($url,$query){
+    function sockPost($url, $query, $port = 80){
         $data = "";
-        $info=parse_url($url);
-        $fp=fsockopen($info["host"],80,$errno,$errstr,30);
-        if(!$fp){
+        $info = parse_url($url);
+        $fp = fsockopen($info["host"], $port, $errno, $errstr, 30);
+        if ( ! $fp) {
             return $data;
         }
-        $head="POST ".$info['path']." HTTP/1.0\r\n";
-        $head.="Host: ".$info['host']."\r\n";
-        $head.="Referer: http://".$info['host'].$info['path']."\r\n";
-        $head.="Content-type: application/x-www-form-urlencoded\r\n";
-        $head.="Content-Length: ".strlen(trim($query))."\r\n";
-        $head.="\r\n";
-        $head.=trim($query);
-        $write=fputs($fp,$head);
+        $head = "POST ".$info['path']." HTTP/1.0\r\n";
+        $head .= "Host: ".$info['host']."\r\n";
+        $head .= "Referer: http://".$info['host'].$info['path']."\r\n";
+        $head .= "Content-type: application/x-www-form-urlencoded\r\n";
+        $head .= "Content-Length: ".strlen(trim($query))."\r\n";
+        $head .= "\r\n";
+        $head .= trim($query);
+        $write = fputs($fp,$head);
         $header = "";
-        while ($str = trim(fgets($fp,4096))) {
-            $header.=$str;
+        while ($str = trim(fgets($fp, 4096))) {
+            $header .= $str;
         }
-        while (!feof($fp)) {
-            $data .= fgets($fp,4096);
+        while ( ! feof($fp)) {
+            $data .= fgets($fp, 4096);
         }
         return $data;
     }
 
+    /**
+     * overload object attribute
+     * @param $name
+     *
+     * @return mixed
+     */
+    public function __get($name)
+    {
+        if (array_key_exists($name, $this->config)) {
+            return $this->config["$name"];
+        }
+        return null;
+    }
 }

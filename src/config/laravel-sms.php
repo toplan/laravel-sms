@@ -7,7 +7,7 @@ return array(
      * sms agent style
      * 指定代理器(服务商)
      * -----------------------------------
-     * 可选值有:'YunTongXun','YunPian'
+     * 可选值有:'YunTongXun','YunPian','SubMail'
      */
 
     'agent' => 'YunPian',
@@ -99,8 +99,6 @@ return array(
     'codeValidTime' => 5,
 
 
-#-------------------------- agents config ---------------------------
-
     /*
      * -----------------------------------
      * 云片代理器
@@ -112,7 +110,7 @@ return array(
         //验证码短信模板id
         //如果服务商不推荐使用模板短信，建议此处为空。内容会使用'verifySmsContent'
         //如果服务商只支持模板短信，此处需要填写。
-        'verifySmsTemplateId' => '',//not required
+        'verifySmsTemplateId' => '',
 
         //是否重复发送队列任务中失败的短信(设置为false,可以拒绝再次发送失败的短信)
         'isResendFailedSmsInQueue' => false,
@@ -132,7 +130,7 @@ return array(
         //验证码短信模板id
         //如果服务商不推荐使用模板短信，建议此处为空。内容会使用'verifySmsContent'
         //如果服务商只支持模板短信，此处需要填写。
-        'verifySmsTemplateId' => 'your template id',//required
+        'verifySmsTemplateId' => 'your verify sms template id',
 
         //是否重复发送队列任务中失败的短信(设置为false,可以拒绝再次发送失败的短信)
         'isResendFailedSmsInQueue' => false,
@@ -159,7 +157,23 @@ return array(
         'softVersion' => '2013-12-26',
     ],
 
-#--------------------------- end --------------------------------
+    /*
+     * -----------------------------------
+     * SubMail代理器
+     * -----------------------------------
+     * 官方网站：http://submail.cn/
+     */
+    'SubMail' => [
+
+        'verifySmsTemplateId' => 'your verify sms template id',
+
+        'isResendFailedSmsInQueue' => false,
+
+        'appid' => 'your app id',
+
+        'signature' => 'your app key',
+    ],
+
 
     /*
      * -----------------------------------

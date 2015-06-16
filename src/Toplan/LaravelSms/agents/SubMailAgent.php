@@ -1,33 +1,34 @@
 <?php namespace Toplan\Sms;
 
-class YunPianAgent extends Agent {
+class SubMailAgent extends Agent {
 
     public function sendSms($tempId, $to, Array $data, $content)
     {
-        $this->sendContentSms($to, $content);
+        $this->sendTemplateSms($tempId, $to, $data);
     }
 
     public function sendContentSms($to, $content)
     {
-        $url = 'http://yunpian.com/v1/sms/send.json';
-        if (is_array($to)) {
-            $to = implode(',', $to);
-        }
-        $apikey = $this->apikey;
-        $content = urlencode("$content");
-        $postString = "apikey=$apikey&text=$content&mobile=$to";
-        $response = $this->sockPost($url, $postString);
-        $data = json_decode($response, true);
-        if ($data['code'] == 0) {
-            $this->result['success'] = true;
-        }
-        $this->result['info'] = $this->currentAgentName . ':' . $data['msg'];
-        $this->result['code'] = $data['code'];
+        return null;
     }
 
     public function sendTemplateSms($tempId, $to, Array $data)
     {
-        return null;
+        $url = 'https://api.submail.cn/message/xsend.json';
+        if (is_array($to)) {
+            $to = implode(',', $to);
+        }
+        $appid = $this->appid;
+        $signature = $this->signature;
+        $vars = urlencode(json_encode($data));
+        $postString = "appid=$appid&project=$tempId&to=$to&signature=$signature&vars=$vars";
+        $response = $this->sockPost($url, $postString);
+        $data = json_decode($response, true);
+        if ($data['status'] == 'success') {
+            $this->result['success'] = true;
+        }
+        $this->result['info'] = $this->currentAgentName . ':' . $data['msg'];
+        $this->result['code'] = $data['code'];
     }
 
 }
