@@ -11,13 +11,13 @@ interface Sender {
     public function data(Array $data);
 
     /**
-     * 发送短信入口
+     * sms send entry
      * @return mixed
      */
     public function send();
 
     /**
-     * 发送过程
+     * sms send process
      * @return mixed
      */
     public function sendProcess();

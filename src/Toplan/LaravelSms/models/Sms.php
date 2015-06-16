@@ -185,14 +185,12 @@ class Sms extends Model implements Sender{
         $result = $this->agent->sms($this->getTempId(true), $this->getTo(), $this->getData(true), $this->getContent());
         if ($result['success']) {
             $this->sent_time = time();
-            $this->result_info = $result['info'];
-            $this->update();
         } else {
             $this->last_fail_time = time();
             $this->fail_times += 1;
-            $this->result_info = $result['info'];
-            $this->update();
         }
+        $this->result_info = $result['info'];
+        $this->update();
         return $result['success'];
     }
 

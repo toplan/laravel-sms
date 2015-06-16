@@ -158,11 +158,11 @@ Abstract class Agent {
     function sockPost($url, $query, $port = 80){
         $data = "";
         $info = parse_url($url);
-        $fp = fsockopen($info["host"], $port, $errno, $errstr, 30);
+        $fp   = fsockopen($info["host"], $port, $errno, $errstr, 30);
         if ( ! $fp) {
             return $data;
         }
-        $head = "POST ".$info['path']." HTTP/1.0\r\n";
+        $head  = "POST ".$info['path']." HTTP/1.0\r\n";
         $head .= "Host: ".$info['host']."\r\n";
         $head .= "Referer: http://".$info['host'].$info['path']."\r\n";
         $head .= "Content-type: application/x-www-form-urlencoded\r\n";

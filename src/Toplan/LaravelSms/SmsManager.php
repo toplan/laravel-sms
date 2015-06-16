@@ -350,7 +350,6 @@ class SmsManager {
     /**
      * create a YunTongXun(云通讯) agent instance
      * YunTongXun`s official website:
-     * http://www.yuntongxun.com/
      * @param $agentConfig
      * @return YunTongXunAgent
      */
@@ -368,6 +367,17 @@ class SmsManager {
     public function createYunPianAgent(Array $agentConfig)
     {
         return new YunPianAgent($agentConfig);
+    }
+
+    /**
+     * create a SubMail agent instance
+     * @param array $agentConfig
+     *
+     * @return SubMailAgent
+     */
+    public function createSubMailAgent(Array $agentConfig)
+    {
+        return new SubMailAgent($agentConfig);
     }
 
 }
