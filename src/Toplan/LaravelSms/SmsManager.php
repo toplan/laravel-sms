@@ -42,7 +42,7 @@ class SmsManager {
                 'mobile' => '',
                 'code' => '',
                 'deadline_time' => 0,
-                'rules' => config('laravel-sms.rules'),
+                'verify' => config('laravel-sms.verify'),
             ];
         $this->smsData = $data;
     }
@@ -95,10 +95,18 @@ class SmsManager {
         Session::forget($this->getSessionKey());
     }
 
+    /**
+     * Is there a designated validation rule
+     * 是否有指定的验证规则
+     * @param $name
+     * @param $ruleName
+     *
+     * @return bool
+     */
     public function hasRule($name, $ruleName)
     {
         $data = $this->getSmsData();
-        return isset($data['rules']["$name"]['rules']["$ruleName"]);
+        return isset($data['verify']["$name"]['rules']["$ruleName"]);
     }
 
     /**
@@ -110,8 +118,8 @@ class SmsManager {
     public function getRule($name)
     {
         $data = $this->getSmsData();
-        $ruleName = $data['rules']["$name"]['choose_rule'];
-        return $data['rules']["$name"]['rules']["$ruleName"];
+        $ruleName = $data['verify']["$name"]['choose_rule'];
+        return $data['verify']["$name"]['rules']["$ruleName"];
     }
 
     /**
@@ -124,7 +132,7 @@ class SmsManager {
     public function rule($name, $value)
     {
         $data = $this->getSmsData();
-        $data['rules']["$name"]['choose_rule'] = $value;
+        $data['verify']["$name"]['choose_rule'] = $value;
         $this->setSmsData($data);
         return $data;
     }
@@ -138,20 +146,53 @@ class SmsManager {
     public function isCheck($name = 'mobile')
     {
         $data = $this->getSmsData();
-        return $data['rules']["$name"]['is_check'];
+        return $data['verify']["$name"]['enable'];
     }
 
     /**
-     * get template sms id
+     * get default and alternate agent`s verify sms template id
+     * 获得默认/备用代理器的验证码短信模板id
+     */
+    public function getVerifySmsTemplateIdArray()
+    {
+        if ($this->isAlternateAgentsEnable()) {
+            $agents = $this->getAlternateAgents();
+            $defaultAgentName = $this->getDefaultAgent();
+            if ( ! in_array($defaultAgentName, $agents)) {
+                array_unshift($agents, $defaultAgentName);
+            }
+        } else {
+            $agents[] = $this->getDefaultAgent();
+        }
+        $tempIdArray = [];
+        foreach ($agents as $agentName) {
+            $tempIdArray["$agentName"] = $this->getVerifySmsTemplateId($agentName);
+        }
+        return $tempIdArray;
+    }
+
+    /**
+     * get verify sms template id
+     * @param String $agentName
      * @return mixed
      */
-    public function getTempIdForVerifySms()
+    public function getVerifySmsTemplateId($agentName = null)
     {
-        $tempId = config('laravel-sms.templateIdForVerifySms');
-        if ($tempId) {
-            return $tempId;
+        $agentName = $agentName ?: $this->getDefaultAgent();
+        $agentConfig = config('laravel-sms.'.$agentName, null);
+        if ($agentConfig && isset($agentConfig['verifySmsTemplateId'])) {
+            return $agentConfig['verifySmsTemplateId'];
         }
-        throw new \InvalidArgumentException("config key [templateIdForVerifySms] empty. Please set 'templateIdForVerifySms' in config file");
+        return '';
+    }
+
+    /**
+     * get verify sms content
+     * @return mixed
+     */
+    public function getVerifySmsContent()
+    {
+        return config('laravel-sms.verifySmsContent');
     }
 
     /**
@@ -179,7 +220,7 @@ class SmsManager {
      */
     public function getCodeValidTime()
     {
-        return config('laravel-sms.codeValidTime');//minutes
+        return config('laravel-sms.codeValidTime');
     }
 
     /**
@@ -251,8 +292,11 @@ class SmsManager {
     public function getAgentConfig($agentName)
     {
         $config = config("laravel-sms.$agentName", []);
-        $config['smsSendQueue'] = config('laravel-sms.smsSendQueue');
+        $config['smsSendQueue'] = config('laravel-sms.smsSendQueue', false);
         $config['smsWorker'] = config('laravel-sms.smsWorker', 'Toplan\Sms\SmsWorker');
+        $config['nextAgentEnable'] = $this->isAlternateAgentsEnable();
+        $config['nextAgentName'] = $this->getAlternateAgentNameByCurrentName($agentName);
+        $config['currentAgentName'] = $agentName;
         if ( ! class_exists($config['smsWorker'])) {
             throw new \InvalidArgumentException("Worker [" . $config['worker'] . "] not support.");
         }
@@ -260,15 +304,91 @@ class SmsManager {
     }
 
     /**
+     * is alternate agents enable
+     * return false or true
+     * @return mixed
+     */
+    public function isAlternateAgentsEnable()
+    {
+        return config('laravel-sms.alternate.enable', false);
+    }
+
+    /**
+     * get alternate agents name
+     * @return mixed
+     */
+    public function getAlternateAgents()
+    {
+        return config("laravel-sms.alternate.agents", []);
+    }
+
+    /**
+     * get alternate agent`s name
+     * @param $agentName
+     *
+     * @return null
+     */
+    public function getAlternateAgentNameByCurrentName($agentName)
+    {
+        $agents = $this->getAlternateAgents();
+        if ( ! count($agents)) {
+            return null;
+        }
+        if ( ! in_array($agentName, $agents)) {
+            return $agents[0];
+        }
+        if (in_array($agentName, $agents) && $agentName == $this->getDefaultAgent()) {
+            return null;
+        }
+        $currentKey = array_search($agentName, $agents);
+        if (($currentKey + 1) < count($agents)) {
+            return $agents[$currentKey + 1];
+        }
+        return null;
+    }
+
+    /**
      * create a YunTongXun(云通讯) agent instance
      * YunTongXun`s official website:
-     * http://www.yuntongxun.com/
      * @param $agentConfig
      * @return YunTongXunAgent
      */
     public function createYunTongXunAgent(Array $agentConfig)
     {
         return new YunTongXunAgent($agentConfig);
+    }
+
+    /**
+     * create a YunPian agent instance
+     * @param array $agentConfig
+     *
+     * @return YunPianAgent
+     */
+    public function createYunPianAgent(Array $agentConfig)
+    {
+        return new YunPianAgent($agentConfig);
+    }
+
+    /**
+     * create a SubMail agent instance
+     * @param array $agentConfig
+     *
+     * @return SubMailAgent
+     */
+    public function createSubMailAgent(Array $agentConfig)
+    {
+        return new SubMailAgent($agentConfig);
+    }
+
+    /**
+     * create a Luosimao agent instance
+     * @param array $agentConfig
+     *
+     * @return LuosimaoAgent
+     */
+    public function createLuosimaoAgent(Array $agentConfig)
+    {
+        return new LuosimaoAgent($agentConfig);
     }
 
 }

@@ -23,7 +23,7 @@ Validator::extend('verify_code', function ($attribute, $value, $parameters) {
 
 Validator::extend('verify_rule', function($attribute, $value, $parameters) {
     $smsData = SmsManager::getSmsDataFromSession();
-    if ($smsData && $smsData['rules']['mobile']['choose_rule'] == $parameters[0]) {
+    if ($smsData && $smsData['verify']['mobile']['choose_rule'] == $parameters[0]) {
         return true;
     }
     return false;

@@ -2,20 +2,22 @@
 
 interface Sender {
 
-    public function template($tempId);
+    public function content($content);
+
+    public function template($agentName, $tempId);
 
     public function to($mobile);
 
     public function data(Array $data);
 
     /**
-     * 发送短信入口
+     * sms send entry
      * @return mixed
      */
     public function send();
 
     /**
-     * 发送过程
+     * sms send process
      * @return mixed
      */
     public function sendProcess();
