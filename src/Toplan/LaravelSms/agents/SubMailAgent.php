@@ -21,6 +21,7 @@ class SubMailAgent extends Agent {
 
         $postString = "appid=$appid&project=$tempId&to=$to&signature=$signature&vars=$vars";
         $response = $this->sockPost($url, $postString);
+
         $data = json_decode($response, true);
         if ($data['status'] == 'success') {
             $this->result['success'] = true;
