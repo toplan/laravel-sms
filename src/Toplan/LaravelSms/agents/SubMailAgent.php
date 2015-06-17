@@ -21,6 +21,7 @@ class SubMailAgent extends Agent {
         $appid = $this->appid;
         $signature = $this->signature;
         $vars = urlencode(json_encode($data));
+
         $postString = "appid=$appid&project=$tempId&to=$to&signature=$signature&vars=$vars";
         $response = $this->sockPost($url, $postString);
         $data = json_decode($response, true);

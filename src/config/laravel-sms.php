@@ -7,7 +7,7 @@ return array(
      * sms agent style
      * 指定代理器(服务商)
      * -----------------------------------
-     * 可选值有:'YunTongXun','YunPian','SubMail'
+     * 可选值有:'YunTongXun', 'YunPian', 'SubMail', 'Luosimao'
      */
 
     'agent' => 'YunPian',
@@ -45,7 +45,7 @@ return array(
      * -----------------------------------
      * 使用默认或指定代理器发送失败后，系统可以启用其他代理器进行发送。
      * enable:
-     *       是否启用备用代理器
+     *       是否启用备用代理器，true为开启，false为关闭
      * agents:
      *       备用代理器组，排名分先后，越在前面的代理器会优先使用
      *       example : ['YunPian', ...]
@@ -76,9 +76,11 @@ return array(
             'rules' => [
                 //唯一性检测规则
                 'check_mobile_unique' => 'unique:users,mobile',//适用于注册
+
                 //存在性检测规则
                 'check_mobile_exists' => 'exists:users',//适用于找回密码和系统内业务验证
-                //add more mobile rules here
+
+                //add your rules here...
             ]
         ]
     ],
@@ -107,9 +109,9 @@ return array(
      */
 
     'YunPian' => [
+
         //验证码短信模板id
         //如果服务商不推荐使用模板短信，建议此处为空。内容会使用'verifySmsContent'
-        //如果服务商只支持模板短信，此处需要填写。
         'verifySmsTemplateId' => '',
 
         //是否重复发送队列任务中失败的短信(设置为false,可以拒绝再次发送失败的短信)
@@ -127,8 +129,8 @@ return array(
      */
 
     'YunTongXun' => [
+
         //验证码短信模板id
-        //如果服务商不推荐使用模板短信，建议此处为空。内容会使用'verifySmsContent'
         //如果服务商只支持模板短信，此处需要填写。
         'verifySmsTemplateId' => 'your verify sms template id',
 
@@ -174,6 +176,20 @@ return array(
         'signature' => 'your app key',
     ],
 
+    /*
+     * -----------------------------------
+     * luosimao
+     * -----------------------------------
+     * 官方网站：http://luosimao.com
+     */
+    'Luosimao' => [
+
+        'isResendFailedSmsInQueue' => false,
+
+        // API key是验证密码，必须
+        // 在管理中心->短信服务->触发发送下查看
+        'apikey' => 'your api key',
+    ],
 
     /*
      * -----------------------------------

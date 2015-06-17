@@ -183,7 +183,7 @@ class SmsManager {
         if ($agentConfig && isset($agentConfig['verifySmsTemplateId'])) {
             return $agentConfig['verifySmsTemplateId'];
         }
-        throw new \InvalidArgumentException("get verify sms template id failed, because agent [$agentName] not support");
+        return '';
     }
 
     /**
@@ -220,7 +220,7 @@ class SmsManager {
      */
     public function getCodeValidTime()
     {
-        return config('laravel-sms.codeValidTime');//minutes
+        return config('laravel-sms.codeValidTime');
     }
 
     /**
@@ -378,6 +378,17 @@ class SmsManager {
     public function createSubMailAgent(Array $agentConfig)
     {
         return new SubMailAgent($agentConfig);
+    }
+
+    /**
+     * create a Luosimao agent instance
+     * @param array $agentConfig
+     *
+     * @return LuosimaoAgent
+     */
+    public function createLuosimaoAgent(Array $agentConfig)
+    {
+        return new LuosimaoAgent($agentConfig);
     }
 
 }

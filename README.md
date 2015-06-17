@@ -6,7 +6,7 @@ laravel-sms特点:
 2. 兼容模板短信和内容短信。
 3. [支持短信队列](https://github.com/toplan/laravel-sms#短信队列)。
 4. 集成[验证码短信发送/校验模块](https://github.com/toplan/laravel-sms#验证码短信模块)，
-   从此告别重复写验证码短信发送和验证码校验。
+   从此告别重复写验证码短信发送与校验的历史。
 5. 集成第三方短信服务商，[欢迎提供更多的服务商](https://github.com/toplan/laravel-sms#开源贡献)。
    目前支持的第三方平台有：
    * [容联·云通讯](http://www.yuntongxun.com)
@@ -47,6 +47,7 @@ laravel-sms特点:
 ```
 
    * 配置代理服务商的相关参数
+
    在config/laravel-sms.php中，找到支持的代理器，并填写好配置信息即可。
 
    如果你使用的是云片，请在数组'YunPian'中按照提示填写配置信息
@@ -68,6 +69,7 @@ laravel-sms特点:
    更多的服务商配置就不详说了，请到配置文件中查看并按提示修改相应代理服务商的配置。
 
    * 设置默认代理器(服务商)
+
    请在config/laravel-sms.php中设置默认代理服务商，默认为'YunPian'。
 ```php
    'agent' => 'YunPian';
@@ -321,3 +323,7 @@ laravel-sms特点:
         return new FooAgent($agentConfig);
     }
 ```
+
+##License
+
+MIT

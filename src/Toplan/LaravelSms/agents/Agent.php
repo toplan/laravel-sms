@@ -53,7 +53,10 @@ Abstract class Agent {
      */
     public function isResendFailedSmsInQueue()
     {
-        return $this->config['isResendFailedSmsInQueue'];
+        if (isset($this->config['isResendFailedSmsInQueue'])) {
+            return $this->config['isResendFailedSmsInQueue'];
+        }
+        return false;
     }
 
     /**
