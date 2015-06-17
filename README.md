@@ -8,10 +8,11 @@ laravel-sms特点:
 4. 集成[验证码短信发送/校验模块](https://github.com/toplan/laravel-sms#验证码短信模块)，
    从此告别重复写验证码短信发送与校验的历史。
 5. 集成第三方短信服务商，[欢迎提供更多的服务商](https://github.com/toplan/laravel-sms#开源贡献)。
-   目前支持的第三方平台有：
+   目前支持的服务商有：
    * [容联·云通讯](http://www.yuntongxun.com)
    * [云片网络](http://www.yunpian.com)
    * [SUBMAIL](http://submail.cn)
+   * [Luosimao](http://luosimao.com)
 6. [备用代理器(服务商)机制](https://github.com/toplan/laravel-sms#备用代理器机制)。即:如果用一个服务商发送短信失败，将会自动尝试通过预先设置的备用服务商发送。
 
 ##安装
@@ -214,9 +215,9 @@ laravel-sms特点:
    }
 ```
    PS:
-   * mobile_changed 验证的是用户手机号是否合法。
-   * verify_code 验证的是验证码是否合法(包括是否正确，是否超时无效)。
-   * verify_rule:{$mobileRule} 用于防止非法请求,后面的第一值为手机号检测规则，必须和你在浏览器端js插件中填写的mobileRule的值一致。
+   * `mobile_changed` 验证的是用户手机号是否合法。
+   * `verify_code` 验证的是验证码是否合法(包括是否正确，是否超时无效)。
+   * `verify_rule:{$mobileRule}` 用于防止非法请求,后面的第一值为手机号检测规则，必须和你在浏览器端js插件中填写的mobileRule的值一致。
 
    请在语言包中做好翻译。
 
