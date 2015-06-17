@@ -13,7 +13,7 @@ class LuosimaoAgent extends Agent {
         $apikey = $this->apikey;
         $optData = [
             'mobile' => $to,
-            'message' => $content
+            'message' => urlencode("$content")
         ];
 
         $ch = curl_init();

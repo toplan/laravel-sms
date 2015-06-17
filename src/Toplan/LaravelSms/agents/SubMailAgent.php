@@ -15,9 +15,6 @@ class SubMailAgent extends Agent {
     public function sendTemplateSms($tempId, $to, Array $data)
     {
         $url = 'https://api.submail.cn/message/xsend.json';
-        if (is_array($to)) {
-            $to = implode(',', $to);
-        }
         $appid = $this->appid;
         $signature = $this->signature;
         $vars = urlencode(json_encode($data));
