@@ -63,6 +63,7 @@
    * 配置代理服务商的相关参数
 
    在config/laravel-sms.php中，找到你想要使用的代理器，并填写好配置信息。
+
 >  如果你使用的是云片，请在数组'YunPian'中按照提示填写配置信息
 >  ```php
 >     'YunPian' => [
@@ -70,6 +71,7 @@
 >          'apikey' => 'your api key',
 >     ]
 >  ```
+
    更多的服务商配置就不详说了，请到配置文件中查看并按提示修改相应代理服务商的配置。
 
 ####3.Enjoy it! 使用Sms模型发送短信
@@ -78,11 +80,17 @@
 ```php
   //只希望使用模板方式发送短信,如你使用的服务商是云通讯
   Toplan\Sms\Sms::make($tempId)->to('1828****349')->data(['12345', 5])->send();
+
   //只希望使用内容方式放送,如你使用的服务商是云片
   Toplan\Sms\Sms::make()->to('1828****349')->content('【Laravel SMS】亲爱的张三，欢迎访问，祝你工作愉快。')->send();
-  //同时确保能通过两种方式发送。这样做的好处是，可以兼顾到任何备用代理器(服务商)！
-  Toplan\Sms\Sms::make($tempId)->to('1828****349')->data(['张三'])
-                  ->content('【Laravel SMS】亲爱的张三，欢迎访问，祝你工作愉快。')->send();
+
+  //同时确保能通过两种方式发送。这样做的好处是，可以兼顾到各种代理器(服务商)！
+  $tempIds = [
+    'YunTongXun' => '...',
+    'SubMail'    => '...',
+  ];//适配模板短信
+  $content = '【Laravel SMS】亲爱的张三，欢迎访问，祝你工作愉快。'//适配内容短信
+  Toplan\Sms\Sms::make($tempIds)->to('1828****349')->data(['张三'])->content($content)->send();
 ```
 
 ####4.常用的语法糖
