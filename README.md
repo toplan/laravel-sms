@@ -86,8 +86,8 @@
 
   //同时确保能通过模板和内容方式发送。这样做的好处是，可以兼顾到各种代理器(服务商)！
   Toplan\Sms\Sms::make([
-      'YunTongXun' => '...',
-      'SubMail'    => '...',
+      'YunTongXun' => 'xxxx',
+      'SubMail'    => 'xxxx'
   ])
   ->to('1828****349')
   ->data(['张三'])
@@ -207,12 +207,14 @@
 
 * 修改或自定义发送前检测规则
 
-> 'rules' => [
->   //唯一性检测规则
->   'check_mobile_unique' => 'unique:users,mobile',//适用于注册
->   //存在性检测规则
->   'check_mobile_exists' => 'exists:users',//适用于找回密码和系统内业务验证
-> ]
+> ```php
+>    'rules' => [
+>        //唯一性检测规则
+>        'check_mobile_unique' => 'unique:users,mobile',//适用于注册
+>        //存在性检测规则
+>        'check_mobile_exists' => 'exists:users',//适用于找回密码和系统内业务验证
+>    ]
+> ```
 
 
 ####3.[服务器端]合法性验证
