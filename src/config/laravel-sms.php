@@ -92,7 +92,7 @@ return array(
      */
 
     // 验证码短信通用内容
-    'verifySmsContent' => "【your app name】亲爱的用户，您的验证码是%s。有效期为%s分钟，请尽快验证",
+    'verifySmsContent' => "【your app signature】亲爱的用户，您的验证码是%s。有效期为%s分钟，请尽快验证",
 
     // 验证码长度
     'codeLength' => 5,
