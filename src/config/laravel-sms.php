@@ -91,7 +91,7 @@ return array(
      * -----------------------------------
      */
 
-    // 验证码短信通用内容
+    // 验证码短信通用内容, 提供给内容短信(如YuPian,Luosimao)的验证码短信内容
     'verifySmsContent' => "【your app signature】亲爱的用户，您的验证码是%s。有效期为%s分钟，请尽快验证",
 
     // 验证码长度
@@ -106,13 +106,10 @@ return array(
      * 云片代理器
      * -----------------------------------
      * 官方网站：http://www.yunpian.com
+     * 只支持内容短信
      */
 
     'YunPian' => [
-
-        //验证码短信模板id
-        //如果服务商不推荐使用模板短信，建议此处为空。内容会使用'verifySmsContent'
-        'verifySmsTemplateId' => '',
 
         //是否重复发送队列任务中失败的短信(设置为false,可以拒绝再次发送失败的短信)
         'isResendFailedSmsInQueue' => false,
@@ -126,12 +123,12 @@ return array(
      * 云通讯代理器
      * -----------------------------------
      * 官方网站：http://www.yuntongxun.com/
+     * 只支持模板短信
      */
 
     'YunTongXun' => [
 
         //验证码短信模板id
-        //如果服务商只支持模板短信，此处需要填写。
         'verifySmsTemplateId' => 'your verify sms template id',
 
         //是否重复发送队列任务中失败的短信(设置为false,可以拒绝再次发送失败的短信)
@@ -164,6 +161,7 @@ return array(
      * SubMail代理器
      * -----------------------------------
      * 官方网站：http://submail.cn/
+     * 只支持模板短信
      */
     'SubMail' => [
 
@@ -181,12 +179,13 @@ return array(
      * luosimao
      * -----------------------------------
      * 官方网站：http://luosimao.com
+     * 只支持内容短信
      */
     'Luosimao' => [
 
         'isResendFailedSmsInQueue' => false,
 
-        // API key是验证密码，必须
+        // API key是验证密码
         // 在管理中心->短信服务->触发发送下查看
         'apikey' => 'your api key',
     ],

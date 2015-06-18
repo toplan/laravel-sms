@@ -4,7 +4,7 @@
 
 1. 发送短信验证码。
 2. 发送信息通知短信(如：订单通知，发货通知，上课通知...)。
-3. 个别用户收不到短信？laravel-sms提倡通过备用代理器机制使用两个以上服务商。
+3. 个别用户收不到短信？laravel-sms提倡通过备用代理器机制使用两个及两个以上服务商。
 
 *该包特性*
 
@@ -78,19 +78,21 @@
 
   在控制器中发送触发短信，如：
 ```php
-  //只希望使用模板方式发送短信,如你使用的服务商是云通讯
+  //只希望使用模板方式发送短信,可以不设置内容content (如云通讯,Submail)
   Toplan\Sms\Sms::make($tempId)->to('1828****349')->data(['12345', 5])->send();
 
-  //只希望使用内容方式放送,如你使用的服务商是云片
+  //只希望使用内容方式放送,可以不设置模板id和模板数据data (如云片,luosimao)
   Toplan\Sms\Sms::make()->to('1828****349')->content('【Laravel SMS】亲爱的张三，欢迎访问，祝你工作愉快。')->send();
 
-  //同时确保能通过两种方式发送。这样做的好处是，可以兼顾到各种代理器(服务商)！
-  $tempIds = [
-    'YunTongXun' => '...',
-    'SubMail'    => '...',
-  ];//适配模板短信
-  $content = '【Laravel SMS】亲爱的张三，欢迎访问，祝你工作愉快。'//适配内容短信
-  Toplan\Sms\Sms::make($tempIds)->to('1828****349')->data(['张三'])->content($content)->send();
+  //同时确保能通过模板和内容方式发送。这样做的好处是，可以兼顾到各种代理器(服务商)！
+  Toplan\Sms\Sms::make([
+      'YunTongXun' => '...',
+      'SubMail'    => '...',
+  ])
+  ->to('1828****349')
+  ->data(['张三'])
+  ->content('【签名】亲爱的张三，欢迎访问，祝你工作愉快。')
+  ->send();
 ```
 
 ####4.常用的语法糖
@@ -110,7 +112,7 @@
    $sms = $sms->template('20001');
 ```
 
-如果你要开启备用代理器机制，那么需要为默认/备用代理器设置相应模板ID，这样才能保证每个代理器正常使用。可以这样设置:
+如果你要开启备用代理器机制，那么需要为只支持模板短信默认/备用代理器设置相应模板ID，这样才能保证这些代理器正常使用。可以这样设置:
 ```php
    //静态方法设置，并返回sms实例
    $sms = Toplan\Sms\Sms::make(['YunTongXun' => '20001', 'SubMail' => 'xxx', ...]);
@@ -129,6 +131,8 @@
 ```
 
   * 设置内容短信的内容
+
+  有些服务商(如YunPian,Luosimao)只支持内容短信(即直接发送短信内容)，不支持模板，那么就需要设置短信内容。
 ```php
   $sms = $sms->content('【签名】亲爱的张三，您的订单号是281xxxx，祝你购物愉快。');
 ```
@@ -184,20 +188,32 @@
 
 ####2.[服务器端]配置短信内容/模板
 
-在config/laravel-sms.php中先填写你的验证码 短信内容 或 短信模板标示符
+配置文件: config/laravel-sms.php
 
-如果你使用的是内容短信(如云片网络,Luosimao)，则使用或修改'verifySmsContent'的值：
-```php
-   'verifySmsContent' => '【填写签名】亲爱的用户，您的验证码是%s。有效期为%s分钟，请尽快验证'
-```
+* 填写你的验证码短信内容或模板标示符
 
-如果你使用模板短信(如云通讯,SubMail)，需要到相应代理器中填写模板标示符：
-```php
-   'YunTongXun' => [
-       //模板标示符
-       'verifySmsTemplateId' => 'your template id',
-   ]
-```
+> 如果你使用的是内容短信(如云片网络,Luosimao)，则使用或修改'verifySmsContent'的值：
+> ```php
+>    'verifySmsContent' => '【填写签名】亲爱的用户，您的验证码是%s。有效期为%s分钟，请尽快验证'
+> ```
+
+> 如果你使用模板短信(如云通讯,SubMail)，需要到相应代理器中填写模板标示符：
+> ```php
+>    'YunTongXun' => [
+>        //模板标示符
+>        'verifySmsTemplateId' => 'your template id',
+>    ]
+> ```
+
+* 修改或自定义发送前检测规则
+
+> 'rules' => [
+>   //唯一性检测规则
+>   'check_mobile_unique' => 'unique:users,mobile',//适用于注册
+>   //存在性检测规则
+>   'check_mobile_exists' => 'exists:users',//适用于找回密码和系统内业务验证
+> ]
+
 
 ####3.[服务器端]合法性验证
 
