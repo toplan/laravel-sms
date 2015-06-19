@@ -10,7 +10,7 @@ return array(
      * 可选值有:'YunTongXun', 'YunPian', 'SubMail', 'Luosimao'
      */
 
-    'agent' => 'YunPian',
+    'agent' => 'Luosimao',
 
     /*
      *-----------------------------------
@@ -91,7 +91,7 @@ return array(
      * -----------------------------------
      */
 
-    // 验证码短信通用内容, 提供给内容短信(如YuPian,Luosimao)的验证码短信内容
+    // 验证码短信通用内容, 提供给内容短信(如云片,Luosimao)的验证码短信内容
     'verifySmsContent' => "【your app signature】亲爱的用户，您的验证码是%s。有效期为%s分钟，请尽快验证",
 
     // 验证码长度

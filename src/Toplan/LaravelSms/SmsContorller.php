@@ -14,7 +14,7 @@ class SmsController extends Controller {
         $this->smsModel = config('laravel-sms.smsModel', 'Toplan/Sms/Sms');
     }
 
-    public function getSendCode($rule, $mobile = '')
+    public function postSendCode($rule, $mobile = '')
     {
         $vars = [];
         $input = ['mobile' => $mobile];

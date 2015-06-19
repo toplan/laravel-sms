@@ -35,7 +35,8 @@
         var mobile = $(opts.mobileSelector).val();
         $.ajax({
             url  : '/sms/verify-code/rule/' + opts.mobileRule + '/mobile/' + mobile,
-            type : 'get'
+            type : 'post',
+            data : {_token:opts.token}
         }).success(function (data) {
             console.log(data);
            if (data.success) {
@@ -68,6 +69,7 @@
     }
 
     $.fn.sms.default = {
+        token          : '',
         mobileRule     : 'check_mobile_unique',
         mobileSelector : '',
         seconds        : 60,

@@ -55,9 +55,9 @@
 
    * 设置默认代理器(服务商)
 
-   请在config/laravel-sms.php中设置默认代理服务商，默认为'YunPian'。
+   请在config/laravel-sms.php中设置默认代理服务商，默认为'Luosimao'。
 ```php
-   'agent' => 'YunPian';
+   'agent' => 'Luosimao';
 ```
 
    * 配置代理服务商的相关参数
@@ -66,7 +66,7 @@
 
 >  如果你使用的是云片，请在数组'YunPian'中按照提示填写配置信息
 >  ```php
->     'YunPian' => [
+>     'Luosimao' => [
 >          ...
 >          'apikey' => 'your api key',
 >     ]
@@ -172,12 +172,12 @@
   <script src="/assets/js/jquery(zepto).laravel-sms.js"></script>
   <script>
      $('#sendVerifySmsButton').sms({
+        //token value
+        token          : "{{csrf_token()}}",
         //定义如何获取mobile的值
         mobileSelector : 'input[name="mobile"]',
         //定义手机号的检测规则,当然你还可以到配置文件中自定义你想要的任何规则
         mobileRule     : 'check_mobile_unique',
-        //下次发送短信的等待时间
-        seconds        : 60 //单位秒，默认为60
         //定义服务器有消息返回时如何展示，默认为alert
         alertMsg       :  function (msg) {
             alert(msg);
