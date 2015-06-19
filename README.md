@@ -11,15 +11,15 @@
 1. 数据库记录/管理短信数据及其发送情况。
 2. 兼容模板短信和内容短信。
 3. [支持短信队列](https://github.com/toplan/laravel-sms#短信队列)。
-4. 集成[验证码短信发送/校验模块](https://github.com/toplan/laravel-sms#验证码短信模块)，
+4. [备用代理器(服务商)机制](https://github.com/toplan/laravel-sms#备用代理器机制)。即:如果用一个服务商发送短信失败，将会自动尝试通过预先设置的备用服务商发送。
+5. 集成[验证码短信发送/校验模块](https://github.com/toplan/laravel-sms#验证码短信模块)，只需三步即可搞定，
    从此告别重复写验证码短信发送与校验的历史。
-5. 集成第三方短信服务商，[欢迎提供更多的服务商](https://github.com/toplan/laravel-sms#开源贡献)。
+6. 集成第三方短信服务商，[欢迎提供更多的服务商](https://github.com/toplan/laravel-sms#开源贡献)。
    目前支持的服务商有：
    * [Luosimao](http://luosimao.com)
    * [云片网络](http://www.yunpian.com)
    * [容联·云通讯](http://www.yuntongxun.com)
    * [SUBMAIL](http://submail.cn)
-6. [备用代理器(服务商)机制](https://github.com/toplan/laravel-sms#备用代理器机制)。即:如果用一个服务商发送短信失败，将会自动尝试通过预先设置的备用服务商发送。
 
 ##安装
 在项目根目录下运行如下composer命令:
@@ -64,7 +64,7 @@
 
    在config/laravel-sms.php中，找到你想要使用的代理器，并填写好配置信息。
 
->  如果你使用的是云片，请在数组'YunPian'中按照提示填写配置信息
+>  如果你使用的是Luosimao，请在数组'Luosimao'中按照提示填写配置信息
 >  ```php
 >     'Luosimao' => [
 >          ...
@@ -161,6 +161,21 @@
    php artisan queue:listen
 ```
 
+##备用代理器机制
+  如果用一个服务商发送短信失败，将会自动尝试通过备用服务商发送。
+  在config/laravel-sms.php中配置备用代理器
+```php
+  'alternate' => [
+      //关闭备用代理器机制为false,打开为true
+      'enable' => false,
+      //备用代理器组，排名分先后，越在前面的代理器会优先使用
+      //example: ['YunPian', ...]
+      'agents' => []
+  ],
+```
+  其中agents中如果有多个值，如：A,B,C。
+  那么当默认代理器发送失败时，会自动启用A代理器，若A代理器发送失败，则会自动启用B，依次类推直到最后一个备用代理器。
+
 ##验证码短信模块
 
 可以直接访问example.com/sms/info查看该模块是否可用，并可在该页面里观察验证码短信发送数据，方便你进行调试。
@@ -240,21 +255,6 @@
    * `verify_rule:{$mobileRule}` 检测是否为非法请求，第一值为手机号检测规则，必须和你在浏览器端js插件中填写的mobileRule的值一致。
 
    请在语言包中做好翻译。
-
-##备用代理器机制
-  如果用一个服务商发送短信失败，将会自动尝试通过备用服务商发送。
-  在config/laravel-sms.php中配置备用代理器
-```php
-  'alternate' => [
-      //关闭备用代理器机制为false,打开为true
-      'enable' => false,
-      //备用代理器组，排名分先后，越在前面的代理器会优先使用
-      //example: ['YunPian', ...]
-      'agents' => []
-  ],
-```
-  其中agents中如果有多个值，如：A,B,C。
-  那么当默认代理器发送失败时，会自动启用A代理器，若A代理器发送失败，则会自动启用B，依次类推直到最后一个备用代理器。
 
 ##自助二次开发
 
