@@ -57,7 +57,7 @@
 
    请在config/laravel-sms.php中设置默认代理服务商，默认为'Luosimao'。
 ```php
-   'agent' => 'Luosimao';
+   'agent' => 'Luosimao',
 ```
 
    * 配置代理服务商的相关参数
@@ -138,7 +138,7 @@
   $sms = $sms->content('【签名】亲爱的张三，您的订单号是281xxxx，祝你购物愉快。');
 ```
 
-  * 开启/关闭短信队列
+  * 临时开启/关闭短信队列
 ```php
   $sms = $sms->openQueue();//开启队列,短信会在队列中排队
   $sms = $sms->closeQueue();//关闭队列,短信会直接发送
