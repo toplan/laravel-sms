@@ -15,10 +15,10 @@
    从此告别重复写验证码短信发送与校验的历史。
 5. 集成第三方短信服务商，[欢迎提供更多的服务商](https://github.com/toplan/laravel-sms#开源贡献)。
    目前支持的服务商有：
-   * [容联·云通讯](http://www.yuntongxun.com)
-   * [云片网络](http://www.yunpian.com)
-   * [SUBMAIL](http://submail.cn)
    * [Luosimao](http://luosimao.com)
+   * [云片网络](http://www.yunpian.com)
+   * [容联·云通讯](http://www.yuntongxun.com)
+   * [SUBMAIL](http://submail.cn)
 6. [备用代理器(服务商)机制](https://github.com/toplan/laravel-sms#备用代理器机制)。即:如果用一个服务商发送短信失败，将会自动尝试通过预先设置的备用服务商发送。
 
 ##安装
@@ -100,6 +100,7 @@
    * 发送给谁
 ```php
    $sms = $sms->to('1828*******');
+   $sms = $sms->to(['1828*******', '1828*******', ...]);//多个目标号码
 ```
 
    * 设置模板ID
