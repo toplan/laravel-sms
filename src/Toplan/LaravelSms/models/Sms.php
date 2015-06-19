@@ -129,6 +129,9 @@ class Sms extends Model implements Sender{
      */
     public function to($mobile)
     {
+        if (is_array($mobile)) {
+            $mobile = implode(',', $mobile);
+        }
         $this->to = $mobile;
         return $this;
     }
