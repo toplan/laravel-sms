@@ -1,14 +1,15 @@
 /*
- * toplan/laravel-sms package for zepto
- * js file for send sms with verify code
+ * send verify sms
  *---------------------------
- * author top lan <toplan710@gmail.com>
+ * top lan <toplan710@gmail.com>
+ * https://github.com/toplan/laravel-sms
  * --------------------------
- * 2015/06/08
+ * Date 2015/06/08
  *
  * example usage:
  *   $('#sendVerifySmsButton').sms({
- *       mobileSelector : 'input[name="mobile"]'
+ *       token          : "{{csrf_token}}",
+ *       mobileSelector : 'input[name="mobile"]',
  *       alertMsg       : function (msg) {
  *           alert(msg);
  *        }

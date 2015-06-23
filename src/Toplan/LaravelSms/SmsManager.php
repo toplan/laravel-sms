@@ -276,11 +276,8 @@ class SmsManager {
     public function createAgent($agentName)
     {
         $method = 'create'.ucfirst($agentName).'Agent';
-        if (method_exists($this, $method)) {
-            $agentConfig = $this->getAgentConfig($agentName);
-            return $this->$method($agentConfig);
-        }
-        throw new \InvalidArgumentException("Agent [$agentName] not supported.");
+        $agentConfig = $this->getAgentConfig($agentName);
+        return $this->$method($agentConfig);
     }
 
     /**
@@ -348,47 +345,26 @@ class SmsManager {
     }
 
     /**
-     * create a YunTongXun(云通讯) agent instance
-     * YunTongXun`s official website:
-     * @param $agentConfig
-     * @return YunTongXunAgent
-     */
-    public function createYunTongXunAgent(Array $agentConfig)
-    {
-        return new YunTongXunAgent($agentConfig);
-    }
-
-    /**
-     * create a YunPian agent instance
-     * @param array $agentConfig
+     * method overload
+     * @param $name
+     * @param $args
      *
-     * @return YunPianAgent
+     * @return mixed
      */
-    public function createYunPianAgent(Array $agentConfig)
+    public function __call($name, $args)
     {
-        return new YunPianAgent($agentConfig);
-    }
-
-    /**
-     * create a SubMail agent instance
-     * @param array $agentConfig
-     *
-     * @return SubMailAgent
-     */
-    public function createSubMailAgent(Array $agentConfig)
-    {
-        return new SubMailAgent($agentConfig);
-    }
-
-    /**
-     * create a Luosimao agent instance
-     * @param array $agentConfig
-     *
-     * @return LuosimaoAgent
-     */
-    public function createLuosimaoAgent(Array $agentConfig)
-    {
-        return new LuosimaoAgent($agentConfig);
+        if (preg_match('/^(?:create)([0-9a-zA-Z]+)(?:Agent)$/', $name, $matches)) {
+            $agentName = $matches[1];
+            $className = 'Toplan\\Sms\\' . $agentName . 'Agent';
+            if (class_exists($className)) {
+                if (isset($args[0]) && is_array($args[0])) {
+                    return new $className($args[0]);
+                }
+                throw new \InvalidArgumentException("Agent [$agentName] arguments cannot be empty, and must be array.");
+            }
+            throw new \InvalidArgumentException("Agent [$agentName] not support.");
+        }
+        throw new \BadMethodCallException("Method [$name] does not exist.");
     }
 
 }

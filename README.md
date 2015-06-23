@@ -299,7 +299,7 @@
    ]
 ```
 
-在agents目录下添加代理器类,并继承Agent抽象类。如果使用到其他api，可以将api文件放入src/lib文件夹中。
+在agents目录下添加代理器类(注意类名为FooAgent),并继承Agent抽象类。如果使用到其他api，可以将api文件放入src/lib文件夹中。
 
 ```php
    namespace Toplan\Sms;
@@ -336,14 +336,7 @@
         }
    }
 ```
-
-最后一步，在SmsManager.php中的最后一行添加方法, 至此, 新加代理器成功!
-```php
-    public function createFooAgent(Array $agentConfig)
-    {
-        return new FooAgent($agentConfig);
-    }
-```
+至此, 新加代理器成功!
 
 ##License
 
