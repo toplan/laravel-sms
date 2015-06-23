@@ -1,14 +1,15 @@
 /*
- * toplan/laravel-sms package
- * js file for send sms with verify code
+ * send verify sms
  *---------------------------
- * author top lan <toplan710@gmail.com>
+ * top lan <toplan710@gmail.com>
+ * https://github.com/toplan/laravel-sms
  * --------------------------
- * 2015/06/05
+ * Date 2015/06/05
  *
  * example usage:
  *   $('#sendVerifySmsButton').sms({
- *       mobileSelector : 'input[name="mobile"]'
+ *       token          : "{{csrf_token}}",
+ *       mobileSelector : 'input[name="mobile"]',
  *       alertMsg       : function (msg) {
  *           alert(msg);
  *        }
@@ -35,7 +36,8 @@
         var mobile = $(opts.mobileSelector).val();
         $.ajax({
             url  : '/sms/verify-code/rule/' + opts.mobileRule + '/mobile/' + mobile,
-            type : 'get'
+            type : 'post',
+            data : {_token:opts.token}
         }).success(function (data) {
             console.log(data);
            if (data.success) {
@@ -68,6 +70,7 @@
     }
 
     $.fn.sms.default = {
+        token          : '',
         mobileRule     : 'check_mobile_unique',
         mobileSelector : '',
         seconds        : 60,

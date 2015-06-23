@@ -1,19 +1,25 @@
 # laravel-sms for laravel 5
 
-laravel-sms特点:
+*使用场景*
+
+1. 发送短信验证码。
+2. 发送信息通知短信(如：订单通知，发货通知，上课通知...)。
+3. 个别用户收不到短信？laravel-sms提倡通过备用代理器机制使用两个及两个以上服务商。
+
+*该包特性*
 
 1. 数据库记录/管理短信数据及其发送情况。
 2. 兼容模板短信和内容短信。
 3. [支持短信队列](https://github.com/toplan/laravel-sms#短信队列)。
-4. 集成[验证码短信发送/校验模块](https://github.com/toplan/laravel-sms#验证码短信模块)，
+4. [备用代理器(服务商)机制](https://github.com/toplan/laravel-sms#备用代理器机制)。即:如果用一个服务商发送短信失败，将会自动尝试通过预先设置的备用服务商发送。
+5. 集成[验证码短信发送/校验模块](https://github.com/toplan/laravel-sms#验证码短信模块)，分分钟搞定验证码短信发送以及手机号/验证码校验，
    从此告别重复写验证码短信发送与校验的历史。
-5. 集成第三方短信服务商，[欢迎提供更多的服务商](https://github.com/toplan/laravel-sms#开源贡献)。
+6. 集成第三方短信服务商，[欢迎提供更多的服务商](https://github.com/toplan/laravel-sms#开源贡献)。
    目前支持的服务商有：
-   * [容联·云通讯](http://www.yuntongxun.com)
-   * [云片网络](http://www.yunpian.com)
-   * [SUBMAIL](http://submail.cn)
    * [Luosimao](http://luosimao.com)
-6. [备用代理器(服务商)机制](https://github.com/toplan/laravel-sms#备用代理器机制)。即:如果用一个服务商发送短信失败，将会自动尝试通过预先设置的备用服务商发送。
+   * [云片网络](http://www.yunpian.com)
+   * [容联·云通讯](http://www.yuntongxun.com)
+   * [SUBMAIL](http://submail.cn)
 
 ##安装
 在项目根目录下运行如下composer命令:
@@ -47,46 +53,46 @@ laravel-sms特点:
    php artisan migrate
 ```
 
-   * 配置代理服务商的相关参数
-
-   在config/laravel-sms.php中，找到支持的代理器，并填写好配置信息即可。
-
-   如果你使用的是云片，请在数组'YunPian'中按照提示填写配置信息
-```php
-   'YunPian' => [
-        ...
-        'apikey' => 'your api key',
-   ]
-```
-   如果你使用的是云通讯，请在数组'YunTongXun'中按照提示填写配置信息
-```php
-   'YunTongXun' => [
-       ...
-       'accountSid' => 'your account sid',
-       'accountToken' => 'your auth token',
-       'appId' => 'your app id',
-   ]
-```
-   更多的服务商配置就不详说了，请到配置文件中查看并按提示修改相应代理服务商的配置。
-
    * 设置默认代理器(服务商)
 
-   请在config/laravel-sms.php中设置默认代理服务商，默认为'YunPian'。
+   请在config/laravel-sms.php中设置默认代理服务商，默认为'Luosimao'。
 ```php
-   'agent' => 'YunPian';
+   'agent' => 'Luosimao',
 ```
+
+   * 配置代理服务商的相关参数
+
+   在config/laravel-sms.php中，找到你想要使用的代理器，并填写好配置信息。
+
+>  如果你使用的是Luosimao，请在数组'Luosimao'中按照提示填写配置信息
+>  ```php
+>     'Luosimao' => [
+>          ...
+>          'apikey' => 'your api key',
+>     ]
+>  ```
+
+   更多的服务商配置就不详说了，请到配置文件中查看并按提示修改相应代理服务商的配置。
 
 ####3.Enjoy it! 使用Sms模型发送短信
 
-  在控制器中发送模板/内容短信，如：
+  在控制器中发送触发短信，如：
 ```php
-  //只希望使用模板方式发送短信,如你使用的服务商是云通讯
+  //只希望使用模板方式发送短信,可以不设置内容content (如云通讯,Submail)
   Toplan\Sms\Sms::make($tempId)->to('1828****349')->data(['12345', 5])->send();
-  //只希望使用内容方式放送,如你使用的服务商是云片
+
+  //只希望使用内容方式放送,可以不设置模板id和模板数据data (如云片,luosimao)
   Toplan\Sms\Sms::make()->to('1828****349')->content('【Laravel SMS】亲爱的张三，欢迎访问，祝你工作愉快。')->send();
-  //同时确保能通过两种方式发送。这样做的好处是，可以兼顾到任何备用代理器(服务商)！
-  Toplan\Sms\Sms::make($tempId)->to('1828****349')->data(['张三'])
-                  ->content('【Laravel SMS】亲爱的张三，欢迎访问，祝你工作愉快。')->send();
+
+  //同时确保能通过模板和内容方式发送。这样做的好处是，可以兼顾到各种代理器(服务商)！
+  Toplan\Sms\Sms::make([
+      'YunTongXun' => 'xxxx',
+      'SubMail'    => 'xxxx'
+  ])
+  ->to('1828****349')
+  ->data(['张三'])
+  ->content('【签名】亲爱的张三，欢迎访问，祝你工作愉快。')
+  ->send();
 ```
 
 ####4.常用的语法糖
@@ -94,6 +100,7 @@ laravel-sms特点:
    * 发送给谁
 ```php
    $sms = $sms->to('1828*******');
+   $sms = $sms->to(['1828*******', '1828*******', ...]);//多个目标号码
 ```
 
    * 设置模板ID
@@ -101,20 +108,19 @@ laravel-sms特点:
 如果你只使用了默认代理器，即没有开启备用代理器机制。你只需要设置默认代理器的模板ID:
 ```php
    //静态方法设置，并返回sms实例
-   $sms = Toplan\Sms\Sms::make('20001');//设置默认代理器的模板id
+   $sms = Toplan\Sms\Sms::make('20001');
    //或
-   $sms = $sms->template('20001');//设置默认代理器的模板id
+   $sms = $sms->template('20001');
 ```
 
-如果你要开启备用代理器机制，那么需要为默认/备用代理器设置相应模板ID，这样才能保证每个代理器正常使用。
-可以这样设置:
+如果你要开启备用代理器机制，那么需要为只支持模板短信默认/备用代理器设置相应模板ID，这样才能保证这些代理器正常使用。可以这样设置:
 ```php
    //静态方法设置，并返回sms实例
    $sms = Toplan\Sms\Sms::make(['YunTongXun' => '20001', 'SubMail' => 'xxx', ...]);
-   //或
-   $sms = $sms->template('YunTongXun', '20001')->template('SubMail' => 'xxx');//设置指定服务商的模板id
-   //或
-   $sms = $sms->template(['YunTongXun' => '20001', 'SubMail' => 'xxx', ...]);//一次性设置多个服务商的模板id
+   //设置指定服务商的模板id
+   $sms = $sms->template('YunTongXun', '20001')->template('SubMail' => 'xxx');
+   //一次性设置多个服务商的模板id
+   $sms = $sms->template(['YunTongXun' => '20001', 'SubMail' => 'xxx', ...]);
 ```
 
   * 设置模板短信的模板数据
@@ -126,11 +132,13 @@ laravel-sms特点:
 ```
 
   * 设置内容短信的内容
+
+  有些服务商(如YunPian,Luosimao)只支持内容短信(即直接发送短信内容)，不支持模板，那么就需要设置短信内容。
 ```php
-  $sms = $sms->content('【Laravel SMS】亲爱的张三，欢迎访问，祝你工作愉快。');
+  $sms = $sms->content('【签名】亲爱的张三，您的订单号是281xxxx，祝你购物愉快。');
 ```
 
-  * 开启/关闭短信队列
+  * 临时开启/关闭短信队列
 ```php
   $sms = $sms->openQueue();//开启队列,短信会在队列中排队
   $sms = $sms->closeQueue();//关闭队列,短信会直接发送
@@ -138,8 +146,7 @@ laravel-sms特点:
 
   * 发送短信
 ```php
-  //return true or false;
-  $result = $sms->send();
+  $sms->send();//return true or false
 ```
 
 ##短信队列
@@ -154,6 +161,21 @@ laravel-sms特点:
    php artisan queue:listen
 ```
 
+##备用代理器机制
+  如果用一个服务商发送短信失败，将会自动尝试通过备用服务商发送。
+  在config/laravel-sms.php中配置备用代理器
+```php
+  'alternate' => [
+      //关闭备用代理器机制为false,打开为true
+      'enable' => false,
+      //备用代理器组，排名分先后，越在前面的代理器会优先使用
+      //example: ['YunPian', ...]
+      'agents' => []
+  ],
+```
+  其中agents中如果有多个值，如：A,B,C。
+  那么当默认代理器发送失败时，会自动启用A代理器，若A代理器发送失败，则会自动启用B，依次类推直到最后一个备用代理器。
+
 ##验证码短信模块
 
 可以直接访问example.com/sms/info查看该模块是否可用，并可在该页面里观察验证码短信发送数据，方便你进行调试。
@@ -165,14 +187,13 @@ laravel-sms特点:
   //js文件在laravel-sms包的js文件夹中，请复制到项目资源目录
   <script src="/assets/js/jquery(zepto).laravel-sms.js"></script>
   <script>
-     //为发送按钮添加sms方法,捕获点击事件
      $('#sendVerifySmsButton').sms({
+        //token value
+        token          : "{{csrf_token()}}",
         //定义如何获取mobile的值
         mobileSelector : 'input[name="mobile"]',
         //定义手机号的检测规则,当然你还可以到配置文件中自定义你想要的任何规则
         mobileRule     : 'check_mobile_unique',
-        //下次发送短信的等待时间
-        seconds        : 60 //单位秒，默认为60
         //定义服务器有消息返回时如何展示，默认为alert
         alertMsg       :  function (msg) {
             alert(msg);
@@ -183,20 +204,34 @@ laravel-sms特点:
 
 ####2.[服务器端]配置短信内容/模板
 
-在config/laravel-sms.php中先填写你的验证码 短信内容 或 短信模板标示符
+配置文件: config/laravel-sms.php
 
-如果你使用的是内容短信，则使用或修改'verifySmsContent'的值(如云片网络)
-```php
-   'verifySmsContent' => 'bla bla...'
-```
+* 填写你的验证码短信内容或模板标示符
 
-如果你使用模板短信，需要到相应代理器中填写模板标示符，如云通讯：
-```php
-   'YunTongXun' => [
-       //模板标示符
-       'verifySmsTemplateId' => 'your template id',
-   ]
-```
+> 如果你使用的是内容短信(如云片网络,Luosimao)，则使用或修改'verifySmsContent'的值：
+> ```php
+>    'verifySmsContent' => '【填写签名】亲爱的用户，您的验证码是%s。有效期为%s分钟，请尽快验证'
+> ```
+
+> 如果你使用模板短信(如云通讯,SubMail)，需要到相应代理器中填写模板标示符：
+> ```php
+>    'YunTongXun' => [
+>        //模板标示符
+>        'verifySmsTemplateId' => 'your template id',
+>    ]
+> ```
+
+* 修改或自定义发送前检测规则
+
+> ```php
+>    'rules' => [
+>        //唯一性检测规则
+>        'check_mobile_unique' => 'unique:users,mobile',//适用于注册
+>        //存在性检测规则
+>        'check_mobile_exists' => 'exists:users',//适用于找回密码和系统内业务验证
+>    ]
+> ```
+
 
 ####3.[服务器端]合法性验证
 
@@ -215,26 +250,11 @@ laravel-sms特点:
    }
 ```
    PS:
-   * `mobile_changed` 验证的是用户手机号是否合法。
-   * `verify_code` 验证的是验证码是否合法(包括是否正确，是否超时无效)。
-   * `verify_rule:{$mobileRule}` 用于防止非法请求,后面的第一值为手机号检测规则，必须和你在浏览器端js插件中填写的mobileRule的值一致。
+   * `mobile_changed` 验证用户手机号是否合法。
+   * `verify_code` 验证验证码是否合法(验证码是否正确，是否超时无效)。
+   * `verify_rule:{$mobileRule}` 检测是否为非法请求，第一值为手机号检测规则，必须和你在浏览器端js插件中填写的mobileRule的值一致。
 
    请在语言包中做好翻译。
-
-##备用代理器机制
-  如果用一个服务商发送短信失败，将会自动尝试通过备用服务商发送。
-  在config/laravel-sms.php中配置备用代理器
-```php
-  'alternate' => [
-      //关闭备用代理器机制为false,打开为true
-      'enable' => false,
-      //备用代理器组，排名分先后，越在前面的代理器会优先使用
-      //example: ['YunPian', ...]
-      'agents' => []
-  ],
-```
-  其中agents中如果有多个值，如：A,B,C。
-  那么当默认代理器发送失败时，会自动启用A代理器，若A代理器发送失败，则会自动启用B，依次类推直到最后一个备用代理器。
 
 ##自助二次开发
 
@@ -279,7 +299,7 @@ laravel-sms特点:
    ]
 ```
 
-在agents目录下添加代理器类,并继承Agent抽象类。如果使用到其他api，可以将api文件放入src/lib文件夹中。
+在agents目录下添加代理器类(注意类名为FooAgent),并继承Agent抽象类。如果使用到其他api，可以将api文件放入src/lib文件夹中。
 
 ```php
    namespace Toplan\Sms;
@@ -316,14 +336,7 @@ laravel-sms特点:
         }
    }
 ```
-
-最后一步，在SmsManager.php中的最后一行添加方法, 至此, 新加代理器成功!
-```php
-    public function createFooAgent(Array $agentConfig)
-    {
-        return new FooAgent($agentConfig);
-    }
-```
+至此, 新加代理器成功!
 
 ##License
 

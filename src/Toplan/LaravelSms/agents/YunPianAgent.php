@@ -12,9 +12,10 @@ class YunPianAgent extends Agent {
         $url = 'http://yunpian.com/v1/sms/send.json';
         $apikey = $this->apikey;
         $content = urlencode("$content");
-        $postString = "apikey=$apikey&text=$content&mobile=$to";
 
+        $postString = "apikey=$apikey&text=$content&mobile=$to";
         $response = $this->sockPost($url, $postString);
+
         $data = json_decode($response, true);
         if ($data['code'] == 0) {
             $this->result['success'] = true;
