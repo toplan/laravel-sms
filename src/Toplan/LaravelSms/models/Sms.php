@@ -86,42 +86,6 @@ class Sms extends Model implements Sender{
     }
 
     /**
-     * set sms content
-     * @param $content
-     *
-     * @return $this
-     */
-    public function content($content)
-    {
-        $this->content = $content;
-        return $this;
-    }
-
-    /**
-     * set template id
-     * @param $agentName
-     * @param $tempId
-     *
-     * @return $this
-     */
-    public function template($agentName, $tempId = null)
-    {
-        $tempIdArray = $this->getTempId(true);
-        if ($tempId) {
-            $tempIdArray["$agentName"] = $tempId;
-        } else {
-            if (is_array($agentName)) {
-                $tempIdArray = $agentName;
-            } else {
-                $defaultAgentName = SmsManager::getDefaultAgent();
-                $tempIdArray["$defaultAgentName"] = $agentName;
-            }
-        }
-        $this->temp_id = json_encode($tempIdArray);
-        return $this;
-    }
-
-    /**
      * set the mobile number
      * @param $mobile
      *
@@ -137,12 +101,49 @@ class Sms extends Model implements Sender{
     }
 
     /**
+     * set sms content
+     * @param $content
+     *
+     * @return $this
+     */
+    public function setContent($content)
+    {
+        $this->content = $content;
+        return $this;
+    }
+
+    /**
+     * set template id
+     * @param $agentName
+     * @param $tempId
+     *
+     * @return $this
+     */
+    public function template($agentName, $tempId = null)
+    {
+        $tempIdArray = $this->getTemplate(true);
+        if ($tempId) {
+            $tempIdArray["$agentName"] = $tempId;
+        } else {
+            if (is_array($agentName)) {
+                $tempIdArray = $agentName;
+            } else {
+                $defaultAgentName = SmsManager::getDefaultAgent();
+                $tempIdArray["$defaultAgentName"] = $agentName;
+            }
+        }
+        $this->temp_id = json_encode($tempIdArray);
+        return $this;
+    }
+
+
+    /**
      * set data
      * @param array $data
      *
      * @return $this
      */
-    public function data(Array $data)
+    public function setData(Array $data)
     {
         $this->data = json_encode($data);
         return $this;
@@ -155,7 +156,7 @@ class Sms extends Model implements Sender{
     public function send()
     {
         $validator = Validator::make([
-            'temp_id' => $this->getTempId(),
+            'temp_id' => $this->getTemplate(),
             'to'      => $this->getTo(),
             'data'    => $this->getData(),
             'content' => $this->getContent()
@@ -185,7 +186,7 @@ class Sms extends Model implements Sender{
      */
     public function sendProcess()
     {
-        $result = $this->agent->sms($this->getTempId(true), $this->getTo(), $this->getData(true), $this->getContent());
+        $result = $this->agent->sms($this->getTemplate(true), $this->getTo(), $this->getData(true), $this->getContent());
         if ($result['success']) {
             $this->sent_time = time();
         } else {
@@ -202,9 +203,9 @@ class Sms extends Model implements Sender{
      * @param bool $getArray
      * @return mixed
      */
-    public function getTempId($getArray = false)
+    public function getTemplate($getArray = false)
     {
-        return $getArray ? json_decode($this->temp_id, true) : $this->temp_id;
+        return $getArray ? (json_decode($this->temp_id, true) ?: []) : $this->temp_id;
     }
 
     /**
@@ -224,7 +225,7 @@ class Sms extends Model implements Sender{
      */
     public function getData($getArray = false)
     {
-        return $getArray ? json_decode($this->data, true) : $this->data;
+        return $getArray ? (json_decode($this->data, true) ?: []) : $this->data;
     }
 
     /**

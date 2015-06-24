@@ -2,13 +2,38 @@
 
 interface Sender {
 
-    public function content($content);
-
-    public function template($agentName, $tempId);
-
+    /**
+     * receiver
+     * @param $mobile
+     *
+     * @return mixed
+     */
     public function to($mobile);
 
-    public function data(Array $data);
+    /**
+     * set text content for content sms
+     * @param $content
+     *
+     * @return mixed
+     */
+    public function setContent($content);
+
+    /**
+     * set template id
+     * @param $agentName
+     * @param $tempId
+     *
+     * @return mixed
+     */
+    public function template($agentName, $tempId);
+
+    /**
+     * set template data
+     * @param array $data
+     *
+     * @return mixed
+     */
+    public function setData(Array $data);
 
     /**
      * sms send entry

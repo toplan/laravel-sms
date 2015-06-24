@@ -79,10 +79,10 @@
   在控制器中发送触发短信，如：
 ```php
   //只希望使用模板方式发送短信,可以不设置内容content (如云通讯,Submail)
-  Toplan\Sms\Sms::make($tempId)->to('1828****349')->data(['12345', 5])->send();
+  Toplan\Sms\Sms::make($tempId)->to('1828****349')->setData(['12345', 5])->send();
 
   //只希望使用内容方式放送,可以不设置模板id和模板数据data (如云片,luosimao)
-  Toplan\Sms\Sms::make()->to('1828****349')->content('【Laravel SMS】亲爱的张三，欢迎访问，祝你工作愉快。')->send();
+  Toplan\Sms\Sms::make()->to('1828****349')->setContent('【Laravel SMS】亲爱的张三，欢迎访问，祝你工作愉快。')->send();
 
   //同时确保能通过模板和内容方式发送。这样做的好处是，可以兼顾到各种代理器(服务商)！
   Toplan\Sms\Sms::make([
@@ -90,8 +90,8 @@
       'SubMail'    => 'xxxx'
   ])
   ->to('1828****349')
-  ->data(['张三'])
-  ->content('【签名】亲爱的张三，欢迎访问，祝你工作愉快。')
+  ->setData(['张三'])
+  ->setContent('【签名】亲爱的张三，欢迎访问，祝你工作愉快。')
   ->send();
 ```
 
@@ -125,7 +125,7 @@
 
   * 设置模板短信的模板数据
 ```php
-  $sms = $sms->data([
+  $sms = $sms->setData([
         'code' => $code,
         'minutes' => $minutes
       ]);//must be array
@@ -135,7 +135,7 @@
 
   有些服务商(如YunPian,Luosimao)只支持内容短信(即直接发送短信内容)，不支持模板，那么就需要设置短信内容。
 ```php
-  $sms = $sms->content('【签名】亲爱的张三，您的订单号是281xxxx，祝你购物愉快。');
+  $sms = $sms->setContent('【签名】亲爱的张三，您的订单号是281xxxx，祝你购物愉快。');
 ```
 
   * 临时开启/关闭短信队列
