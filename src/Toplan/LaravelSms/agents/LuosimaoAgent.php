@@ -17,11 +17,11 @@ class LuosimaoAgent extends Agent {
             $content = str_replace($matches[0], '', $content) . $matches[0];
         }
 
-        $url = 'http://sms-api.luosimao.com/v1/send.json';
+        $url = 'https://sms-api.luosimao.com/v1/send.json';
         $apikey = $this->apikey;
         $optData = [
             'mobile' => $to,
-            'message' => urlencode("$content")
+            'message' => $content
         ];
 
         $ch = curl_init();
