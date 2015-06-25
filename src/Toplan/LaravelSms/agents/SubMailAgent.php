@@ -17,7 +17,7 @@ class SubMailAgent extends Agent {
         $url = 'https://api.submail.cn/message/xsend.json';
         $appid = $this->appid;
         $signature = $this->signature;
-        $vars = urlencode(json_encode($data));
+        $vars = json_encode($data);
 
         $postString = "appid=$appid&project=$tempId&to=$to&signature=$signature&vars=$vars";
         $response = $this->sockPost($url, $postString);
