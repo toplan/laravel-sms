@@ -295,7 +295,7 @@ class SmsManager {
         $config['nextAgentName'] = $this->getAlternateAgentNameByCurrentName($agentName);
         $config['currentAgentName'] = $agentName;
         if ( ! class_exists($config['smsWorker'])) {
-            throw new \InvalidArgumentException("Worker [" . $config['worker'] . "] not support.");
+            throw new \InvalidArgumentException("Worker [" . $config['smsWorker'] . "] not support.");
         }
         return $config;
     }
