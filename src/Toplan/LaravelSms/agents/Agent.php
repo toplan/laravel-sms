@@ -1,7 +1,5 @@
 <?php namespace Toplan\Sms;
 
-use \SmsManager;
-
 Abstract class Agent {
 
     /**
@@ -115,7 +113,7 @@ Abstract class Agent {
         if ( ! $this->config['nextAgentName']) {
             return null;
         }
-        $agent = SmsManager::agent($this->config['nextAgentName']);
+        $agent = app('SmsManager')->agent($this->config['nextAgentName']);
         $result = $agent->sms($tempIds, $to, $data, $content);
         return $result;
     }
