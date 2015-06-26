@@ -59,8 +59,8 @@ class SmsController extends Controller {
         $sms       = new $this->smsModel;
         $result    = $sms->template($tempIdArray)
                          ->to($mobile)
-                         ->setData(['code' => $code,'minutes' => $minutes])
-                         ->setContent($content)
+                         ->data(['code' => $code,'minutes' => $minutes])
+                         ->content($content)
                          ->send();
         if ($result) {
             $data = SmsManager::getSmsData();

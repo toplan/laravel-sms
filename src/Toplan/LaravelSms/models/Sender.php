@@ -16,7 +16,7 @@ interface Sender {
      *
      * @return mixed
      */
-    public function setContent($content);
+    public function content($content);
 
     /**
      * set template id
@@ -33,7 +33,7 @@ interface Sender {
      *
      * @return mixed
      */
-    public function setData(Array $data);
+    public function data(Array $data);
 
     /**
      * sms send entry
