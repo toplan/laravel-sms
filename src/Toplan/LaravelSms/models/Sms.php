@@ -44,27 +44,23 @@ class Sms extends Model implements Sender{
      */
     public function __construct()
     {
-        $this->agent = SmsManager::agent();
+        $this->agent   = SmsManager::agent();
+        //init attributes
+        $this->data    = json_encode([]);
+        $this->content = '';
     }
 
     /**
      * create a instance of sms
+     * @param $agentName
      * @param $tempId
      *
      * @return Sms
      */
-    public static function make($tempId = '')
+    public static function make($agentName = '', $tempId = null)
     {
         $sms = new self;
-        $tempIdArray = [];
-        if (is_array($tempId)) {
-            $tempIdArray = $tempId;
-        } else {
-            $defaultAgentName = SmsManager::getDefaultAgent();
-            $tempIdArray["$defaultAgentName"] = (string) $tempId;
-        }
-        $sms->temp_id = json_encode($tempIdArray);
-        return $sms;
+        return $sms->template($agentName, $tempId);
     }
 
     /**
@@ -101,19 +97,19 @@ class Sms extends Model implements Sender{
     }
 
     /**
-     * set sms content
+     * set content for content sms
      * @param $content
      *
      * @return $this
      */
-    public function setContent($content)
+    public function content($content)
     {
         $this->content = $content;
         return $this;
     }
 
     /**
-     * set template id
+     * set template id for template sms
      * @param $agentName
      * @param $tempId
      *
@@ -122,7 +118,7 @@ class Sms extends Model implements Sender{
     public function template($agentName, $tempId = null)
     {
         $tempIdArray = $this->getTemplate(true);
-        if ($tempId) {
+        if ( ! is_null($tempId)) {
             $tempIdArray["$agentName"] = $tempId;
         } else {
             if (is_array($agentName)) {
@@ -138,12 +134,12 @@ class Sms extends Model implements Sender{
 
 
     /**
-     * set data
+     * set data for template sms
      * @param array $data
      *
      * @return $this
      */
-    public function setData(Array $data)
+    public function data(Array $data)
     {
         $this->data = json_encode($data);
         return $this;
@@ -156,10 +152,7 @@ class Sms extends Model implements Sender{
     public function send()
     {
         $validator = Validator::make([
-            'temp_id' => $this->getTemplate(),
             'to'      => $this->getTo(),
-            'data'    => $this->getData(),
-            'content' => $this->getContent()
         ], $this->rules);
         if ( ! $validator->fails()) {
             if ( ! $this->created_at) {
@@ -176,7 +169,7 @@ class Sms extends Model implements Sender{
             }
             return true;
         } else {
-            return false;
+            throw new \InvalidArgumentException("UPDATE/CREATE sms model failed, must set [to] attribute.");
         }
     }
 
