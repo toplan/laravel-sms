@@ -33,12 +33,18 @@
 
 在config/app.php文件中providers数组里加入：
 ```php
+   //laravel 5.0.*
    'Toplan\Sms\SmsManagerServiceProvider'
+   //laravel 5.1.*
+   Toplan\Sms\SmsManagerServiceProvider::class
 ```
 
 在config/app.php文件中的aliases数组里加入
 ```php
+   //laravel 5.0.*
    'SmsManager' => 'Toplan\Sms\Facades\SmsManager'
+   //laravel 5.1.*
+   'SmsManager' => Toplan\Sms\Facades\SmsManager::class
 ```
 
 ####2.migration生成 & 参数配置
@@ -182,7 +188,7 @@
 
 ####1.[浏览器端]请求发送带验证码短信
 
-该包已经封装好浏览器端的jqury/zepto插件，只需要为发送按钮添加扩展方法即可实现发送短信。
+该包已经封装好浏览器端的jquery/zepto插件，只需要为发送按钮添加扩展方法即可实现发送短信。
 ```html
   //js文件在laravel-sms包的js文件夹中，请复制到项目资源目录
   <script src="/assets/js/jquery(zepto).laravel-sms.js"></script>
