@@ -20,6 +20,7 @@
    * [云片网络](http://www.yunpian.com)
    * [容联·云通讯](http://www.yuntongxun.com)
    * [SUBMAIL](http://submail.cn)
+   * [云之讯](http://www.ucpaas.com/)
 
 ##安装
 在项目根目录下运行如下composer命令:
