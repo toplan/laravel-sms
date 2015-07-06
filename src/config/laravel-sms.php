@@ -7,7 +7,7 @@ return array(
      * sms agent style
      * 指定代理器(服务商)
      * -----------------------------------
-     * 可选值有:'YunTongXun', 'YunPian', 'SubMail', 'Luosimao'
+     * 可选值有:'Luosimao', 'YunTongXun', 'YunPian', 'SubMail', 'Ucpaas'
      */
 
     'agent' => 'Luosimao',
