@@ -61,7 +61,7 @@ class UcpaasAgent extends Agent
             $this->result['success'] = false;
             $this->result['info'] = $this->currentAgentName . ':' . $result->resp->respCode;
             $this->result['code'] = $result->resp->respCode;
-        } elseif ($result->statusCode == 0) {
+        } elseif ($result->statusCode == '000000') {
             //sent success
             $this->result['success'] = true;
             $this->result['info'] = $this->currentAgentName . ':' . $result->resp->respCode;
