@@ -192,6 +192,32 @@ return array(
 
     /*
      * -----------------------------------
+     * ucpaas
+     * -----------------------------------
+     * 官方网站：http://ucpaas.com
+     * 只支持内容短信
+     */
+    'Ucpaas' => [
+
+        //验证码短信模板id
+        'verifySmsTemplateId' => 'your verify sms template id',
+
+        //是否重复发送队列任务中失败的短信(设置为false,可以拒绝再次发送失败的短信)
+        'isResendFailedSmsInQueue' => false,
+
+        //主帐号,对应开官网发者主账号下的 ACCOUNT SID
+        'accountSid' => 'your account sid',
+
+        //主帐号令牌,对应官网开发者主账号下的 AUTH TOKEN
+        'accountToken' => 'your account token',
+
+        //应用Id，在官网应用列表中点击应用，对应应用详情中的APP ID
+        //在开发调试的时候，可以使用官网自动为您分配的测试Demo的APP ID
+        'appId' => 'your app id',
+    ],
+
+    /*
+     * -----------------------------------
      * session key
      * -----------------------------------
      * store verify sms data in session
