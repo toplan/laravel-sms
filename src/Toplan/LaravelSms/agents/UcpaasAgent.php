@@ -23,7 +23,7 @@ class UcpaasAgent extends Agent
      */
     public function sendSms($tempId, $to, Array $data, $content)
     {
-        $this->sendTemplateSms($tempId, $to, $content);
+        $this->sendTemplateSms($tempId, $to, $data);
     }
 
     /**
