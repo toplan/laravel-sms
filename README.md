@@ -16,11 +16,14 @@
    从此告别重复写验证码短信发送与校验的历史。
 6. 集成第三方短信服务商，[欢迎提供更多的服务商](https://github.com/toplan/laravel-sms#开源贡献)。
    目前支持的服务商有：
-   * [Luosimao](http://luosimao.com)
-   * [云片网络](http://www.yunpian.com)
-   * [容联·云通讯](http://www.yuntongxun.com)
-   * [SUBMAIL](http://submail.cn)
-   * [云之讯](http://www.ucpaas.com/)
+
+| 服务商 | 模板短信 | 内容短信 |  最低消费  |  单价 |
+| ----- | :-----: | :----: | :-------: | :-----: |
+| [Luosimao](http://luosimao.com)        | no  | yes    |￥850(1万条) |￥0.085/条|
+| [云片网络](http://www.yunpian.com)       | no | yes   |￥55(1千条)  |￥0.055/条|
+| [容联·云通讯](http://www.yuntongxun.com) | yes | no     |充值￥500   |￥0.055/条|
+| [SUBMAIL](http://submail.cn)           | yes | no     |￥100(1千条) |￥0.100/条|
+| [云之讯](http://www.ucpaas.com/)        | yes | no     |            |￥0.050/条|
 
 ##安装
 在项目根目录下运行如下composer命令:
