@@ -1,7 +1,8 @@
-<?php namespace Toplan\Sms;
+<?php
+namespace Toplan\Sms;
 
-interface Sender {
-
+interface Sender
+{
     /**
      * receiver
      * @param $mobile
@@ -46,5 +47,4 @@ interface Sender {
      * @return mixed
      */
     public function sendProcess();
-
 }

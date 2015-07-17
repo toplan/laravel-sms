@@ -1,9 +1,10 @@
-<?php namespace Toplan\Sms;
+<?php
+namespace Toplan\Sms;
 
 use Illuminate\Support\ServiceProvider;
 
-class SmsManagerServiceProvider extends ServiceProvider{
-
+class SmsManagerServiceProvider extends ServiceProvider
+{
     /**
      * bootstrap, add routes
      */

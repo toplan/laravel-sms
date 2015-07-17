@@ -1,13 +1,14 @@
-<?php namespace Toplan\Sms;
+<?php
+namespace Toplan\Sms;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-
 use \Queue;
 use \Validator;
 use \SmsManager;
 
-class Sms extends Model implements Sender{
+class Sms extends Model implements Sender
+{
 
     /**
      * table name
@@ -229,5 +230,4 @@ class Sms extends Model implements Sender{
     {
         return $this->content;
     }
-
 }

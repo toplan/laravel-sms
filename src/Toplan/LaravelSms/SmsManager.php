@@ -1,9 +1,10 @@
-<?php namespace Toplan\Sms;
+<?php
+namespace Toplan\Sms;
 
 use \Session;
 
-class SmsManager {
-
+class SmsManager
+{
     /**
      * the application instance
      * @var
@@ -366,5 +367,4 @@ class SmsManager {
         }
         throw new \BadMethodCallException("Method [$name] does not exist.");
     }
-
 }

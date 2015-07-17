@@ -1,7 +1,8 @@
-<?php namespace Toplan\Sms;
+<?php
+namespace Toplan\Sms;
 
-class LuosimaoAgent extends Agent {
-
+class LuosimaoAgent extends Agent
+{
     public function sendSms($tempId, $to, Array $data, $content)
     {
         $this->sendContentSms($to, $content);
@@ -52,5 +53,4 @@ class LuosimaoAgent extends Agent {
     {
         return null;
     }
-
 }

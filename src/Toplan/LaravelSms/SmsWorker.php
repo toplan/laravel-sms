@@ -1,7 +1,8 @@
-<?php namespace Toplan\Sms;
+<?php
+namespace Toplan\Sms;
 
-class SmsWorker {
-
+class SmsWorker
+{
     public function fire( $job ,  $data ){
         $id       = $data['smsId'];
         $isResend = $data['isResend'];
@@ -21,5 +22,4 @@ class SmsWorker {
             }
         }
     }
-
 }

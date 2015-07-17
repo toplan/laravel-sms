@@ -1,7 +1,8 @@
-<?php namespace Toplan\Sms;
+<?php
+namespace Toplan\Sms;
 
-class YunPianAgent extends Agent {
-
+class YunPianAgent extends Agent
+{
     public function sendSms($tempId, $to, Array $data, $content)
     {
         $this->sendContentSms($to, $content);
@@ -28,5 +29,4 @@ class YunPianAgent extends Agent {
     {
         return null;
     }
-
 }

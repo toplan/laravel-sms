@@ -1,9 +1,10 @@
-<?php namespace Toplan\Sms\Facades;
+<?php
+namespace Toplan\Sms\Facades;
 
 use Illuminate\Support\Facades\Facade;
 
-class SmsManager extends Facade{
-
+class SmsManager extends Facade
+{
     protected static function getFacadeAccessor()
     {
         return 'SmsManager';

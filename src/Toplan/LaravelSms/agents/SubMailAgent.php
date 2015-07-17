@@ -1,7 +1,8 @@
-<?php namespace Toplan\Sms;
+<?php
+namespace Toplan\Sms;
 
-class SubMailAgent extends Agent {
-
+class SubMailAgent extends Agent
+{
     public function sendSms($tempId, $to, Array $data, $content)
     {
         $this->sendTemplateSms($tempId, $to, $data);
@@ -29,5 +30,4 @@ class SubMailAgent extends Agent {
         $this->result['info'] = $this->currentAgentName . ':' . $data['msg'];
         $this->result['code'] = $data['code'];
     }
-
 }

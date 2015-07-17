@@ -1,9 +1,10 @@
-<?php namespace Toplan\Sms;
+<?php
+namespace Toplan\Sms;
 
 use REST;
 
-class YunTongXunAgent extends Agent{
-
+class YunTongXunAgent extends Agent
+{
     public function sendSms($tempId, $to, Array $data, $content)
     {
         //云通讯目前只支持模板短信
@@ -41,5 +42,4 @@ class YunTongXunAgent extends Agent{
     {
         return null;
     }
-
 }

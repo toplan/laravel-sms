@@ -1,12 +1,13 @@
-<?php namespace Toplan\Sms;
+<?php
+namespace Toplan\Sms;
 
 use \Input;
 use \SmsManager;
 use \Validator;
 use Illuminate\Routing\Controller;
 
-class SmsController extends Controller {
-
+class SmsController extends Controller
+{
     public $smsModel;
 
     public function __construct()
@@ -92,5 +93,4 @@ class SmsController extends Controller {
             echo '<p align="center" style="color: #ff0000;;">现在是非调试模式，无法查看验证码短信数据</p>';
         }
     }
-
 }

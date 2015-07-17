@@ -1,7 +1,8 @@
-<?php namespace Toplan\Sms;
+<?php
+namespace Toplan\Sms;
 
-Abstract class Agent {
-
+Abstract class Agent
+{
     /**
      * agent config
      * @var array
