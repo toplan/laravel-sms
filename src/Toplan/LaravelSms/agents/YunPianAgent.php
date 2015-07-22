@@ -29,4 +29,13 @@ class YunPianAgent extends Agent
     {
         return null;
     }
+
+    public function voiceVerify($to, $code)
+    {
+        //todo
+        //...
+        $this->result['success'] = false;
+        $this->result['info'] = $this->currentAgentName . ':' . '';
+        $this->result['code'] = '';
+    }
 }

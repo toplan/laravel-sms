@@ -30,4 +30,13 @@ class SubMailAgent extends Agent
         $this->result['info'] = $this->currentAgentName . ':' . $data['msg'];
         $this->result['code'] = $data['code'];
     }
+
+    public function voiceVerify($to, $code)
+    {
+        //todo
+        //...
+        $this->result['success'] = false;
+        $this->result['info'] = $this->currentAgentName . ':' . '';
+        $this->result['code'] = '';
+    }
 }

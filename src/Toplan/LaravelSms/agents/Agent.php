@@ -150,6 +150,15 @@ Abstract class Agent
     public abstract function sendTemplateSms($tempId, $to, Array $data);
 
     /**
+     * voice verify
+     * @param $to
+     * @param $code
+     *
+     * @return mixed
+     */
+    public abstract function voiceVerify($to, $code);
+
+    /**
      * http post request
      * @param       $url
      * @param array $query

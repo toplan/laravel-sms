@@ -65,6 +65,23 @@ class Sms extends Model implements Sender
     }
 
     /**
+     * voice verify code
+     * 语音验证码
+     * @param $code
+     *
+     * @return Sms
+     */
+    public static function voice($code)
+    {
+        $sms = new self;
+        $sms->temp_id = '';
+        $sms->data = json_encode([
+               'voice_verify_code' => $code,
+            ]);
+        return $sms;
+    }
+
+    /**
      * send sms by queue
      */
     public function openQueue()
@@ -180,7 +197,14 @@ class Sms extends Model implements Sender
      */
     public function sendProcess()
     {
-        $result = $this->agent->sms($this->getTemplate(true), $this->getTo(), $this->getData(true), $this->getContent());
+        $data = $this->getData(true);
+        if ($this->getTemplate(false) == '' && isset($data['voice_verify_code'])) {
+            //voice verify
+            $result = $this->agent->voiceVerify($this->getTo(), $data['voice_verify_code']);
+        } else {
+            //sms
+            $result = $this->agent->sms($this->getTemplate(true), $this->getTo(), $this->getData(true), $this->getContent());
+        }
         if ($result['success']) {
             $this->sent_time = time();
         } else {
