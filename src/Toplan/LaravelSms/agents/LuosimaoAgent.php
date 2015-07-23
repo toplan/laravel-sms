@@ -56,8 +56,8 @@ class LuosimaoAgent extends Agent
 
     public function voiceVerify($to, $code)
     {
-        $url = 'http://voice-api.luosimao.com/v1/verify.json';
-        $apikey = $this->apikey;
+        $url = 'https://voice-api.luosimao.com/v1/verify.json';
+        $apikey = $this->voiceApikey;
         $optData = [
             'mobile' => $to,
             'code' => $code
@@ -85,5 +85,6 @@ class LuosimaoAgent extends Agent
         }
         $this->result['info'] = $this->currentAgentName . ':' . $data['msg'] . "({$data['error']})";
         $this->result['code'] = $data['error'];
+        return $this->result;
     }
 }

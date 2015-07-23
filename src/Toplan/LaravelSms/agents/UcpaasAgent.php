@@ -75,5 +75,6 @@ class UcpaasAgent extends Agent
         $this->result['success'] = false;
         $this->result['info'] = $this->currentAgentName . ':' . '';
         $this->result['code'] = '';
+        throw new \Exception("The agent [{$this->currentAgentName}] not support voice verify, developing...");
     }
 }

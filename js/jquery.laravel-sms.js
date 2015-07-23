@@ -34,8 +34,12 @@
 
     function sendSms(opts, elem) {
         var mobile = $(opts.mobileSelector).val();
+        var url = '/sms/verify-code/rule/' + opts.mobileRule + '/mobile/' + mobile;
+        if (opts.voice) {
+            url = '/sms/voice-verify/rule/' + opts.mobileRule + '/mobile/' + mobile;
+        }
         $.ajax({
-            url  : '/sms/verify-code/rule/' + opts.mobileRule + '/mobile/' + mobile,
+            url  : url,
             type : 'post',
             data : {_token:opts.token}
         }).success(function (data) {
@@ -74,6 +78,7 @@
         mobileRule     : 'check_mobile_unique',
         mobileSelector : '',
         seconds        : 60,
+        voice          : false,
         alertMsg       : function (msg) {
             alert(msg);
         }
