@@ -21,7 +21,7 @@
 | 服务商 | 模板短信 | 内容短信 | 语音验证码 | 最低消费  |  最低消费单价 |
 | ----- | :-----: | :-----: | :------: | :-------: | :-----: |
 | [Luosimao](http://luosimao.com)        | no  | yes |  yes    |￥850(1万条) |￥0.085/条|
-| [云片网络](http://www.yunpian.com)       | no | yes  | 开发中.. |￥55(1千条)  |￥0.055/条|
+| [云片网络](http://www.yunpian.com)       | no | yes  | yes    |￥55(1千条)  |￥0.055/条|
 | [容联·云通讯](http://www.yuntongxun.com) | yes | no  | 开发中.. |充值￥500    |￥0.055/条|
 | [SUBMAIL](http://submail.cn)           | yes | no  | 开发中.. |￥100(1千条) |￥0.100/条|
 | [云之讯](http://www.ucpaas.com/)        | yes | no  | 开发中.. |            |￥0.050/条|
@@ -214,8 +214,8 @@
      });
   </script>
 ```
-> 语音验证码目前只支持Luosimao
-> 其它代理器的语音验证后续会支持...
+> **注意:**
+> 如果你使用Luosimao语音验证码，请在配置文件中'Luosimao'中设置'voiceApikey'。
 
 ####2.[服务器端]配置短信内容/模板
 

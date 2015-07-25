@@ -32,11 +32,18 @@ class YunPianAgent extends Agent
 
     public function voiceVerify($to, $code)
     {
-        //todo
-        //...
-        $this->result['success'] = false;
-        $this->result['info'] = $this->currentAgentName . ':' . '';
-        $this->result['code'] = '';
-        throw new \Exception("The agent [{$this->currentAgentName}] not support voice verify, developing...");
+        $url = 'http://voice.yunpian.com/v1/voice/send.json';
+        $apikey = $this->apikey;
+
+        $postString = "apikey=$apikey&code=$code&mobile=$to";
+        $response = $this->sockPost($url, $postString);
+
+        $data = json_decode($response, true);
+        if ($data['code'] == 0) {
+            $this->result['success'] = true;
+        }
+        $this->result['info'] = $this->currentAgentName . ':' . $data['msg'];
+        $this->result['code'] = $data['code'];
+        return $this->result;
     }
 }
