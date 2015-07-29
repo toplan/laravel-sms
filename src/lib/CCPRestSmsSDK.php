@@ -165,9 +165,68 @@ class REST {
         }
  
         return $datas; 
-    } 
-   
-  /**
+    }
+
+    /**
+     * 语音验证码
+     * @param verifyCode 验证码内容，为数字和英文字母，不区分大小写，长度4-8位
+     * @param playTimes 播放次数，1－3次
+     * @param to 接收号码
+     * @param displayNum 显示的主叫号码
+     * @param respUrl 语音验证码状态通知回调地址，云通讯平台将向该Url地址发送呼叫结果通知
+     * @param lang 语言类型
+     * @param userData 第三方私有数据
+     * @param welcomePrompt  欢迎提示音，在播放验证码语音前播放此内容（语音文件格式为wav）
+     * @param playVerifyCode  语音验证码的内容全部播放此节点下的全部语音文件
+     */
+    function voiceVerify($verifyCode,$playTimes,$to,$displayNum,$respUrl,$lang,$userData,$welcomePrompt,$playVerifyCode)
+    {
+        //主帐号鉴权信息验证，对必选参数进行判空。
+        $auth=$this->accAuth();
+        if($auth!=""){
+            return $auth;
+        }
+        // 拼接请求包体
+        if($this->BodyType=="json"){
+            $body= "{'appId':'$this->AppId','verifyCode':'$verifyCode','playTimes':'$playTimes','to':'$to','respUrl':'$respUrl','displayNum':'$displayNum',
+           'lang':'$lang','userData':'$userData','welcomePrompt':'$welcomePrompt','playVerifyCode':'$playVerifyCode'}";
+        }else{
+            $body="<VoiceVerify>
+                    <appId>$this->AppId</appId>
+                    <verifyCode>$verifyCode</verifyCode>
+                    <playTimes>$playTimes</playTimes>
+                    <to>$to</to>
+                    <respUrl>$respUrl</respUrl>
+                    <displayNum>$displayNum</displayNum>
+                    <lang>$lang</lang>
+                    <userData>$userData</userData>
+					<welcomePrompt>$welcomePrompt</welcomePrompt>
+					<playVerifyCode>$playVerifyCode</playVerifyCode>
+                  </VoiceVerify>";
+        }
+        $this->showlog("request body = ".$body);
+        // 大写的sig参数
+        $sig =  strtoupper(md5($this->AccountSid . $this->AccountToken . $this->Batch));
+        // 生成请求URL
+        $url="https://$this->ServerIP:$this->ServerPort/$this->SoftVersion/Accounts/$this->AccountSid/Calls/VoiceVerify?sig=$sig";
+        $this->showlog("request url = ".$url);
+        // 生成授权：主帐户Id + 英文冒号 + 时间戳。
+        $authen = base64_encode($this->AccountSid . ":" . $this->Batch);
+        // 生成包头
+        $header = array("Accept:application/$this->BodyType","Content-Type:application/$this->BodyType;charset=utf-8","Authorization:$authen");
+        // 发送请求
+        $result = $this->curl_post($url,$body,$header);
+        $this->showlog("response body = ".$result);
+        if($this->BodyType=="json"){//JSON格式
+            $datas=json_decode($result);
+        }else{ //xml格式
+            $datas = simplexml_load_string(trim($result," \t\n\r"));
+        }
+
+        return $datas;
+    }
+
+    /**
     * 主帐号鉴权
     */   
    function accAuth()

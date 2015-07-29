@@ -45,11 +45,34 @@ class YunTongXunAgent extends Agent
 
     public function voiceVerify($to, $code)
     {
-        //todo
-        //...
-        $this->result['success'] = false;
-        $this->result['info'] = $this->currentAgentName . ':' . '';
-        $this->result['code'] = '';
-        throw new \Exception("The agent [{$this->currentAgentName}] not support voice verify, developing...");
+        // 初始化REST SDK
+        $rest = new REST(
+            $this->serverIP,
+            $this->serverPort,
+            $this->softVersion,
+            storage_path('logs/sms-log.txt')
+        );
+        $rest->setAccount($this->accountSid, $this->accountToken);
+        $rest->setAppId($this->appId);
+
+        // 调用语音验证码接口
+        $playTimes = 3;
+        $respUrl = null;
+        $lang = 'zh';
+        $userData = null;
+        $result = $rest->voiceVerify($code, $playTimes, $to, null, $respUrl, $lang, $userData, null, null);
+        if ($result == null) {
+            return $this->result;
+        }
+        if ( $result->statusCode == 0 ) {
+            $this->result['success'] = true;
+            // 获取返回信息
+            //$voiceVerify = $result->VoiceVerify;
+            //echo "callSid:".$voiceVerify->callSid."<br/>";
+            //echo "dateCreated:".$voiceVerify->dateCreated."<br/>";
+        }
+        $this->result['info'] = $this->currentAgentName . ':' . $result->statusMsg;
+        $this->result['code'] = $result->statusCode;
+        return $this->result;
     }
 }
