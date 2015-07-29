@@ -22,7 +22,7 @@
 | ----- | :-----: | :-----: | :------: | :-------: | :-----: |
 | [Luosimao](http://luosimao.com)        | no  | yes |  yes    |￥850(1万条) |￥0.085/条|
 | [云片网络](http://www.yunpian.com)       | no | yes  | yes    |￥55(1千条)  |￥0.055/条|
-| [容联·云通讯](http://www.yuntongxun.com) | yes | no  | 开发中.. |充值￥500    |￥0.055/条|
+| [容联·云通讯](http://www.yuntongxun.com) | yes | no  | yes    |充值￥500    |￥0.055/条|
 | [SUBMAIL](http://submail.cn)           | yes | no  | 开发中.. |￥100(1千条) |￥0.100/条|
 | [云之讯](http://www.ucpaas.com/)        | yes | no  | 开发中.. |            |￥0.050/条|
 
