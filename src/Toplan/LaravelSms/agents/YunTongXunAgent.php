@@ -22,20 +22,13 @@ class YunTongXunAgent extends Agent
         );
         $rest->setAccount($this->accountSid, $this->accountToken);
         $rest->setAppId($this->appId);
-
         // 发送模板短信
         $result = $rest->sendTemplateSMS($to, array_values($data), $tempId);
-        if ($result == null || $result->statusCode != 0) {
-            //sent failed
-            $this->result['success'] = false;
-            $this->result['info'] = $this->currentAgentName . ':' . $result->statusCode;
-            $this->result['code'] = $result->statusCode;
-        } elseif ($result->statusCode == 0) {
-            //sent success
+        if ($result != null && $result->statusCode == 0) {
             $this->result['success'] = true;
-            $this->result['info'] = $this->currentAgentName . ':' . $result->statusCode;
-            $this->result['code'] = $result->statusCode;
         }
+        $this->result['info'] = $this->currentAgentName . ':' . $result->statusCode;
+        $this->result['code'] = $result->statusCode;
     }
 
     public function sendContentSms($to, $content)
