@@ -49,6 +49,7 @@ class Sms extends Model implements Sender
         //init attributes
         $this->data    = json_encode([]);
         $this->content = '';
+        $this->result_info = '';
     }
 
     /**
