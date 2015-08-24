@@ -348,6 +348,15 @@
         {
             //同上...
         }
+
+        //override
+        //发送语音验证码
+        public function voiceVerify($to, $code)
+        {
+            //同上...
+            //与发送短信唯一不同的是，切记返回结果数组
+            return $this->result;
+        }
    }
 ```
 至此, 新加代理器成功!
