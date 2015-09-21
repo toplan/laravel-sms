@@ -3,6 +3,7 @@ namespace Toplan\Sms;
 
 use \SmsManager;
 use \Validator;
+use \Input;
 use Illuminate\Routing\Controller;
 
 class SmsController extends Controller
@@ -19,7 +20,8 @@ class SmsController extends Controller
         $vars = [];
         $vars['success'] = false;
         $input = [
-            'mobile' => $mobile
+            'mobile' => $mobile,
+            'seconds' => Input::get('seconds', 60)
         ];
         $verifyResult = $this->verifyData($input, $rule);
         if (!$verifyResult['pass']) {
@@ -42,6 +44,7 @@ class SmsController extends Controller
             $vars['success'] = true;
             $vars['msg'] = '语言验证码请求成功，请注意接听';
             $vars['type'] = 'sent_success';
+            SmsManager::setCanSendTime($input['seconds']);
         } else {
             $vars['msg'] = '语言验证码请求失败，请重新获取';
             $vars['type'] = 'sent_failed';
@@ -54,7 +57,8 @@ class SmsController extends Controller
         $vars = [];
         $vars['success'] = false;
         $input = [
-            'mobile' => $mobile
+            'mobile' => $mobile,
+            'seconds' => Input::get('seconds', 60)
         ];
         $verifyResult = $this->verifyData($input, $rule);
         if (!$verifyResult['passed']) {
@@ -84,6 +88,7 @@ class SmsController extends Controller
             $vars['success'] = true;
             $vars['msg'] = '验证码短信发送成功，请注意查收';
             $vars['type'] = 'sent_success';
+            SmsManager::setCanSendTime($input['seconds']);
         } else {
             $vars['msg'] = '验证码短信发送失败，请重新获取';
             $vars['type'] = 'sent_failed';
@@ -95,6 +100,11 @@ class SmsController extends Controller
     {
         $vars = [];
         $vars['passed'] = true;
+        if (!SmsManager::canSend()) {
+            $vars['passed'] = false;
+            $vars['msg'] = "请求无效，请在{$input['seconds']}秒后重试";
+            $vars['type'] = 'waiting';
+        }
         if (SmsManager::hasRule('mobile', $rule)) {
             SmsManager::rule('mobile', $rule);
         }

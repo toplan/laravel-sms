@@ -207,7 +207,7 @@
         //是否请求语音验证码
         voice          : false,
         //定义服务器有消息返回时如何展示，默认为alert
-        alertMsg       :  function (msg) {
+        alertMsg       :  function (msg, type) {
             alert(msg);
         },
      });

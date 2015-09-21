@@ -43,14 +43,14 @@
         $.ajax({
             url  : url,
             type : 'post',
-            data : {_token:opts.token},
+            data : {_token:opts.token, seconds:opts.seconds},
             success : function (data) {
                if (data.success) {
                    timer(elem, opts.seconds, opts.btnContent)
                } else {
                    elem.html(opts.btnContent);
                    elem.prop('disabled', false);
-                   opts.alertMsg(data.msg);
+                   opts.alertMsg(data.msg, data.type);
                }
             },
             error: function(xhr, type){
@@ -82,7 +82,7 @@
         mobileSelector : '',
         seconds        : 60,
         voice          : false,
-        alertMsg       : function (msg) {
+        alertMsg       : function (msg, type) {
             alert(msg);
         }
     };
