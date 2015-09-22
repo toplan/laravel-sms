@@ -1,13 +1,14 @@
-<?php namespace Toplan\Sms;
+<?php
+namespace Toplan\Sms;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-
 use \Queue;
 use \Validator;
-use \SmsManager;
+use \SmsManager as SM;
 
-class Sms extends Model implements Sender{
+class Sms extends Model implements Sender
+{
 
     /**
      * table name
@@ -44,10 +45,11 @@ class Sms extends Model implements Sender{
      */
     public function __construct()
     {
-        $this->agent   = SmsManager::agent();
+        $this->agent   = SM::agent();
         //init attributes
         $this->data    = json_encode([]);
         $this->content = '';
+        $this->result_info = '';
     }
 
     /**
@@ -61,6 +63,23 @@ class Sms extends Model implements Sender{
     {
         $sms = new self;
         return $sms->template($agentName, $tempId);
+    }
+
+    /**
+     * voice verify code
+     * 语音验证码
+     * @param $code
+     *
+     * @return Sms
+     */
+    public static function voice($code)
+    {
+        $sms = new self;
+        $sms->temp_id = '';
+        $sms->data = json_encode([
+               'voice_verify_code' => $code,
+            ]);
+        return $sms;
     }
 
     /**
@@ -124,7 +143,7 @@ class Sms extends Model implements Sender{
             if (is_array($agentName)) {
                 $tempIdArray = $agentName;
             } else {
-                $defaultAgentName = SmsManager::getDefaultAgent();
+                $defaultAgentName = SM::getDefaultAgent();
                 $tempIdArray["$defaultAgentName"] = $agentName;
             }
         }
@@ -179,7 +198,14 @@ class Sms extends Model implements Sender{
      */
     public function sendProcess()
     {
-        $result = $this->agent->sms($this->getTemplate(true), $this->getTo(), $this->getData(true), $this->getContent());
+        $data = $this->getData(true);
+        if ($this->getTemplate(false) == '' && isset($data['voice_verify_code'])) {
+            //voice verify
+            $result = $this->agent->voiceVerify($this->getTo(), $data['voice_verify_code']);
+        } else {
+            //sms
+            $result = $this->agent->sms($this->getTemplate(true), $this->getTo(), $this->getData(true), $this->getContent());
+        }
         if ($result['success']) {
             $this->sent_time = time();
         } else {
@@ -229,5 +255,4 @@ class Sms extends Model implements Sender{
     {
         return $this->content;
     }
-
 }

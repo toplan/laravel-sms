@@ -34,10 +34,14 @@
 
     function sendSms(opts, elem) {
         var mobile = $(opts.mobileSelector).val();
+        var url = '/sms/verify-code/rule/' + opts.mobileRule + '/mobile/' + mobile;
+        if (opts.voice) {
+            url = '/sms/voice-verify/rule/' + opts.mobileRule + '/mobile/' + mobile;
+        }
         $.ajax({
-            url  : '/sms/verify-code/rule/' + opts.mobileRule + '/mobile/' + mobile,
+            url  : url,
             type : 'post',
-            data : {_token:opts.token}
+            data : {_token:opts.token, seconds:opts.seconds}
         }).success(function (data) {
             console.log(data);
            if (data.success) {
@@ -45,7 +49,7 @@
            } else {
                elem.html(opts.btnContent);
                elem.prop('disabled', false);
-               opts.alertMsg(data.msg);
+               opts.alertMsg(data.msg, data.type);
            }
         }).fail(function () {
             opts.alertMsg('请求失败，请重试');
@@ -74,7 +78,8 @@
         mobileRule     : 'check_mobile_unique',
         mobileSelector : '',
         seconds        : 60,
-        alertMsg       : function (msg) {
+        voice          : false,
+        alertMsg       : function (msg, type) {
             alert(msg);
         }
     };

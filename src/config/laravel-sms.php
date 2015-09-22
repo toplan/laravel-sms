@@ -7,7 +7,7 @@ return array(
      * sms agent style
      * 指定代理器(服务商)
      * -----------------------------------
-     * 可选值有:'Luosimao', 'YunTongXun', 'YunPian', 'SubMail', 'Ucpaas'
+     * 可选值有:'Luosimao', 'YunTongXun', 'YunPian', 'SubMail', 'Ucpaas', 'Log'
      */
 
     'agent' => 'Luosimao',
@@ -185,9 +185,13 @@ return array(
 
         'isResendFailedSmsInQueue' => false,
 
-        // API key是验证密码
-        // 在管理中心->短信服务->触发发送下查看
+        // 短信 API key
+        // 在管理中心->短信->触发发送下查看
         'apikey' => 'your api key',
+
+        // 语言验证 API key
+        // 在管理中心->语音->语音验证下查看
+        'voiceApikey' =>  'your voice api key',
     ],
 
     /*

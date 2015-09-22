@@ -1,7 +1,8 @@
-<?php namespace Toplan\Sms;
+<?php
+namespace Toplan\Sms;
 
-class SubMailAgent extends Agent {
-
+class SubMailAgent extends Agent
+{
     public function sendSms($tempId, $to, Array $data, $content)
     {
         $this->sendTemplateSms($tempId, $to, $data);
@@ -30,4 +31,13 @@ class SubMailAgent extends Agent {
         $this->result['code'] = $data['code'];
     }
 
+    public function voiceVerify($to, $code)
+    {
+        //todo
+        //...
+        $this->result['success'] = false;
+        $this->result['info'] = $this->currentAgentName . ':' . '';
+        $this->result['code'] = '';
+        throw new \Exception("The agent [{$this->currentAgentName}] does not support voice verify");
+    }
 }

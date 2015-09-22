@@ -1,7 +1,8 @@
-<?php namespace Toplan\Sms;
+<?php
+namespace Toplan\Sms;
 
-Abstract class Agent {
-
+Abstract class Agent
+{
     /**
      * agent config
      * @var array
@@ -147,6 +148,15 @@ Abstract class Agent {
      * @return mixed
      */
     public abstract function sendTemplateSms($tempId, $to, Array $data);
+
+    /**
+     * voice verify
+     * @param $to
+     * @param $code
+     *
+     * @return mixed
+     */
+    public abstract function voiceVerify($to, $code);
 
     /**
      * http post request

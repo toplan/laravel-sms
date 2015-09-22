@@ -1,9 +1,10 @@
-<?php namespace Toplan\Sms;
+<?php
+namespace Toplan\Sms;
 
 use \Session;
 
-class SmsManager {
-
+class SmsManager
+{
     /**
      * the application instance
      * @var
@@ -225,11 +226,12 @@ class SmsManager {
 
     /**
      * get session key
+     * @param String $str
      * @return mixed
      */
-    public function getSessionKey()
+    public function getSessionKey($str = '')
     {
-        return config('laravel-sms.sessionKey');
+        return config('laravel-sms.sessionKey') . $str;
     }
 
     /**
@@ -345,6 +347,39 @@ class SmsManager {
     }
 
     /**
+     * set can be send sms time
+     * @param int $seconds
+     *
+     * @return int
+     */
+    public function setCanSendTime($seconds = 60)
+    {
+        $key = $this->getSessionKey('_CanSendTime');
+        $time = time() + $seconds;
+        Session::put($key, $time);
+        return $time;
+    }
+
+    /**
+     * get can be send sms time
+     * @return mixed
+     */
+    public function getCanSendTime()
+    {
+        $key = $this->getSessionKey('_CanSendTime');
+        return Session::get($key, 0);
+    }
+
+    /**
+     * can be send sms
+     * @return bool
+     */
+    public function canSend()
+    {
+        return $this->getCanSendTime() <= time();
+    }
+
+    /**
      * method overload
      * @param $name
      * @param $args
@@ -366,5 +401,4 @@ class SmsManager {
         }
         throw new \BadMethodCallException("Method [$name] does not exist.");
     }
-
 }

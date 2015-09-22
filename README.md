@@ -1,12 +1,12 @@
 # laravel-sms for laravel 5
 
-*使用场景*
+**使用场景**
 
 1. 发送短信验证码。
 2. 发送信息通知短信(如：订单通知，发货通知，上课通知...)。
 3. 特殊情况下用户收不到短信？ laravel-sms提倡通过备用代理器机制使用两个及两个以上服务商。
 
-*该包特性*
+**该包特性**
 
 1. 数据库记录/管理短信数据及其发送情况。
 2. 兼容模板短信和内容短信。
@@ -14,13 +14,16 @@
 4. [备用代理器(服务商)机制](https://github.com/toplan/laravel-sms#备用代理器机制)。即:如果用一个服务商发送短信失败，将会自动尝试通过预先设置的备用服务商发送。
 5. 集成[验证码短信发送/校验模块](https://github.com/toplan/laravel-sms#验证码短信模块)，分分钟搞定验证码短信发送以及手机号/验证码校验，
    从此告别重复写验证码短信发送与校验的历史。
-6. 集成第三方短信服务商，[欢迎提供更多的服务商](https://github.com/toplan/laravel-sms#开源贡献)。
-   目前支持的服务商有：
-   * [Luosimao](http://luosimao.com)
-   * [云片网络](http://www.yunpian.com)
-   * [容联·云通讯](http://www.yuntongxun.com)
-   * [SUBMAIL](http://submail.cn)
-   * [云之讯](http://www.ucpaas.com/)
+6. 支持语音验证码，使用方法见特性5。
+7. 集成如下第三方短信服务商，你也可[自定义代理器](https://github.com/toplan/laravel-sms#自定义代理器)。
+
+| 服务商 | 模板短信 | 内容短信 | 语音验证码 | 最低消费  |  最低消费单价 |
+| ----- | :-----: | :-----: | :------: | :-------: | :-----: |
+| [Luosimao](http://luosimao.com)        | no  | yes |  yes    |￥850(1万条) |￥0.085/条|
+| [云片网络](http://www.yunpian.com)       | no | yes  | yes    |￥55(1千条)  |￥0.055/条|
+| [容联·云通讯](http://www.yuntongxun.com) | yes | no  | yes    |充值￥500    |￥0.055/条|
+| [SUBMAIL](http://submail.cn)           | yes | no  | no      |￥100(1千条) |￥0.100/条|
+| [云之讯](http://www.ucpaas.com/)        | yes | no  | yes     |            |￥0.050/条|
 
 ##安装
 在项目根目录下运行如下composer命令:
@@ -201,13 +204,17 @@
         mobileSelector : 'input[name="mobile"]',
         //定义手机号的检测规则,当然你还可以到配置文件中自定义你想要的任何规则
         mobileRule     : 'check_mobile_unique',
+        //是否请求语音验证码
+        voice          : false,
         //定义服务器有消息返回时如何展示，默认为alert
-        alertMsg       :  function (msg) {
+        alertMsg       :  function (msg, type) {
             alert(msg);
         },
      });
   </script>
 ```
+> **注意:**
+> 如果你使用Luosimao语音验证码，请在配置文件中'Luosimao'中设置'voiceApikey'。
 
 ####2.[服务器端]配置短信内容/模板
 
@@ -252,7 +259,7 @@
    ]);
    if ($validator->fails()) {
        //验证失败的话需要清除session数据，防止用户多次试错
-       SmsManager::forgetSmsDataFromSession();
+       \SmsManager::forgetSmsDataFromSession();
        return redirect()->back()->withErrors($validator);
    }
 ```
@@ -261,7 +268,7 @@
    * `verify_code` 验证验证码是否合法(验证码是否正确，是否超时无效)。
    * `verify_rule:{$mobileRule}` 检测是否为非法请求，第一值为手机号检测规则，必须和你在浏览器端js插件中填写的mobileRule的值一致。
 
-   请在语言包中做好翻译。
+   *请在语言包中做好翻译。*
 
 ##自助二次开发
 
@@ -289,7 +296,7 @@
    'smsModel' => 'App\Models\MySmsModel',
 ```
 
-##开源贡献
+##自定义代理器
 
 欢迎贡献更多的代理器，这样就能支持更多第三方服务商的发送接口。请注意命名规范，Foo为代理器(服务商)名称。
 
@@ -340,6 +347,15 @@
         public function sendTemplateSms($tempId, $to, Array $data)
         {
             //同上...
+        }
+
+        //override
+        //发送语音验证码
+        public function voiceVerify($to, $code)
+        {
+            //同上...
+            //与发送短信唯一不同的是，切记返回结果数组
+            return $this->result;
         }
    }
 ```

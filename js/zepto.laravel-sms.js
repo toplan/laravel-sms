@@ -36,17 +36,21 @@
 
     function sendSms(opts, elem) {
         var mobile = $(opts.mobileSelector).val();
+        var url = '/sms/verify-code/rule/' + opts.mobileRule + '/mobile/' + mobile;
+        if (opts.voice) {
+            url = '/sms/voice-verify/rule/' + opts.mobileRule + '/mobile/' + mobile;
+        }
         $.ajax({
-            url  : '/sms/verify-code/rule/' + opts.mobileRule + '/mobile/' + mobile,
+            url  : url,
             type : 'post',
-            data : {_token:opts.token},
+            data : {_token:opts.token, seconds:opts.seconds},
             success : function (data) {
                if (data.success) {
                    timer(elem, opts.seconds, opts.btnContent)
                } else {
                    elem.html(opts.btnContent);
                    elem.prop('disabled', false);
-                   opts.alertMsg(data.msg);
+                   opts.alertMsg(data.msg, data.type);
                }
             },
             error: function(xhr, type){
@@ -77,7 +81,8 @@
         mobileRule     : 'check_mobile_unique',
         mobileSelector : '',
         seconds        : 60,
-        alertMsg       : function (msg) {
+        voice          : false,
+        alertMsg       : function (msg, type) {
             alert(msg);
         }
     };
