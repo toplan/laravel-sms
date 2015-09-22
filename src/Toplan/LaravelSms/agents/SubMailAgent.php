@@ -26,15 +26,17 @@ class SubMailAgent extends Agent
         $data = json_decode($response, true);
         if ($data['status'] == 'success') {
             $this->result['success'] = true;
+            $this->result['info'] = $this->currentAgentName.
+                                    ':{send_id:' . $data['send_id'].
+                                    ',sms_credits:' . $data['sms_credits'] . '}';
+        } else {
+            $this->result['info'] = $this->currentAgentName . ':' . $data['msg'];
+            $this->result['code'] = $data['code'];
         }
-        $this->result['info'] = $this->currentAgentName . ':' . $data['msg'];
-        $this->result['code'] = $data['code'];
     }
 
     public function voiceVerify($to, $code)
     {
-        //todo
-        //...
         $this->result['success'] = false;
         $this->result['info'] = $this->currentAgentName . ':' . '';
         $this->result['code'] = '';
