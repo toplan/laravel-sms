@@ -28,6 +28,10 @@
 ##安装
 在项目根目录下运行如下composer命令:
 ```php
+   //安装稳定版本
+   composer require 'toplan/laravel-sms:1.0.1'
+
+   //安装开发中版本
    composer require 'toplan/laravel-sms:dev-master'
 ```
 

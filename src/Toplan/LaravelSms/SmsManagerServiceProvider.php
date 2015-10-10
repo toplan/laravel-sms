@@ -17,7 +17,7 @@ class SmsManagerServiceProvider extends ServiceProvider
 
         //publish migrations
         $this->publishes([
-            __DIR__ . '/../../migrations/' => database_path('/migrations')
+            __DIR__ . '/../../../migrations/' => database_path('/migrations')
         ], 'migrations');
 
         //route file
