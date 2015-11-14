@@ -1,6 +1,6 @@
 # laravel-sms for laravel 5
 
-> 感兴趣的朋友还可以参看[phpsms](https://github.com/toplan/phpsms)，一个更加靠谱和优雅的php短信发送库。
+> 感兴趣的朋友还可以参看下[phpsms](https://github.com/toplan/phpsms)，一个更加靠谱和优雅的php短信发送库(该库不局限于任何框架)。
 > laravel-sms后续版本也会基于[phpsms](https://github.com/toplan/phpsms)进行开发。
 
 **使用场景**
