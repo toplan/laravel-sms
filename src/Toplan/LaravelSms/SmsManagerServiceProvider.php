@@ -1,10 +1,16 @@
 <?php
 namespace Toplan\Sms;
 
+use App\Jobs\SendReminderSms;
+use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Support\ServiceProvider;
+use Toplan\PhpSms\Sms;
+use DB;
 
 class SmsManagerServiceProvider extends ServiceProvider
 {
+    use DispatchesJobs;
+
     /**
      * bootstrap, add routes
      */
@@ -36,6 +42,30 @@ class SmsManagerServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(
             __DIR__ . '/../../config/laravel-sms.php', 'laravel-sms'
         );
+
+        Sms::queue(function($sms, $data){
+           return $this->dispatch(new SendReminderSms($sms));
+        });
+
+        Sms::beforeSend(function($task){
+            $data = $task->data;
+            $id = DB::table('sms')->insertGetId([
+                'to' => $data['to'],
+                'temp_id' => json_encode($data['templates']),
+                'data' => json_encode($data['templateData']),
+                'content' => $data['content'],
+            ]);
+            $data['smsId'] = $id;
+            $task->setData($data);
+        });
+
+        Sms::afterSend(function($task, $results){
+            $data = $task->data;
+            $smsId = $data['smsId'];
+            DB::table('sms')->where('id', $smsId)->update([
+                'result_info' => json_encode($results),
+            ]);
+        });
 
         $this->app->singleton('SmsManager', function(){
             return new SmsManager($this->app);
