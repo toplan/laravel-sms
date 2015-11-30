@@ -1,7 +1,6 @@
 <?php
 namespace Toplan\Sms;
 
-use \Session;
 class SmsManager
 {
     /**
@@ -11,17 +10,17 @@ class SmsManager
     protected $sentInfo;
 
     /**
-     * unique key for store key
-     * store key = storePrefixKey + '_' + uniqueKey
-     * @var null
-     */
-    protected $uniqueKey = null;
-
-    /**
      * storage
      * @var null
      */
     protected static $storage = null;
+
+    /**
+     * unique key for store key
+     * store key = storePrefixKey + uniqueKey
+     * @var null
+     */
+    protected $uniqueKey = null;
 
     /**
      * construct
@@ -81,7 +80,7 @@ class SmsManager
         if (self::$storage) {
             return self::$storage;
         }
-        $className = config('laravel-sms.storage');
+        $className = config('laravel-sms.storage', 'Toplan\Sms\SessionStorage');
         if (class_exists($className)) {
             self::$storage = new $className();
             return self::$storage;
