@@ -1,6 +1,8 @@
 <?php
 namespace Toplan\Sms;
 
+use Toplan\PhpSms\Sms;
+
 class SmsManager
 {
     /**
@@ -11,16 +13,16 @@ class SmsManager
 
     /**
      * storage
-     * @var null
+     * @var
      */
-    protected static $storage = null;
+    protected static $storage;
 
     /**
-     * unique key for store key
-     * store key = storePrefixKey + uniqueKey
-     * @var null
+     * unique key
+     * for store key
+     * @var
      */
-    protected $uniqueKey = null;
+    protected $uniqueKey;
 
     /**
      * construct
@@ -35,14 +37,13 @@ class SmsManager
      */
     private function init()
     {
-        $info = [
+        $this->sentInfo = [
                 'sent' => false,
                 'mobile' => '',
                 'code' => '',
                 'deadline_time' => 0,
-                'verify' => config('laravel-sms.verify'),
+                'verify' => config('laravel-sms.verify', []),
             ];
-        $this->sentInfo = $info;
     }
 
     /**
@@ -75,7 +76,7 @@ class SmsManager
      * @return null
      * @throws LaravelSmsException
      */
-    public function getStorage()
+    public function storage()
     {
         if (self::$storage) {
             return self::$storage;
@@ -108,8 +109,7 @@ class SmsManager
             $this->setSentInfo($data);
         }
         $key = $this->getStoreKey();
-        $storage = $this->getStorage();
-        $storage->set($key, $this->getSentInfo());
+        $this->storage()->set($key, $this->getSentInfo());
     }
 
     /**
@@ -119,8 +119,7 @@ class SmsManager
     public function getSentInfoFromStorage()
     {
         $key = $this->getStoreKey();
-        $storage = $this->getStorage();
-        return $storage->get($key, []);
+        return $this->storage()->get($key, []);
     }
 
     /**
@@ -129,33 +128,47 @@ class SmsManager
     public function forgetSentInfoFromStorage()
     {
         $key = $this->getStoreKey();
-        $storage = $this->getStorage();
-        $storage->forget($key);
+        $this->storage()->forget($key);
     }
 
     /**
      * get store key
      * @param String $str
+     * @param String $split
      * @return mixed
      */
-    public function getStoreKey($str = '')
+    public function getStoreKey($str = '', $split = '.')
     {
         $prefix = config('laravel-sms.storePrefixKey', 'laravel_sms_info');
-        if ($str) {
-            return $prefix . ((String) $str);
-        }
         if ($this->uniqueKey) {
-            return $prefix . ((String) $this->uniqueKey);
+            $prefix .= $split . ((String) $this->uniqueKey);
+        }
+        if ($str) {
+            $prefix .= $split . ((String) $str);
         }
         return $prefix;
     }
 
-
-    //--------------------------------下面还未修改
+    /**
+     * get verify config
+     * @param $name
+     *
+     * @return mixed
+     * @throws LaravelSmsException
+     */
+    protected function getVerifyData($name)
+    {
+        if (!$name) {
+            return $this->sentInfo['verify'];
+        }
+        if ($this->sentInfo['verify']["$name"]) {
+            return $this->sentInfo['verify']["$name"];
+        }
+        throw new LaravelSmsException("Don`t find [$name] verify data in config file:laravel-sms.php");
+    }
 
     /**
-     * Is there a designated validation rule
-     * 是否有指定的验证规则
+     * whether contain a character validation rule
      * @param $name
      * @param $ruleName
      *
@@ -163,8 +176,8 @@ class SmsManager
      */
     public function hasRule($name, $ruleName)
     {
-        $data = $this->getSmsData();
-        return isset($data['verify']["$name"]['rules']["$ruleName"]);
+        $data = $this->getVerifyData($name);
+        return isset($data['rules']["$ruleName"]);
     }
 
     /**
@@ -175,51 +188,59 @@ class SmsManager
      */
     public function getRule($name)
     {
-        $data = $this->getSmsData();
-        $ruleName = $data['verify']["$name"]['choose_rule'];
-        return $data['verify']["$name"]['rules']["$ruleName"];
+        $data = $this->getVerifyData($name);
+        $ruleName = $data['use'];
+        if (array_key_exists($ruleName, $data['rules'])) {
+            return $data['rules']["$ruleName"];
+        }
+        return $ruleName;
     }
 
     /**
-     * set rule
+     * manual set verify rule
      * @param $name
      * @param $value
      *
      * @return mixed
      */
-    public function rule($name, $value)
+    public function useRule($name, $value)
     {
-        $data = $this->getSmsData();
-        $data['verify']["$name"]['choose_rule'] = $value;
-        $this->setSmsData($data);
-        return $data;
+        if ($this->getVerifyData($name)) {
+            $this->sentInfo['verify']["$name"]['use'] = $value;
+        }
     }
 
     /**
-     * is verify
+     * whether to verify character data
      * @param string $name
      *
      * @return mixed
      */
     public function isCheck($name = 'mobile')
     {
-        $data = $this->getSmsData();
-        return $data['verify']["$name"]['enable'];
+        $data = $this->getVerifyData($name);
+        return !!$data['enable'];
     }
 
     /**
-     * get verify sms template id
-     * @param String $agentName
-     * @return mixed
+     * get verify sms templates id
+     * @return array
      */
-    public function getVerifySmsTemplateId($agentName = null)
+    public function getVerifySmsTemplates()
     {
-        $agentName = $agentName ?: $this->getDefaultAgent();
-        $agentConfig = config('laravel-sms.'.$agentName, null);
-        if ($agentConfig && isset($agentConfig['verifySmsTemplateId'])) {
-            return $agentConfig['verifySmsTemplateId'];
+        $templates = [];
+        $enableAgents = Sms::getEnableAgents();
+        $agentsConfig = Sms::getAgentsConfig();
+        foreach ($enableAgents as $name => $opts) {
+            if (isset($agentsConfig["$name"])) {
+                if (isset($agentsConfig["$name"]['verifySmsTemplateId'])) {
+                    array_push($templates, [
+                        $name => $agentsConfig["$name"]['verifySmsTemplateId']
+                    ]);
+                }
+            }
         }
-        return '';
+        return $templates;
     }
 
     /**
@@ -259,33 +280,32 @@ class SmsManager
         return config('laravel-sms.codeValidTime');
     }
 
-
     /**
-     * set can be send sms time
+     * 设置可以发送短信的时间
      * @param int $seconds
      *
      * @return int
      */
-    public function setCanSendTime($seconds = 60)
+    protected function setCanSendTime($seconds = 60)
     {
-        $key = $this->getStoreKey('_CanSendTime');
+        $key = $this->getStoreKey('canSendTime');
         $time = time() + $seconds;
-        Session::put($key, $time);
+        $this->storage()->set($key, $time);
         return $time;
     }
 
     /**
-     * get can be send sms time
+     * 获取可以发送短信的时间
      * @return mixed
      */
-    public function getCanSendTime()
+    protected function getCanSendTime()
     {
-        $key = $this->getSessionKey('_CanSendTime');
-        return Session::get($key, 0);
+        $key = $this->getStoreKey('canSendTime');
+        return $this->storage()->get($key, 0);
     }
 
     /**
-     * can be send sms
+     * 判断能否发送
      * @return bool
      */
     public function canSend()

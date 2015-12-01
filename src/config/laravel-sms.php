@@ -7,18 +7,16 @@ return [
      * -----------------------------------
      */
     'verify' => [
-        //手机号检测规则
         'mobile' => [
-            //是否可用
             'enable' => true,
-            //默认规则
-            'choose_rule' => 'check_mobile_unique',
-            //可选规则
+
+            //use rule
+            'use' => 'check_mobile_unique',
+
+            //available rules
             'rules' => [
-                //唯一性检测规则
                 'check_mobile_unique' => 'unique:users,mobile',//适用于注册
 
-                //存在性检测规则
                 'check_mobile_exists' => 'exists:users',//适用于找回密码和系统内业务验证
 
                 //add your rules here...
