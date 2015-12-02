@@ -5,15 +5,6 @@
  * https://github.com/toplan/laravel-sms
  * --------------------------
  * Date 2015/06/08
- *
- * example usage:
- *   $('#sendVerifySmsButton').sms({
- *       token          : "{{csrf_token}}",
- *       mobileSelector : 'input[name="mobile"]',
- *       alertMsg       : function (msg) {
- *           alert(msg);
- *        }
- *   });
  */
 (function($){
 
@@ -36,21 +27,21 @@
 
     function sendSms(opts, elem) {
         var mobile = $(opts.mobileSelector).val();
-        var url = '/sms/verify-code/rule/' + opts.mobileRule + '/mobile/' + mobile;
+        var url = '/sms/verify-code/mobile/' + mobile + '/rule/' + opts.mobileRule;
         if (opts.voice) {
-            url = '/sms/voice-verify/rule/' + opts.mobileRule + '/mobile/' + mobile;
+            url = '/sms/voice-verify/mobile/' + mobile + '/rule/' + opts.mobileRule;
         }
         $.ajax({
             url  : url,
             type : 'post',
-            data : {_token:opts.token, seconds:opts.seconds},
+            data : {_token:opts.token, seconds:opts.seconds, uuid:opts.uuid},
             success : function (data) {
                if (data.success) {
                    timer(elem, opts.seconds, opts.btnContent)
                } else {
                    elem.html(opts.btnContent);
                    elem.prop('disabled', false);
-                   opts.alertMsg(data.msg, data.type);
+                   opts.alertMsg(data.message, data.type);
                }
             },
             error: function(xhr, type){
@@ -81,6 +72,7 @@
         mobileRule     : 'check_mobile_unique',
         mobileSelector : '',
         seconds        : 60,
+        uuid           : '',
         voice          : false,
         alertMsg       : function (msg, type) {
             alert(msg);

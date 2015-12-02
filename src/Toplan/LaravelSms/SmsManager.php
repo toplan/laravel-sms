@@ -2,7 +2,7 @@
 namespace Toplan\Sms;
 
 use Toplan\PhpSms\Sms;
-
+use \Validator;
 class SmsManager
 {
     /**
@@ -16,13 +16,6 @@ class SmsManager
      * @var
      */
     protected static $storage;
-
-    /**
-     * unique key
-     * for store key
-     * @var
-     */
-    protected $uniqueKey;
 
     /**
      * construct
@@ -91,60 +84,68 @@ class SmsManager
 
     /**
      * put sms sent info to storage
-     * @param       $uniqueKey
+     * @param       $uuid
      * @param array $data
      *
      * @throws LaravelSmsException
      */
-    public function storeSentInfo($uniqueKey, $data = [])
+    public function storeSentInfo($uuid, $data = [])
     {
-        if (is_array($uniqueKey)) {
-            $data = $uniqueKey;
-            $uniqueKey = null;
-        }
-        if ($uniqueKey) {
-            $this->uniqueKey = $uniqueKey;
+        if (is_array($uuid)) {
+            $data = $uuid;
+            $uuid = null;
         }
         if (is_array($data)) {
             $this->setSentInfo($data);
         }
-        $key = $this->getStoreKey();
+        $key = $this->getStoreKey($uuid);
         $this->storage()->set($key, $this->getSentInfo());
     }
 
     /**
      * get sms sent info from storage
+     * @param  $uuid
      * @return mixed
      */
-    public function getSentInfoFromStorage()
+    public function getSentInfoFromStorage($uuid = null)
     {
-        $key = $this->getStoreKey();
+        $key = $this->getStoreKey($uuid);
         return $this->storage()->get($key, []);
     }
 
     /**
      * remove sms data from session
+     * @param  $uuid
      */
-    public function forgetSentInfoFromStorage()
+    public function forgetSentInfoFromStorage($uuid = null)
     {
-        $key = $this->getStoreKey();
+        $key = $this->getStoreKey($uuid);
         $this->storage()->forget($key);
     }
 
     /**
      * get store key
-     * @param String $str
-     * @param String $split
+     * support split-> . : + * /
      * @return mixed
      */
-    public function getStoreKey($str = '', $split = '.')
+    public function getStoreKey()
     {
         $prefix = config('laravel-sms.storePrefixKey', 'laravel_sms_info');
-        if ($this->uniqueKey) {
-            $prefix .= $split . ((String) $this->uniqueKey);
+        $args = func_get_args();
+        $split = '.';
+        $appends = [];
+        foreach ($args as $arg) {
+            $arg = (String) $arg;
+            if ($arg) {
+                if (preg_match('/^[.:\+\*\/]+$/', $arg)) {
+                    $split = $arg;
+                } elseif(preg_match('/^[_\-0-9a-zA-Z]+$/', $arg)) {
+                    array_push($appends, $arg);
+                }
+            }
         }
-        if ($str) {
-            $prefix .= $split . ((String) $str);
+        if ($appends) {
+            $prefix .= $split . implode($split, $appends);
         }
         return $prefix;
     }
@@ -282,13 +283,14 @@ class SmsManager
 
     /**
      * 设置可以发送短信的时间
+     * @param int $uuid
      * @param int $seconds
      *
      * @return int
      */
-    protected function setCanSendTime($seconds = 60)
+    public function storeCanSendTime($uuid, $seconds = 60)
     {
-        $key = $this->getStoreKey('canSendTime');
+        $key = $this->getStoreKey($uuid, 'canSendTime');
         $time = time() + $seconds;
         $this->storage()->set($key, $time);
         return $time;
@@ -296,20 +298,99 @@ class SmsManager
 
     /**
      * 获取可以发送短信的时间
+     * @param int $uuid
      * @return mixed
      */
-    protected function getCanSendTime()
+    protected function getCanSendTimeFromStorage($uuid = null)
     {
-        $key = $this->getStoreKey('canSendTime');
+        $key = $this->getStoreKey($uuid, 'canSendTime');
         return $this->storage()->get($key, 0);
     }
 
     /**
      * 判断能否发送
+     * @param  $uuid
      * @return bool
      */
-    public function canSend()
+    public function canSend($uuid = null)
     {
-        return $this->getCanSendTime() <= time();
+        return $this->getCanSendTimeFromStorage($uuid) <= time();
+    }
+
+    /**
+     * validator
+     * @param array  $input
+     * @param string $rule
+     *
+     * @return array
+     */
+    public function validator(Array $input, $rule = '')
+    {
+        if (!$input) {
+            return $this->genResult(false, 'no_input_value');
+        }
+        if (!$this->canSend()) {
+            $seconds = $input['seconds'];
+            return $this->genResult(false, 'request_invalid', [$seconds]);
+        }
+        if ($this->isCheck('mobile')) {
+            if ($this->hasRule('mobile', $rule)) {
+                $this->useRule('mobile', $rule);
+            }
+            $realRule = $this->getRule('mobile');
+            $validator = Validator::make($input, [
+                'mobile' => $realRule ? "mobile" : "mobile|$realRule"
+            ]);
+            if ($validator->fails()) {
+                $msg = $validator->errors()->first();
+                $rule = $rule ?: $realRule;
+                return $this->genResult(false, $rule, $msg);
+            }
+        }
+        return $this->genResult(true, 'success');
+    }
+
+    /**
+     * generator validator result
+     * @param        $pass
+     * @param        $type
+     * @param string $message
+     * @param Array  $data
+     *
+     * @return array
+     */
+    protected function genResult($pass, $type, $message = '', $data = [])
+    {
+        $result = [];
+        $result['success'] = !!$pass;
+        $result['type'] = $type;
+        if (is_array($message)) {
+            $data = $message;
+            $message = '';
+        }
+        $message = $message ?: $this->getNotifyMessage($type);
+        if (is_array($data) && count($data)) {
+            try {
+                $message = vsprintf($message, $data);
+            } catch(\Exception $e) {
+            }
+        }
+        $result['message'] = $message;
+        return $result;
+    }
+
+    /**
+     * get notify message
+     * @param $name
+     *
+     * @return null
+     */
+    public function getNotifyMessage($name)
+    {
+        $messages = config('laravel-sms.notifies', []);
+        if (array_key_exists($name, $messages)) {
+            return $messages["$name"];
+        }
+        return $name;
     }
 }

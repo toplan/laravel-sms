@@ -56,12 +56,12 @@ class SmsManagerServiceProvider extends ServiceProvider
                 'content' => $data['content'],
             ]);
             $data['smsId'] = $id;
-            $task->setData($data);
+            $task->data($data);
         });
 
         Sms::afterSend(function($task, $results){
             $data = $task->data;
-            $smsId = $data['smsId'];
+            $smsId = isset($data['smsId']) ? $data['smsId'] : 0;
             DB::table('sms')->where('id', $smsId)->update([
                 'result_info' => json_encode($results),
             ]);
