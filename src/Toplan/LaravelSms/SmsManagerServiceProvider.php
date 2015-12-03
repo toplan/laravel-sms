@@ -38,37 +38,75 @@ class SmsManagerServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        // Merge configs
+        // merge configs
         $this->mergeConfigFrom(
             __DIR__ . '/../../config/laravel-sms.php', 'laravel-sms'
         );
 
+        // init phpsms
+        $this->initPhpSms();
+
+        // store to container
+        $this->app->singleton('SmsManager', function(){
+            return new SmsManager();
+        });
+    }
+
+    /**
+     * bootstrap PhpSms
+     */
+    protected function initPhpSms()
+    {
+        // define how to use queue
         Sms::queue(function($sms, $data){
            return $this->dispatch(new SendReminderSms($sms));
         });
 
+        // before send hook
+        // store sms data to database
         Sms::beforeSend(function($task){
-            $data = $task->data;
+            $data = $task->data ?: [];
             $id = DB::table('sms')->insertGetId([
                 'to' => $data['to'],
                 'temp_id' => json_encode($data['templates']),
                 'data' => json_encode($data['templateData']),
                 'content' => $data['content'],
+                'created_at' => date('Y-m-d H:i:s')
             ]);
             $data['smsId'] = $id;
             $task->data($data);
         });
 
+        // after send hook
+        // update sms data in database
         Sms::afterSend(function($task, $results){
+            $success = false;
+            $finishedAt = 0;
+
+            // parse status from results data
+            $lastRecord = array_pop($results);
+            if ($lastRecord) {
+                $success = $lastRecord['success'];
+                $finishedAt = $lastRecord['time']['finished_at'];
+            }
+
+            // get sms id
             $data = $task->data;
             $smsId = isset($data['smsId']) ? $data['smsId'] : 0;
-            DB::table('sms')->where('id', $smsId)->update([
-                'result_info' => json_encode($results),
-            ]);
-        });
 
-        $this->app->singleton('SmsManager', function(){
-            return new SmsManager($this->app);
+            // update database
+            DB::beginTransaction();
+            $dbData = [];
+            $dbData['updated_at'] = date('Y-m-d H:i:s');
+            $dbData['result_info'] = json_encode($results);
+            if ($success) {
+                $dbData['sent_time'] = $finishedAt;
+            } else {
+                DB::table('sms')->where('id', $smsId)->incremnet('fail_times');
+                $dbData['last_fail_time'] = $finishedAt;
+            }
+            DB::table('sms')->where('id', $smsId)->update($dbData);
+            DB::commit();
         });
     }
 
