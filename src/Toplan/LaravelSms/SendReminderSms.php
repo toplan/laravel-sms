@@ -33,8 +33,7 @@ class SendReminderSms extends Job implements SelfHandling, ShouldQueue
     public function handle()
     {
         if ($this->sms instanceof Sms) {
-            $r = $this->sms->send();
-            var_dump($r);
+            $this->sms->send();
         }
     }
 }

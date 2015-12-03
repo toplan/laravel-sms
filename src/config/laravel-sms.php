@@ -12,13 +12,16 @@ return [
             'enable' => true,
 
             //use rule
-            'use' => 'check_mobile_unique',
+            'use' => 'mobile_required',
 
             //available rules
             'rules' => [
-                'check_mobile_unique' => 'unique:users,mobile',//适用于注册
 
-                'check_mobile_exists' => 'exists:users',//适用于找回密码和系统内业务验证
+                'mobile_required' => 'required|zh_mobile',
+
+                'check_mobile_unique' => 'required|zh_mobile|unique:users,mobile',
+
+                'check_mobile_exists' => 'required|zh_mobile|exists:users',
 
                 //add your rules here...
             ]

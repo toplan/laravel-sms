@@ -59,7 +59,10 @@ class SmsManagerServiceProvider extends ServiceProvider
     {
         // define how to use queue
         Sms::queue(function($sms, $data){
-           return $this->dispatch(new SendReminderSms($sms));
+            $this->dispatch(new SendReminderSms($sms));
+            return [
+                'success' => true
+            ];
         });
 
         // before send hook
@@ -71,7 +74,7 @@ class SmsManagerServiceProvider extends ServiceProvider
                 'temp_id' => json_encode($data['templates']),
                 'data' => json_encode($data['templateData']),
                 'content' => $data['content'],
-                'created_at' => date('Y-m-d H:i:s')
+                'created_at' => date('Y-m-d H:i:s', time())
             ]);
             $data['smsId'] = $id;
             $task->data($data);
@@ -87,7 +90,9 @@ class SmsManagerServiceProvider extends ServiceProvider
             $lastRecord = array_pop($results);
             if ($lastRecord) {
                 $success = $lastRecord['success'];
-                $finishedAt = $lastRecord['time']['finished_at'];
+                $microTime = $lastRecord['time']['finished_at'];
+                $finishedAt = explode(' ', $microTime)[1];
+                array_push($results, $lastRecord);
             }
 
             // get sms id
@@ -97,16 +102,19 @@ class SmsManagerServiceProvider extends ServiceProvider
             // update database
             DB::beginTransaction();
             $dbData = [];
-            $dbData['updated_at'] = date('Y-m-d H:i:s');
+            $dbData['updated_at'] = date('Y-m-d H:i:s', $finishedAt);
             $dbData['result_info'] = json_encode($results);
             if ($success) {
                 $dbData['sent_time'] = $finishedAt;
             } else {
-                DB::table('sms')->where('id', $smsId)->incremnet('fail_times');
+                DB::table('sms')->where('id', $smsId)->increment('fail_times');
                 $dbData['last_fail_time'] = $finishedAt;
             }
             DB::table('sms')->where('id', $smsId)->update($dbData);
             DB::commit();
+            return [
+                'success' => $success
+            ];
         });
     }
 

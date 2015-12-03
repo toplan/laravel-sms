@@ -5,7 +5,7 @@ Validator::extend('zh_mobile', function($attribute, $value, $parameters) {
     return preg_match('/^(\+80)*1[3|5|7|8][0-9]{9}$/', $value);
 });
 
-Validator::extend('confirm_mobile', function ($attribute, $value, $parameters) {
+Validator::extend('confirm_mobile_not_change', function ($attribute, $value, $parameters) {
     $uuid = isset($parameters[0]) ? $parameters[0] : null;
     $smsData = SmsManager::getSentInfoFromStorage($uuid);
     if ($smsData && $smsData['mobile'] == $value) {

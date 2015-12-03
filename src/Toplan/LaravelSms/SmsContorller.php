@@ -2,7 +2,7 @@
 namespace Toplan\Sms;
 
 use \SmsManager;
-use \Input;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 
 class SmsController extends Controller
@@ -14,45 +14,62 @@ class SmsController extends Controller
         $this->phpSms = app('PhpSms');
     }
 
-    public function postVoiceVerify($mobile = '', $rule = '')
+    public function postVoiceVerify(Request $request)
     {
-        $uuid = Input::get('uuid', null);
-        $input = [
+        //get data
+        $mobile = $request->input('mobile', null);
+        $rule = $request->input('mobileRule', null);
+        $uuid = $request->input('uuid', null);
+        $seconds = $request->input('seconds', 60);
+
+        //validate
+        $verifyResult = SmsManager::validator([
             'mobile' => $mobile,
-            'seconds' => Input::get('seconds', 60),
-        ];
-        $verifyResult = SmsManager::validator($input, $rule);
+            'seconds' => $seconds,
+            'uuid' => $uuid
+        ], $rule);
         if (!$verifyResult['success']) {
             return response()->json($verifyResult);
         }
+
+        //request voice verify
         $code = SmsManager::generateCode();
         $result = $this->phpSms->voice($code)->to($mobile)->send();
-        if ($result) {
+        if ($result['success']) {
             $data = SmsManager::getSentInfo();
             $data['sent'] = true;
             $data['mobile'] = $mobile;
             $data['code'] = $code;
             $data['deadline_time'] = time() + (15 * 60);
             SmsManager::storeSentInfo($uuid, $data);
-            SmsManager::storeCanSendTime($uuid, $input['seconds']);
+            SmsManager::storeCanSendTime($uuid, $seconds);
         } else {
             $verifyResult['success'] = false;
-            $verifyResult['type'] = 'request_failed';
+            $verifyResult['type'] = 'send_failed';
         }
+
         return response()->json($verifyResult);
     }
 
-    public function postSendCode($mobile = '', $rule = '')
+    public function postSendCode(Request $request)
     {
-        $uuid = Input::get('uuid', null);
-        $seconds = Input::get('seconds', 60);
+        //get data
+        $mobile = $request->input('mobile', null);
+        $rule = $request->input('mobileRule', null);
+        $uuid = $request->input('uuid', null);
+        $seconds = $request->input('seconds', 60);
+
+        //validate
         $verifyResult = SmsManager::validator([
             'mobile' => $mobile,
             'seconds' => $seconds,
+            'uuid' => $uuid,
         ], $rule);
         if (!$verifyResult['success']) {
             return response()->json($verifyResult);
         }
+
+        //send verify sms
         $code     = SmsManager::generateCode();
         $minutes  = SmsManager::getCodeValidTime();
         $templates = SmsManager::getVerifySmsTemplates();
@@ -65,7 +82,7 @@ class SmsController extends Controller
         $result = $this->phpSms->make($templates)->to($mobile)
                          ->data(['code' => $code,'minutes' => $minutes])
                          ->content($content)->send();
-        if ($result) {
+        if ($result['success']) {
             $data = SmsManager::getSentInfo();
             $data['sent'] = true;
             $data['mobile'] = $mobile;
@@ -75,19 +92,20 @@ class SmsController extends Controller
             SmsManager::storeCanSendTime($uuid, $seconds);
         } else {
             $verifyResult['success'] = false;
-            $verifyResult['type'] = 'request_failed';
+            $verifyResult['type'] = 'send_failed';
         }
+
         return response()->json($verifyResult);
     }
 
-    public function getInfo()
+    public function getInfo(Request $request, $uuid = null)
     {
         $html = '<meta charset="UTF-8"/><h2 align="center" style="margin-top: 20px;">Hello, welcome to laravel-sms for l5.</h2>';
         $html .= '<p style="color: #666;"><a href="https://github.com/toplan/laravel-sms" target="_blank">laravel-sms源码</a>托管在GitHub，欢迎你的使用。如有问题和建议，欢迎提供issue。当然你也能为该项目提供开源代码，让laravel-sms支持更多服务商。</p>';
         $html .= '<hr>';
         $html .= '<p>你可以在调试模式(设置config/app.php中的debug为true)下查看到存储在session中的验证码短信相关数据(方便你进行调试)：</p>';
         echo $html;
-        $uuid = Input::get('uuid', null);
+        $uuid = $uuid ?: Input::get('uuid', null);
         if (config('app.debug')) {
             $smsData = SmsManager::getSentInfoFromStorage($uuid);
             dd($smsData);

@@ -198,6 +198,19 @@ class SmsManager
     }
 
     /**
+     * get used rule`s alias
+     * @param $name
+     *
+     * @return mixed
+     * @throws LaravelSmsException
+     */
+    public function getUsedRuleAlias($name)
+    {
+        $data = $this->getVerifyData($name);
+        return $data['use'];
+    }
+
+    /**
      * manual set verify rule
      * @param $name
      * @param $value
@@ -329,7 +342,8 @@ class SmsManager
         if (!$input) {
             return $this->genResult(false, 'no_input_value');
         }
-        if (!$this->canSend()) {
+        $uuid = isset($input['uuid']) ? $input['uuid'] : null;
+        if (!$this->canSend($uuid)) {
             $seconds = $input['seconds'];
             return $this->genResult(false, 'request_invalid', [$seconds]);
         }
@@ -339,11 +353,11 @@ class SmsManager
             }
             $realRule = $this->getRule('mobile');
             $validator = Validator::make($input, [
-                'mobile' => $realRule ? "mobile" : "mobile|$realRule"
+                'mobile' => $realRule
             ]);
             if ($validator->fails()) {
                 $msg = $validator->errors()->first();
-                $rule = $rule ?: $realRule;
+                $rule = $this->getUsedRuleAlias('mobile');
                 return $this->genResult(false, $rule, $msg);
             }
         }

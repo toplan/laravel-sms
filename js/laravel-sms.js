@@ -4,28 +4,21 @@
  * top lan <toplan710@gmail.com>
  * https://github.com/toplan/laravel-sms
  * --------------------------
- * Date 2015/06/05
- *
- * example usage:
- *   $('#sendVerifySmsButton').sms({
- *       token          : "{{csrf_token}}",
- *       mobileSelector : 'input[name="mobile"]',
- *       alertMsg       : function (msg) {
- *           alert(msg);
- *        }
- *   });
+ * Date 2015/06/08
  */
 (function($){
 
     $.fn.sms = function(options){
         var opts = $.extend(
             $.fn.sms.default,
-            options,
-            {btnContent: this.html()}
+            options
         );
-        this.click(function(){
-            //开始发送
+        $(document).on('click', this.selector, function(e){
             var _this = $(this);
+            opts = $.extend(
+                opts,
+                {btnContent: _this.html()}
+            );
             _this.html('短信发送中...');
             _this.prop('disabled', true);
             sendSms(opts, _this)
@@ -34,27 +27,34 @@
 
     function sendSms(opts, elem) {
         var mobile = $(opts.mobileSelector).val();
-        var url = '/sms/verify-code/rule/' + opts.mobileRule + '/mobile/' + mobile;
+        var url = opts.domain + '/sms/verify-code';
         if (opts.voice) {
-            url = '/sms/voice-verify/rule/' + opts.mobileRule + '/mobile/' + mobile;
+            url = opts.domain + '/sms/voice-verify';
         }
         $.ajax({
             url  : url,
             type : 'post',
-            data : {_token:opts.token, seconds:opts.seconds}
-        }).success(function (data) {
-            console.log(data);
-           if (data.success) {
-               timer(elem, opts.seconds, opts.btnContent)
-           } else {
-               elem.html(opts.btnContent);
-               elem.prop('disabled', false);
-               opts.alertMsg(data.msg, data.type);
-           }
-        }).fail(function () {
-            opts.alertMsg('请求失败，请重试');
-            elem.html(opts.btnContent);
-            elem.prop('disabled', false);
+            data : {
+                _token:opts.token,
+                seconds:opts.seconds,
+                uuid:opts.uuid,
+                mobile:mobile,
+                mobileRule:opts.mobileRule
+            },
+            success : function (data) {
+               if (data.success) {
+                   timer(elem, opts.seconds, opts.btnContent)
+               } else {
+                   elem.html(opts.btnContent);
+                   elem.prop('disabled', false);
+                   opts.alertMsg(data.message, data.type);
+               }
+            },
+            error: function(xhr, type){
+                elem.html(opts.btnContent);
+                elem.prop('disabled', false);
+                opts.alertMsg('请求失败，请重试');
+            }
         });
     }
 
@@ -75,13 +75,15 @@
 
     $.fn.sms.default = {
         token          : '',
-        mobileRule     : 'check_mobile_unique',
+        mobileRule     : '',
         mobileSelector : '',
         seconds        : 60,
+        uuid           : '',
         voice          : false,
+        domain         : '',
         alertMsg       : function (msg, type) {
             alert(msg);
         }
     };
 
-})(jQuery);
+})(window.jQuery || window.Zepto);
