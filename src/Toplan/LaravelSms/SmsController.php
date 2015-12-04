@@ -105,9 +105,9 @@ class SmsController extends Controller
         $html .= '<hr>';
         $html .= '<p>你可以在调试模式(设置config/app.php中的debug为true)下查看到存储在session中的验证码短信相关数据(方便你进行调试)：</p>';
         echo $html;
-        $uuid = $uuid ?: Input::get('uuid', null);
+        $uuid = $uuid ?: $request->input('uuid', null);
         if (config('app.debug')) {
-            $smsData = SmsManager::getSentInfoFromStorage($uuid);
+            $smsData = SmsManager::getSentInfoFromStorage($uuid, true);
             dd($smsData);
         } else {
             echo '<p align="center" style="color: #ff0000;;">现在是非调试模式，无法查看验证码短信数据</p>';

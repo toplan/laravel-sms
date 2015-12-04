@@ -5,6 +5,12 @@ use Toplan\PhpSms\Sms;
 use \Validator;
 class SmsManager
 {
+    const CUSTOM_RULE_FLAG = '[custom_rule_in_server]';
+
+    const CAN_RESEND_UNTIL = '[can_resend_until]';
+
+    const SMS_INFO_KEY = '[sms_info]';
+
     /**
      * sent info
      * @var
@@ -98,18 +104,23 @@ class SmsManager
         if (is_array($data)) {
             $this->setSentInfo($data);
         }
-        $key = $this->getStoreKey($uuid);
+        $key = $this->getStoreKey($uuid, self::SMS_INFO_KEY);
         $this->storage()->set($key, $this->getSentInfo());
     }
 
     /**
      * get sms sent info from storage
      * @param  $uuid
+     * @param  $all
      * @return mixed
      */
-    public function getSentInfoFromStorage($uuid = null)
+    public function getSentInfoFromStorage($uuid = null, $all = false)
     {
-        $key = $this->getStoreKey($uuid);
+        if ($all) {
+            $key = $this->getStoreKey($uuid);
+        } else {
+            $key = $this->getStoreKey($uuid, self::SMS_INFO_KEY);
+        }
         return $this->storage()->get($key, []);
     }
 
@@ -139,7 +150,7 @@ class SmsManager
             if ($arg) {
                 if (preg_match('/^[.:\+\*\/]+$/', $arg)) {
                     $split = $arg;
-                } elseif(preg_match('/^[_\-0-9a-zA-Z]+$/', $arg)) {
+                } elseif(preg_match('/^[_\-0-9a-zA-Z\{\}\[\]]+$/', $arg)) {
                     array_push($appends, $arg);
                 }
             }
@@ -182,19 +193,33 @@ class SmsManager
     }
 
     /**
-     * get rule by name
-     * @param $name
+     * get real rule by name
+     * @param $ruleAlias
+     * @param $uuid
      *
      * @return mixed
      */
-    public function getRule($name)
+    public function getRealMobileRule($ruleAlias = '', $uuid = null)
     {
-        $data = $this->getVerifyData($name);
-        $ruleName = $data['use'];
-        if (array_key_exists($ruleName, $data['rules'])) {
-            return $data['rules']["$ruleName"];
+        $realRule = '';
+        //尝试使用用户从客户端传递过来的rule
+        if ($this->setUsedRuleAlias('mobile', $ruleAlias)) {
+            //设置成功
+            $data = $this->getVerifyData('mobile');
+            $realRule = $data['rules']["$ruleAlias"];
+        } else if ($customRule = $this->getMobileRuleFromStorage($uuid)){
+            //是否在服务器端存储过rule
+            $this->sentInfo['verify']['mobile']['use'] = self::CUSTOM_RULE_FLAG;
+            $realRule = $customRule;
+        } else {
+            //使用配置文件中默认rule
+            $data = $this->getVerifyData('mobile');
+            $ruleName = $data['use'];
+            if ($this->hasRule('mobile', $ruleName)) {
+                $realRule = $data['rules']["$ruleName"];
+            }
         }
-        return $ruleName;
+        return $realRule;
     }
 
     /**
@@ -217,11 +242,43 @@ class SmsManager
      *
      * @return mixed
      */
-    public function useRule($name, $value)
+    public function setUsedRuleAlias($name, $value)
     {
-        if ($this->getVerifyData($name)) {
+        if ($this->hasRule($name, $value)) {
             $this->sentInfo['verify']["$name"]['use'] = $value;
+            return true;
         }
+        return false;
+    }
+
+    /**
+     * store mobile custom rule
+     * @param      $uuid
+     * @param null $customRule
+     *
+     * @throws LaravelSmsException
+     */
+    public function storeMobileRule($uuid, $customRule = null)
+    {
+        if ($customRule === null) {
+            $customRule = $uuid;
+            $uuid = null;
+        }
+        $key = $this->getStoreKey($uuid, self::CUSTOM_RULE_FLAG);
+        $this->storage()->set($key, $customRule);
+    }
+
+    public function getMobileRuleFromStorage($uuid)
+    {
+        $key = $this->getStoreKey($uuid, self::CUSTOM_RULE_FLAG);
+        $customRule = $this->storage()->get($key, '');
+        return $customRule;
+    }
+
+    public function forgetMobileRuleFromStorage($uuid)
+    {
+        $key = $this->getStoreKey($uuid, self::CUSTOM_RULE_FLAG);
+        $this->storage()->forget($key);
     }
 
     /**
@@ -303,7 +360,7 @@ class SmsManager
      */
     public function storeCanSendTime($uuid, $seconds = 60)
     {
-        $key = $this->getStoreKey($uuid, 'canSendTime');
+        $key = $this->getStoreKey($uuid, self::CAN_RESEND_UNTIL);
         $time = time() + $seconds;
         $this->storage()->set($key, $time);
         return $time;
@@ -316,7 +373,7 @@ class SmsManager
      */
     protected function getCanSendTimeFromStorage($uuid = null)
     {
-        $key = $this->getStoreKey($uuid, 'canSendTime');
+        $key = $this->getStoreKey($uuid, self::CAN_RESEND_UNTIL);
         return $this->storage()->get($key, 0);
     }
 
@@ -348,10 +405,7 @@ class SmsManager
             return $this->genResult(false, 'request_invalid', [$seconds]);
         }
         if ($this->isCheck('mobile')) {
-            if ($this->hasRule('mobile', $rule)) {
-                $this->useRule('mobile', $rule);
-            }
-            $realRule = $this->getRule('mobile');
+            $realRule = $this->getRealMobileRule($rule, $uuid);
             $validator = Validator::make($input, [
                 'mobile' => $realRule
             ]);
