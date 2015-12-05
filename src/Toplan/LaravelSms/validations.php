@@ -7,7 +7,7 @@ Validator::extend('zh_mobile', function($attribute, $value, $parameters) {
 
 Validator::extend('confirm_mobile_not_change', function ($attribute, $value, $parameters) {
     $uuid = isset($parameters[0]) ? $parameters[0] : null;
-    $smsData = SmsManager::getSentInfoFromStorage($uuid);
+    $smsData = SmsManager::retrieveSentInfo($uuid);
     if ($smsData && $smsData['mobile'] == $value) {
         return true;
     }
@@ -16,7 +16,7 @@ Validator::extend('confirm_mobile_not_change', function ($attribute, $value, $pa
 
 Validator::extend('verify_code', function ($attribute, $value, $parameters) {
     $uuid = isset($parameters[0]) ? $parameters[0] : null;
-    $smsData = SmsManager::getSentInfoFromStorage($uuid);
+    $smsData = SmsManager::retrieveSentInfo($uuid);
     if ($smsData && $smsData['deadline_time'] >= time() && $smsData['code'] == $value) {
         return true;
     }
@@ -28,7 +28,7 @@ Validator::extend('confirm_mobile_rule', function($attribute, $value, $parameter
         throw new LaravelSmsException('Please give validator rule [confirm_mobile_rule] a parameter');
     }
     $uuid = isset($parameters[1]) ? $parameters[1] : null;
-    $smsData = SmsManager::getSentInfoFromStorage($uuid);
+    $smsData = SmsManager::retrieveSentInfo($uuid);
     if ($smsData && $smsData['verify']['mobile']['use'] == $parameters[0]) {
         return true;
     }

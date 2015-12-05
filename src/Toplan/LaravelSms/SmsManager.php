@@ -3,6 +3,7 @@ namespace Toplan\Sms;
 
 use Toplan\PhpSms\Sms;
 use \Validator;
+use \URL;
 class SmsManager
 {
     const CUSTOM_RULE_FLAG = '[custom_rule_in_server]';
@@ -114,7 +115,7 @@ class SmsManager
      * @param  $all
      * @return mixed
      */
-    public function getSentInfoFromStorage($uuid = null, $all = false)
+    public function retrieveSentInfo($uuid = null, $all = false)
     {
         if ($all) {
             $key = $this->getStoreKey($uuid);
@@ -128,7 +129,7 @@ class SmsManager
      * remove sms data from session
      * @param  $uuid
      */
-    public function forgetSentInfoFromStorage($uuid = null)
+    public function forgetSentInfo($uuid = null)
     {
         $key = $this->getStoreKey($uuid);
         $this->storage()->forget($key);
@@ -148,9 +149,9 @@ class SmsManager
         foreach ($args as $arg) {
             $arg = (String) $arg;
             if ($arg) {
-                if (preg_match('/^[.:\+\*\/]+$/', $arg)) {
+                if (preg_match('/^[.:\+\*]+$/', $arg)) {
                     $split = $arg;
-                } elseif(preg_match('/^[_\-0-9a-zA-Z\{\}\[\]]+$/', $arg)) {
+                } elseif(preg_match('/^[^.:\+\*\s]+$/', $arg)) {
                     array_push($appends, $arg);
                 }
             }
@@ -204,10 +205,10 @@ class SmsManager
         $realRule = '';
         //尝试使用用户从客户端传递过来的rule
         if ($this->setUsedRuleAlias('mobile', $ruleAlias)) {
-            //设置成功
+            //客户端rule合法，则使用
             $data = $this->getVerifyData('mobile');
             $realRule = $data['rules']["$ruleAlias"];
-        } else if ($customRule = $this->getMobileRuleFromStorage($uuid)){
+        } else if ($customRule = $this->retrieveMobileRule($uuid)){
             //是否在服务器端存储过rule
             $this->sentInfo['verify']['mobile']['use'] = self::CUSTOM_RULE_FLAG;
             $realRule = $customRule;
@@ -252,7 +253,7 @@ class SmsManager
     }
 
     /**
-     * store mobile custom rule
+     * store custom mobile rule
      * @param      $uuid
      * @param null $customRule
      *
@@ -264,18 +265,35 @@ class SmsManager
             $customRule = $uuid;
             $uuid = null;
         }
-        $key = $this->getStoreKey($uuid, self::CUSTOM_RULE_FLAG);
+        $parsed = parse_url(URL::current());
+        $currentURI = $parsed['path'];
+        $key = $this->getStoreKey($uuid, self::CUSTOM_RULE_FLAG, $currentURI);
         $this->storage()->set($key, $customRule);
     }
 
-    public function getMobileRuleFromStorage($uuid)
+    /**
+     * retrieve custom mobile rule
+     * @param $uuid
+     *
+     * @return mixed
+     * @throws LaravelSmsException
+     */
+    public function retrieveMobileRule($uuid)
     {
-        $key = $this->getStoreKey($uuid, self::CUSTOM_RULE_FLAG);
+        $parsed = parse_url(URL::previous());
+        $previousURI = $parsed['path'];
+        $key = $this->getStoreKey($uuid, self::CUSTOM_RULE_FLAG, $previousURI);
         $customRule = $this->storage()->get($key, '');
         return $customRule;
     }
 
-    public function forgetMobileRuleFromStorage($uuid)
+    /**
+     * forget custom mobile rule
+     * @param $uuid
+     *
+     * @throws LaravelSmsException
+     */
+    public function forgetMobileRule($uuid)
     {
         $key = $this->getStoreKey($uuid, self::CUSTOM_RULE_FLAG);
         $this->storage()->forget($key);
@@ -437,7 +455,7 @@ class SmsManager
             $message = '';
         }
         $message = $message ?: $this->getNotifyMessage($type);
-        if (is_array($data) && count($data)) {
+        if ($message && is_array($data) && count($data)) {
             try {
                 $message = vsprintf($message, $data);
             } catch(\Exception $e) {
