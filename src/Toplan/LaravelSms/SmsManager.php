@@ -1,35 +1,34 @@
 <?php
 namespace Toplan\Sms;
 
-use \Session;
-
+use Toplan\PhpSms\Sms;
+use \Validator;
+use \URL;
 class SmsManager
 {
-    /**
-     * the application instance
-     * @var
-     */
-    protected $app;
+    const CUSTOM_RULE_FLAG = '[custom_rule_in_server]';
+
+    const CAN_RESEND_UNTIL = '[can_resend_until]';
+
+    const SMS_INFO_KEY = '[sms_info]';
 
     /**
-     * agent instances
+     * sent info
      * @var
      */
-    protected $agents;
+    protected $sentInfo;
 
     /**
-     * sms data
+     * storage
      * @var
      */
-    protected $smsData;
+    protected static $storage;
 
     /**
      * construct
-     * @param $app
      */
-	public function __construct($app)
+	public function __construct()
     {
-        $this->app = $app;
         $this->init();
     }
 
@@ -38,67 +37,151 @@ class SmsManager
      */
     private function init()
     {
-        $data = [
+        $this->sentInfo = [
                 'sent' => false,
                 'mobile' => '',
                 'code' => '',
                 'deadline_time' => 0,
-                'verify' => config('laravel-sms.verify'),
+                'verify' => config('laravel-sms.verify', []),
             ];
-        $this->smsData = $data;
     }
 
     /**
-     * get data
-     * 获取发送相关信息
+     * get sent info
      * @return mixed
      */
-    public function getSmsData()
+    public function getSentInfo()
     {
-        return $this->smsData;
+        return $this->sentInfo;
     }
 
     /**
      * set sent data
-     * 设置发送相关信息
-     * @param array $data
+     * @param array $key
+     * @param null $data
      */
-    public function setSmsData(Array $data)
+    public function setSentInfo($key, $data = null)
     {
-        $this->smsData = $data;
+        if (is_array($key)) {
+            foreach ($key as $k => $v) {
+                $this->setSentInfo($k, $v);
+            }
+        } elseif (array_key_exists("$key", $this->sentInfo)) {
+            $this->sentInfo["$key"] = $data;
+        }
     }
 
     /**
-     * put sms data to session
-     * @param array $data
+     * get storage
+     * @return null
+     * @throws LaravelSmsException
      */
-    public function storeSmsDataToSession(Array $data = [])
+    public function storage()
     {
-        $data = $data ?: $this->smsData;
-        $this->smsData = $data;
-        Session::put($this->getSessionKey(), $data);
+        if (self::$storage) {
+            return self::$storage;
+        }
+        $className = config('laravel-sms.storage', 'Toplan\Sms\SessionStorage');
+        if (class_exists($className)) {
+            self::$storage = new $className();
+            return self::$storage;
+        }
+        throw new LaravelSmsException("Generator storage failed, don`t find class [$className]");
     }
 
     /**
-     * get sms data from session
+     * put sms sent info to storage
+     * @param       $uuid
+     * @param array $data
+     *
+     * @throws LaravelSmsException
+     */
+    public function storeSentInfo($uuid, $data = [])
+    {
+        if (is_array($uuid)) {
+            $data = $uuid;
+            $uuid = null;
+        }
+        if (is_array($data)) {
+            $this->setSentInfo($data);
+        }
+        $key = $this->getStoreKey($uuid, self::SMS_INFO_KEY);
+        $this->storage()->set($key, $this->getSentInfo());
+    }
+
+    /**
+     * get sms sent info from storage
+     * @param  $uuid
+     * @param  $all
      * @return mixed
      */
-    public function getSmsDataFromSession()
+    public function retrieveSentInfo($uuid = null, $all = false)
     {
-        return Session::get($this->getSessionKey(), []);
+        if ($all) {
+            $key = $this->getStoreKey($uuid);
+        } else {
+            $key = $this->getStoreKey($uuid, self::SMS_INFO_KEY);
+        }
+        return $this->storage()->get($key, []);
     }
 
     /**
      * remove sms data from session
+     * @param  $uuid
      */
-    public function forgetSmsDataFromSession()
+    public function forgetSentInfo($uuid = null)
     {
-        Session::forget($this->getSessionKey());
+        $key = $this->getStoreKey($uuid);
+        $this->storage()->forget($key);
     }
 
     /**
-     * Is there a designated validation rule
-     * 是否有指定的验证规则
+     * get store key
+     * support split-> . : + * /
+     * @return mixed
+     */
+    public function getStoreKey()
+    {
+        $prefix = config('laravel-sms.storePrefixKey', 'laravel_sms_info');
+        $args = func_get_args();
+        $split = '.';
+        $appends = [];
+        foreach ($args as $arg) {
+            $arg = (String) $arg;
+            if ($arg) {
+                if (preg_match('/^[.:\+\*]+$/', $arg)) {
+                    $split = $arg;
+                } elseif(preg_match('/^[^.:\+\*\s]+$/', $arg)) {
+                    array_push($appends, $arg);
+                }
+            }
+        }
+        if ($appends) {
+            $prefix .= $split . implode($split, $appends);
+        }
+        return $prefix;
+    }
+
+    /**
+     * get verify config
+     * @param $name
+     *
+     * @return mixed
+     * @throws LaravelSmsException
+     */
+    protected function getVerifyData($name)
+    {
+        if (!$name) {
+            return $this->sentInfo['verify'];
+        }
+        if ($this->sentInfo['verify']["$name"]) {
+            return $this->sentInfo['verify']["$name"];
+        }
+        throw new LaravelSmsException("Don`t find [$name] verify data in config file:laravel-sms.php");
+    }
+
+    /**
+     * whether contain a character validation rule
      * @param $name
      * @param $ruleName
      *
@@ -106,85 +189,147 @@ class SmsManager
      */
     public function hasRule($name, $ruleName)
     {
-        $data = $this->getSmsData();
-        return isset($data['verify']["$name"]['rules']["$ruleName"]);
+        $data = $this->getVerifyData($name);
+        return isset($data['rules']["$ruleName"]);
     }
 
     /**
-     * get rule by name
-     * @param $name
+     * get real rule by name
+     * @param $ruleAlias
+     * @param $uuid
      *
      * @return mixed
      */
-    public function getRule($name)
+    public function getRealMobileRule($ruleAlias = '', $uuid = null)
     {
-        $data = $this->getSmsData();
-        $ruleName = $data['verify']["$name"]['choose_rule'];
-        return $data['verify']["$name"]['rules']["$ruleName"];
+        $realRule = '';
+        //尝试使用用户从客户端传递过来的rule
+        if ($this->setUsedRuleAlias('mobile', $ruleAlias)) {
+            //客户端rule合法，则使用
+            $data = $this->getVerifyData('mobile');
+            $realRule = $data['rules']["$ruleAlias"];
+        } else if ($customRule = $this->retrieveMobileRule($uuid)){
+            //是否在服务器端存储过rule
+            $this->sentInfo['verify']['mobile']['use'] = self::CUSTOM_RULE_FLAG;
+            $realRule = $customRule;
+        } else {
+            //使用配置文件中默认rule
+            $data = $this->getVerifyData('mobile');
+            $ruleName = $data['use'];
+            if ($this->hasRule('mobile', $ruleName)) {
+                $realRule = $data['rules']["$ruleName"];
+            }
+        }
+        return $realRule;
     }
 
     /**
-     * set rule
+     * get used rule`s alias
+     * @param $name
+     *
+     * @return mixed
+     * @throws LaravelSmsException
+     */
+    public function getUsedRuleAlias($name)
+    {
+        $data = $this->getVerifyData($name);
+        return $data['use'];
+    }
+
+    /**
+     * manual set verify rule
      * @param $name
      * @param $value
      *
      * @return mixed
      */
-    public function rule($name, $value)
+    public function setUsedRuleAlias($name, $value)
     {
-        $data = $this->getSmsData();
-        $data['verify']["$name"]['choose_rule'] = $value;
-        $this->setSmsData($data);
-        return $data;
+        if ($this->hasRule($name, $value)) {
+            $this->sentInfo['verify']["$name"]['use'] = $value;
+            return true;
+        }
+        return false;
     }
 
     /**
-     * is verify
+     * store custom mobile rule
+     * @param      $uuid
+     * @param null $customRule
+     *
+     * @throws LaravelSmsException
+     */
+    public function storeMobileRule($uuid, $customRule = null)
+    {
+        if ($customRule === null) {
+            $customRule = $uuid;
+            $uuid = null;
+        }
+        $parsed = parse_url(URL::current());
+        $currentURI = $parsed['path'];
+        $key = $this->getStoreKey($uuid, self::CUSTOM_RULE_FLAG, $currentURI);
+        $this->storage()->set($key, $customRule);
+    }
+
+    /**
+     * retrieve custom mobile rule
+     * @param $uuid
+     *
+     * @return mixed
+     * @throws LaravelSmsException
+     */
+    public function retrieveMobileRule($uuid)
+    {
+        $parsed = parse_url(URL::previous());
+        $previousURI = $parsed['path'];
+        $key = $this->getStoreKey($uuid, self::CUSTOM_RULE_FLAG, $previousURI);
+        $customRule = $this->storage()->get($key, '');
+        return $customRule;
+    }
+
+    /**
+     * forget custom mobile rule
+     * @param $uuid
+     *
+     * @throws LaravelSmsException
+     */
+    public function forgetMobileRule($uuid)
+    {
+        $key = $this->getStoreKey($uuid, self::CUSTOM_RULE_FLAG);
+        $this->storage()->forget($key);
+    }
+
+    /**
+     * whether to verify character data
      * @param string $name
      *
      * @return mixed
      */
     public function isCheck($name = 'mobile')
     {
-        $data = $this->getSmsData();
-        return $data['verify']["$name"]['enable'];
+        $data = $this->getVerifyData($name);
+        return !!$data['enable'];
     }
 
     /**
-     * get default and alternate agent`s verify sms template id
-     * 获得默认/备用代理器的验证码短信模板id
+     * get verify sms templates id
+     * @return array
      */
-    public function getVerifySmsTemplateIdArray()
+    public function getVerifySmsTemplates()
     {
-        if ($this->isAlternateAgentsEnable()) {
-            $agents = $this->getAlternateAgents();
-            $defaultAgentName = $this->getDefaultAgent();
-            if ( ! in_array($defaultAgentName, $agents)) {
-                array_unshift($agents, $defaultAgentName);
+        $templates = [];
+        $enableAgents = Sms::getEnableAgents();
+        $agentsConfig = Sms::getAgentsConfig();
+        foreach ($enableAgents as $name => $opts) {
+            if (isset($agentsConfig["$name"])) {
+                if (isset($agentsConfig["$name"]['verifySmsTemplateId'])) {
+                    array_push($templates, [
+                        $name => $agentsConfig["$name"]['verifySmsTemplateId']
+                    ]);
+                }
             }
-        } else {
-            $agents[] = $this->getDefaultAgent();
         }
-        $tempIdArray = [];
-        foreach ($agents as $agentName) {
-            $tempIdArray["$agentName"] = $this->getVerifySmsTemplateId($agentName);
-        }
-        return $tempIdArray;
-    }
-
-    /**
-     * get verify sms template id
-     * @param String $agentName
-     * @return mixed
-     */
-    public function getVerifySmsTemplateId($agentName = null)
-    {
-        $agentName = $agentName ?: $this->getDefaultAgent();
-        $agentConfig = config('laravel-sms.'.$agentName, null);
-        if ($agentConfig && isset($agentConfig['verifySmsTemplateId'])) {
-            return $agentConfig['verifySmsTemplateId'];
-        }
-        return '';
+        return $templates;
     }
 
     /**
@@ -206,7 +351,7 @@ class SmsManager
     public function generateCode($length = null, $characters = null)
     {
         $length = $length ?: (int) config('laravel-sms.codeLength');
-        $characters = $characters ?: '123456789';
+        $characters = $characters ?: '0123456789';
         $charLength = strlen($characters);
         $randomString = '';
         for ($i = 0; $i < $length; ++$i) {
@@ -225,180 +370,113 @@ class SmsManager
     }
 
     /**
-     * get session key
-     * @param String $str
-     * @return mixed
-     */
-    public function getSessionKey($str = '')
-    {
-        return config('laravel-sms.sessionKey') . $str;
-    }
-
-    /**
-     * get the default agent name
-     * @return mixed
-     */
-    public function getDefaultAgent()
-    {
-        return config('laravel-sms.agent');
-    }
-
-    /**
-     * set the default agent name
-     * @param $name
-     * @return string
-     */
-    public function setDefaultAgent($name)
-    {
-        config(['laravel-sms.agent' => $name]);
-        return config('laravel-sms.agent');
-    }
-
-    /**
-     * get a agent instance
-     * @param null $agentName
-     *
-     * @return mixed
-     */
-    public function agent($agentName = null)
-    {
-        $agentName = $agentName ?: $this->getDefaultAgent();
-        if (! isset($this->agents[$agentName])) {
-            $this->agents[$agentName] = $this->createAgent($agentName);
-        }
-        return $this->agents[$agentName];
-    }
-
-    /**
-     * create a agent instance by agent name
-     * @param $agentName
-     *
-     * @return mixed
-     */
-    public function createAgent($agentName)
-    {
-        $method = 'create'.ucfirst($agentName).'Agent';
-        $agentConfig = $this->getAgentConfig($agentName);
-        return $this->$method($agentConfig);
-    }
-
-    /**
-     * get agent config
-     * @param $agentName
-     *
-     * @return array
-     */
-    public function getAgentConfig($agentName)
-    {
-        $config = config("laravel-sms.$agentName", []);
-        $config['smsSendQueue'] = config('laravel-sms.smsSendQueue', false);
-        $config['smsWorker'] = config('laravel-sms.smsWorker', 'Toplan\Sms\SmsWorker');
-        $config['nextAgentEnable'] = $this->isAlternateAgentsEnable();
-        $config['nextAgentName'] = $this->getAlternateAgentNameByCurrentName($agentName);
-        $config['currentAgentName'] = $agentName;
-        if ( ! class_exists($config['smsWorker'])) {
-            throw new \InvalidArgumentException("Worker [" . $config['smsWorker'] . "] not support.");
-        }
-        return $config;
-    }
-
-    /**
-     * is alternate agents enable
-     * return false or true
-     * @return mixed
-     */
-    public function isAlternateAgentsEnable()
-    {
-        return config('laravel-sms.alternate.enable', false);
-    }
-
-    /**
-     * get alternate agents name
-     * @return mixed
-     */
-    public function getAlternateAgents()
-    {
-        return config("laravel-sms.alternate.agents", []);
-    }
-
-    /**
-     * get alternate agent`s name
-     * @param $agentName
-     *
-     * @return null
-     */
-    public function getAlternateAgentNameByCurrentName($agentName)
-    {
-        $agents = $this->getAlternateAgents();
-        if ( ! count($agents)) {
-            return null;
-        }
-        if ( ! in_array($agentName, $agents)) {
-            return $agents[0];
-        }
-        if (in_array($agentName, $agents) && $agentName == $this->getDefaultAgent()) {
-            return null;
-        }
-        $currentKey = array_search($agentName, $agents);
-        if (($currentKey + 1) < count($agents)) {
-            return $agents[$currentKey + 1];
-        }
-        return null;
-    }
-
-    /**
-     * set can be send sms time
+     * 设置可以发送短信的时间
+     * @param int $uuid
      * @param int $seconds
      *
      * @return int
      */
-    public function setCanSendTime($seconds = 60)
+    public function storeCanSendTime($uuid, $seconds = 60)
     {
-        $key = $this->getSessionKey('_CanSendTime');
+        $key = $this->getStoreKey($uuid, self::CAN_RESEND_UNTIL);
         $time = time() + $seconds;
-        Session::put($key, $time);
+        $this->storage()->set($key, $time);
         return $time;
     }
 
     /**
-     * get can be send sms time
+     * 获取可以发送短信的时间
+     * @param int $uuid
      * @return mixed
      */
-    public function getCanSendTime()
+    protected function getCanSendTimeFromStorage($uuid = null)
     {
-        $key = $this->getSessionKey('_CanSendTime');
-        return Session::get($key, 0);
+        $key = $this->getStoreKey($uuid, self::CAN_RESEND_UNTIL);
+        return $this->storage()->get($key, 0);
     }
 
     /**
-     * can be send sms
+     * 判断能否发送
+     * @param  $uuid
      * @return bool
      */
-    public function canSend()
+    public function canSend($uuid = null)
     {
-        return $this->getCanSendTime() <= time();
+        return $this->getCanSendTimeFromStorage($uuid) <= time();
     }
 
     /**
-     * method overload
-     * @param $name
-     * @param $args
+     * validator
+     * @param array  $input
+     * @param string $rule
      *
-     * @return mixed
+     * @return array
      */
-    public function __call($name, $args)
+    public function validator(Array $input, $rule = '')
     {
-        if (preg_match('/^(?:create)([0-9a-zA-Z]+)(?:Agent)$/', $name, $matches)) {
-            $agentName = $matches[1];
-            $className = 'Toplan\\Sms\\' . $agentName . 'Agent';
-            if (class_exists($className)) {
-                if (isset($args[0]) && is_array($args[0])) {
-                    return new $className($args[0]);
-                }
-                throw new \InvalidArgumentException("Agent [$agentName] arguments cannot be empty, and must be array.");
-            }
-            throw new \InvalidArgumentException("Agent [$agentName] not support.");
+        if (!$input) {
+            return $this->genResult(false, 'no_input_value');
         }
-        throw new \BadMethodCallException("Method [$name] does not exist.");
+        $uuid = isset($input['uuid']) ? $input['uuid'] : null;
+        if (!$this->canSend($uuid)) {
+            $seconds = $input['seconds'];
+            return $this->genResult(false, 'request_invalid', [$seconds]);
+        }
+        if ($this->isCheck('mobile')) {
+            $realRule = $this->getRealMobileRule($rule, $uuid);
+            $validator = Validator::make($input, [
+                'mobile' => $realRule
+            ]);
+            if ($validator->fails()) {
+                $msg = $validator->errors()->first();
+                $rule = $this->getUsedRuleAlias('mobile');
+                return $this->genResult(false, $rule, $msg);
+            }
+        }
+        return $this->genResult(true, 'success');
+    }
+
+    /**
+     * generator validator result
+     * @param        $pass
+     * @param        $type
+     * @param string $message
+     * @param Array  $data
+     *
+     * @return array
+     */
+    protected function genResult($pass, $type, $message = '', $data = [])
+    {
+        $result = [];
+        $result['success'] = !!$pass;
+        $result['type'] = $type;
+        if (is_array($message)) {
+            $data = $message;
+            $message = '';
+        }
+        $message = $message ?: $this->getNotifyMessage($type);
+        if ($message && is_array($data) && count($data)) {
+            try {
+                $message = vsprintf($message, $data);
+            } catch(\Exception $e) {
+            }
+        }
+        $result['message'] = $message;
+        return $result;
+    }
+
+    /**
+     * get notify message
+     * @param $name
+     *
+     * @return null
+     */
+    public function getNotifyMessage($name)
+    {
+        $messages = config('laravel-sms.notifies', []);
+        if (array_key_exists($name, $messages)) {
+            return $messages["$name"];
+        }
+        return $name;
     }
 }

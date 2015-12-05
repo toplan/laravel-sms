@@ -1,11 +1,13 @@
 <?php
+use Toplan\Sms\LaravelSmsException;
 
-Validator::extend('mobile', function($attribute, $value, $parameters) {
-    return preg_match('/^1[3|5|7|8|][0-9]{9}$/', $value);
+Validator::extend('zh_mobile', function($attribute, $value, $parameters) {
+    return preg_match('/^(\+80)*1[3|5|7|8][0-9]{9}$/', $value);
 });
 
-Validator::extend('mobile_changed', function ($attribute, $value, $parameters) {
-    $smsData = SmsManager::getSmsDataFromSession();
+Validator::extend('confirm_mobile_not_change', function ($attribute, $value, $parameters) {
+    $uuid = isset($parameters[0]) ? $parameters[0] : null;
+    $smsData = SmsManager::retrieveSentInfo($uuid);
     if ($smsData && $smsData['mobile'] == $value) {
         return true;
     }
@@ -13,16 +15,21 @@ Validator::extend('mobile_changed', function ($attribute, $value, $parameters) {
 });
 
 Validator::extend('verify_code', function ($attribute, $value, $parameters) {
-    $smsData = SmsManager::getSmsDataFromSession();
+    $uuid = isset($parameters[0]) ? $parameters[0] : null;
+    $smsData = SmsManager::retrieveSentInfo($uuid);
     if ($smsData && $smsData['deadline_time'] >= time() && $smsData['code'] == $value) {
         return true;
     }
     return false;
 });
 
-Validator::extend('verify_rule', function($attribute, $value, $parameters) {
-    $smsData = SmsManager::getSmsDataFromSession();
-    if ($smsData && $smsData['verify']['mobile']['choose_rule'] == $parameters[0]) {
+Validator::extend('confirm_mobile_rule', function($attribute, $value, $parameters) {
+    if (!isset($parameters[0])) {
+        throw new LaravelSmsException('Please give validator rule [confirm_mobile_rule] a parameter');
+    }
+    $uuid = isset($parameters[1]) ? $parameters[1] : null;
+    $smsData = SmsManager::retrieveSentInfo($uuid);
+    if ($smsData && $smsData['verify']['mobile']['use'] == $parameters[0]) {
         return true;
     }
     return false;

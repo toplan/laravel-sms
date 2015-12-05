@@ -5,15 +5,6 @@
  * https://github.com/toplan/laravel-sms
  * --------------------------
  * Date 2015/06/08
- *
- * example usage:
- *   $('#sendVerifySmsButton').sms({
- *       token          : "{{csrf_token}}",
- *       mobileSelector : 'input[name="mobile"]',
- *       alertMsg       : function (msg) {
- *           alert(msg);
- *        }
- *   });
  */
 (function($){
 
@@ -36,21 +27,27 @@
 
     function sendSms(opts, elem) {
         var mobile = $(opts.mobileSelector).val();
-        var url = '/sms/verify-code/rule/' + opts.mobileRule + '/mobile/' + mobile;
+        var url = opts.domain + '/sms/verify-code';
         if (opts.voice) {
-            url = '/sms/voice-verify/rule/' + opts.mobileRule + '/mobile/' + mobile;
+            url = opts.domain + '/sms/voice-verify';
         }
         $.ajax({
             url  : url,
             type : 'post',
-            data : {_token:opts.token, seconds:opts.seconds},
+            data : {
+                _token:opts.token,
+                seconds:opts.seconds,
+                uuid:opts.uuid,
+                mobile:mobile,
+                mobileRule:opts.mobileRule
+            },
             success : function (data) {
                if (data.success) {
                    timer(elem, opts.seconds, opts.btnContent)
                } else {
                    elem.html(opts.btnContent);
                    elem.prop('disabled', false);
-                   opts.alertMsg(data.msg, data.type);
+                   opts.alertMsg(data.message, data.type);
                }
             },
             error: function(xhr, type){
@@ -78,13 +75,15 @@
 
     $.fn.sms.default = {
         token          : '',
-        mobileRule     : 'check_mobile_unique',
+        mobileRule     : '',
         mobileSelector : '',
         seconds        : 60,
+        uuid           : '',
         voice          : false,
+        domain         : '',
         alertMsg       : function (msg, type) {
             alert(msg);
         }
     };
 
-})(Zepto);
+})(window.jQuery || window.Zepto);
