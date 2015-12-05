@@ -1,7 +1,8 @@
 # Laravel Sms v2.0
 
 > laravel-sms v2.0基于[phpsms](https://github.com/toplan/phpsms)二次开发。
-> laravel-sms v2.0请求负载均衡由[task-balancer](https://github.com/toplan/task-balancer)提供。
+>
+> laravel-sms v2.0请求负载均衡功能由[task-balancer](https://github.com/toplan/task-balancer)提供。
 
 **使用场景**
 
@@ -247,7 +248,7 @@
 ```php
    //验证手机验证码
    $validator = Validator::make(Input::all(), [
-        'mobile'     => 'required|config_mobile_not_change',
+        'mobile'     => 'required|confirm_mobile_not_change',
         'verifyCode' => 'required|verify_code|confirm_mobile_rule:check_mobile_unique',
         //more...
    ]);
