@@ -1,8 +1,8 @@
 # Laravel Sms v2.0
 
-> laravel-sms v2.0基于[phpsms](https://github.com/toplan/phpsms)二次开发。
+> v2.0基于[phpsms](https://github.com/toplan/phpsms)二次开发。
 >
-> laravel-sms v2.0请求负载均衡功能由[task-balancer](https://github.com/toplan/task-balancer)提供。
+> v2.0请求负载均衡功能由[task-balancer](https://github.com/toplan/task-balancer)提供。
 
 **使用场景**
 
@@ -34,7 +34,10 @@
 在项目根目录下运行如下composer命令:
 ```php
    //安装稳定版本
-   composer require 'toplan/laravel-sms:~2.0.0'
+   composer require 'toplan/laravel-sms:1.0.2',
+
+   //安装2.0版本(测试中，不要用于生产环境)
+   composer require 'toplan/laravel-sms:~2.0.0',
 
    //安装开发中版本
    composer require 'toplan/laravel-sms:dev-master'
@@ -268,7 +271,7 @@ PS:
 
 ##自定义代理器
 
-详情的请参看[phpsms](https://github.com/toplan/phpsms)
+详情请参看[phpsms](https://github.com/toplan/phpsms)
 
 ##License
 
