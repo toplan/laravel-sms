@@ -110,7 +110,7 @@ class SmsManager
     }
 
     /**
-     * get sms sent info from storage
+     * retrieve sms sent info from storage
      * @param  $uuid
      * @param  $all
      * @return mixed
@@ -126,12 +126,12 @@ class SmsManager
     }
 
     /**
-     * remove sms data from session
+     * forget sms sent info from storage
      * @param  $uuid
      */
     public function forgetSentInfo($uuid = null)
     {
-        $key = $this->getStoreKey($uuid);
+        $key = $this->getStoreKey($uuid, self::SMS_INFO_KEY);
         $this->storage()->forget($key);
     }
 
