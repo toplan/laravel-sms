@@ -68,7 +68,7 @@ class SmsManagerServiceProvider extends ServiceProvider
         // before send hook
         // store sms data to database
         Sms::beforeSend(function($task){
-            if (config('laravel-sms.database_enable', false)) {
+            if (!config('laravel-sms.database_enable', false)) {
                 return true;
             }
             $data = $task->data ?: [];
@@ -85,42 +85,32 @@ class SmsManagerServiceProvider extends ServiceProvider
 
         // after send hook
         // update sms data in database
-        Sms::afterSend(function($task, $results){
-            $success = false;
-            $finishedAt = 0;
-
-            // parse status from results data
-            $lastRecord = array_pop($results);
-            if ($lastRecord) {
-                $success = $lastRecord['success'];
-                $microTime = $lastRecord['time']['finished_at'];
-                $finishedAt = explode(' ', $microTime)[1];
-                array_push($results, $lastRecord);
+        Sms::afterSend(function($task, $result){
+            if (!config('laravel-sms.database_enable', false)) {
+                return true;
             }
 
-            if (config('laravel-sms.database_enable', false)) {
-                // get sms id
-                $data = $task->data;
-                $smsId = isset($data['smsId']) ? $data['smsId'] : 0;
+            // get time
+            $microTime = $result['time']['finished_at'];
+            $finishedAt = explode(' ', $microTime)[1];
 
-                // update database
-                DB::beginTransaction();
-                $dbData = [];
-                $dbData['updated_at'] = date('Y-m-d H:i:s', $finishedAt);
-                $dbData['result_info'] = json_encode($results);
-                if ($success) {
-                    $dbData['sent_time'] = $finishedAt;
-                } else {
-                    DB::table('sms')->where('id', $smsId)->increment('fail_times');
-                    $dbData['last_fail_time'] = $finishedAt;
-                }
-                DB::table('sms')->where('id', $smsId)->update($dbData);
-                DB::commit();
+            // get sms id
+            $data = $task->data;
+            $smsId = isset($data['smsId']) ? $data['smsId'] : 0;
+
+            // update database
+            DB::beginTransaction();
+            $dbData = [];
+            $dbData['updated_at'] = date('Y-m-d H:i:s', $finishedAt);
+            $dbData['result_info'] = json_encode($result['logs']);
+            if ($result['success']) {
+                $dbData['sent_time'] = $finishedAt;
+            } else {
+                DB::table('sms')->where('id', $smsId)->increment('fail_times');
+                $dbData['last_fail_time'] = $finishedAt;
             }
-
-            return [
-                'success' => $success
-            ];
+            DB::table('sms')->where('id', $smsId)->update($dbData);
+            DB::commit();
         });
     }
 
