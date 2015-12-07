@@ -427,7 +427,7 @@ class SmsManager
      *
      * @return array
      */
-    protected function genResult($pass, $type, $message = '', $data = [])
+    public function genResult($pass, $type, $message = '', $data = [])
     {
         $result = [];
         $result['success'] = !!$pass;
