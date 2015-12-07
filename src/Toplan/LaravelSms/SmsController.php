@@ -14,13 +14,19 @@ class SmsController extends Controller
         $this->phpSms = app('PhpSms');
     }
 
-    public function postVoiceVerify(Request $request)
+    private function parseInput($request)
     {
-        //get data
         $mobile = $request->input('mobile', null);
         $rule = $request->input('mobileRule', null);
         $uuid = $request->input('uuid', null);
         $seconds = $request->input('seconds', 60);
+        return compact('mobile', 'rule', 'uuid', 'seconds');
+    }
+
+    public function postVoiceVerify(Request $request)
+    {
+        //get data
+        extract($this->parseInput($request));
 
         //validate
         $verifyResult = SmsManager::validator([
@@ -43,9 +49,9 @@ class SmsController extends Controller
             $data['deadline_time'] = time() + (15 * 60);
             SmsManager::storeSentInfo($uuid, $data);
             SmsManager::storeCanSendTime($uuid, $seconds);
+            $verifyResult = SmsManager::genResult(true, 'voice_send_success');
         } else {
-            $verifyResult['success'] = false;
-            $verifyResult['type'] = 'send_failed';
+            $verifyResult = SmsManager::genResult(false, 'voice_send_failure');
         }
 
         return response()->json($verifyResult);
@@ -54,10 +60,7 @@ class SmsController extends Controller
     public function postSendCode(Request $request)
     {
         //get data
-        $mobile = $request->input('mobile', null);
-        $rule = $request->input('mobileRule', null);
-        $uuid = $request->input('uuid', null);
-        $seconds = $request->input('seconds', 60);
+        extract($this->parseInput($request));
 
         //validate
         $verifyResult = SmsManager::validator([
@@ -90,9 +93,9 @@ class SmsController extends Controller
             $data['deadline_time'] = time() + ($minutes * 60);
             SmsManager::storeSentInfo($uuid, $data);
             SmsManager::storeCanSendTime($uuid, $seconds);
+            $verifyResult = SmsManager::genResult(true, 'sms_send_success');
         } else {
-            $verifyResult['success'] = false;
-            $verifyResult['type'] = 'send_failed';
+            $verifyResult = SmsManager::genResult(false, 'sms_send_failure');
         }
 
         return response()->json($verifyResult);
@@ -107,7 +110,7 @@ class SmsController extends Controller
         echo $html;
         $uuid = $uuid ?: $request->input('uuid', null);
         if (config('app.debug')) {
-            $smsData = SmsManager::getSentInfoFromStorage($uuid, true);
+            $smsData = SmsManager::retrieveSentInfo($uuid, true);
             dd($smsData);
         } else {
             echo '<p align="center" style="color: #ff0000;;">现在是非调试模式，无法查看验证码短信数据</p>';

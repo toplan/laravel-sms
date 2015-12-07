@@ -69,6 +69,9 @@ class SmsManagerServiceProvider extends ServiceProvider
         // before send hook
         // store sms data to database
         Sms::beforeSend(function($task){
+            if (config('laravel-sms.database_enable', false)) {
+                return true;
+            }
             $data = $task->data ?: [];
             $id = DB::table('sms')->insertGetId([
                 'to' => $data['to'],
@@ -96,23 +99,26 @@ class SmsManagerServiceProvider extends ServiceProvider
                 array_push($results, $lastRecord);
             }
 
-            // get sms id
-            $data = $task->data;
-            $smsId = isset($data['smsId']) ? $data['smsId'] : 0;
+            if (config('laravel-sms.database_enable', false)) {
+                // get sms id
+                $data = $task->data;
+                $smsId = isset($data['smsId']) ? $data['smsId'] : 0;
 
-            // update database
-            DB::beginTransaction();
-            $dbData = [];
-            $dbData['updated_at'] = date('Y-m-d H:i:s', $finishedAt);
-            $dbData['result_info'] = json_encode($results);
-            if ($success) {
-                $dbData['sent_time'] = $finishedAt;
-            } else {
-                DB::table('sms')->where('id', $smsId)->increment('fail_times');
-                $dbData['last_fail_time'] = $finishedAt;
+                // update database
+                DB::beginTransaction();
+                $dbData = [];
+                $dbData['updated_at'] = date('Y-m-d H:i:s', $finishedAt);
+                $dbData['result_info'] = json_encode($results);
+                if ($success) {
+                    $dbData['sent_time'] = $finishedAt;
+                } else {
+                    DB::table('sms')->where('id', $smsId)->increment('fail_times');
+                    $dbData['last_fail_time'] = $finishedAt;
+                }
+                DB::table('sms')->where('id', $smsId)->update($dbData);
+                DB::commit();
             }
-            DB::table('sms')->where('id', $smsId)->update($dbData);
-            DB::commit();
+
             return [
                 'success' => $success
             ];
