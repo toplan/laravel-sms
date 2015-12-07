@@ -61,7 +61,8 @@ class SmsManagerServiceProvider extends ServiceProvider
         Sms::queue(function($sms, $data){
             $this->dispatch(new SendReminderSms($sms));
             return [
-                'success' => true
+                'success' => true,
+                'after_push_to_queue' => true,
             ];
         });
 
