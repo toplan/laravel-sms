@@ -49,14 +49,14 @@
 
 在config/app.php文件中providers数组里加入：
 ```php
-   Toplan\PhpSms\Sms::class,
+   Toplan\PhpSms\PhpSmsServiceProvide::class,
    Toplan\Sms\SmsManagerServiceProvider::class,
 ```
 
 在config/app.php文件中的aliases数组里加入
 ```php
-   'SmsManager' => Toplan\Sms\Facades\SmsManager::class,
    'PhpSms' => Toplan\PhpSms\Facades\Sms::class,
+   'SmsManager' => Toplan\Sms\Facades\SmsManager::class,
 ```
 
 ####2.migration生成 & 参数配置
