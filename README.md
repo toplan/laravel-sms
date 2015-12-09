@@ -1,16 +1,25 @@
-# Laravel Sms v2.0
+#Laravel Sms
 
-> v2.0基于[phpsms](https://github.com/toplan/phpsms)二次开发。
->
-> v2.0请求负载均衡功能由[task-balancer](https://github.com/toplan/task-balancer)提供。
+###1. 关于
+`laravel-sms` v2.0是基于[phpsms](https://github.com/toplan/phpsms)针对`laravel`二次封装的短信发送库。
+> phpsms的请求负载均衡功能由[task-balancer](https://github.com/toplan/task-balancer)提供。
 
-**使用场景**
+`phpsms`为`laravel-sms`提供了全套的短信发送机制，而且`phpsms`也有自己的service provider，也就是说你完全可以在`laravel`框架下无障碍的独立使用`phpsms`。
+这也是为什么使用`laravel-sms`会在项目中生产两个配置文件(phpsms.php和laravel-sms.php)的根本原因。
 
-1. 发送短信验证码。
-2. 发送信息通知短信(如：订单通知，发货通知，上课通知...)。
-3. 特殊情况下用户收不到短信？ v2.0提倡通过按权重均衡分发请求且采用备用代理器机制。
+> config/phpsms.php负责配置代理器参数设置以及规划如何最优调度代理器(由phpsms提供)，
+> config/laravel-sms.php则全职负责验证码发送/验证模块的配置(由laravel-sms提供)。
 
-**该包特性**
+###2. why me
+
+那么既然有了`phpsms`，为什么还需要`laravel-sms`呢？
+为了更进一步提高开发效率，`laravel-sms`在`phpsms`的基础上针对laravel框架定制好了如下功能：
+
+* 队列工作模式
+* 数据库记录日志
+* 验证码发送/验证模块
+
+# 特点
 
 1. 数据库记录/管理短信数据及其发送情况(可选)。
 2. 兼容模板短信和内容短信。
@@ -30,22 +39,22 @@
 | [SUBMAIL](http://submail.cn)           | yes | no  | no      |￥100(1千条) |￥0.100/条|
 | [云之讯](http://www.ucpaas.com/)        | yes | no  | yes     |            |￥0.050/条|
 
-##安装
+# 安装
 在项目根目录下运行如下composer命令:
 ```php
    //安装稳定版本
    composer require 'toplan/laravel-sms:1.0.2',
 
    //安装2.0版本(测试中，不要用于生产环境)
-   composer require 'toplan/laravel-sms:~2.0.0',
+   composer require 'toplan/laravel-sms:~2.0.2',
 
    //安装开发中版本
    composer require 'toplan/laravel-sms:dev-master'
 ```
 
-##快速上手
+# 快速上手
 
-####1.注册服务提供器
+###1.注册服务提供器
 
 在config/app.php文件中providers数组里加入：
 ```php
@@ -59,19 +68,24 @@
    'SmsManager' => Toplan\Sms\Facades\SmsManager::class,
 ```
 
-####2.migration生成 & 参数配置
+###2.migration生成 & 参数配置
 
    * 请先运行如下命令生成配置文件和migration文件
 ```php
    php artisan vendor:publish
 ```
+> 说明：
+> 这里会生产两个配置文件，分别为phpsms.php和laravel-sms.php。
+> 其中phpsms.php负责配置代理器参数设置以及规划如何调度代理器。
+> laravel-sms.php则全职负责验证码发送/验证模块的配置。
+
 
    * 在数据库中生成sms表(可选)
 ```php
    php artisan migrate
 ```
 
-   * 设置默认代理器(服务商)
+   * 设置代理器使用方案
 
    请在config/phpsms.php中设置代理服务商。
 ```php
@@ -96,59 +110,60 @@
 >     ]
 >  ```
 
-   更多的服务商配置就不详说了，请到配置文件中查看并按提示修改相应代理服务商的配置。
-
-####3.Enjoy it!
+###3.Enjoy it!
 
   在控制器中发送触发短信，如：
 ```php
   //只希望使用模板方式发送短信,可以不设置内容content (如云通讯,Submail)
-  PhpSms::make($tempId)->to('1828****349')->data(['12345', 5])->send();
+  PhpSms::make()->to('1828****349')->template('Luosimao', 'xxx')->data(['12345', 5])->send();
 
   //只希望使用内容方式放送,可以不设置模板id和模板数据data (如云片,luosimao)
   PhpSms::make()->to('1828****349')->content('【Laravel SMS】亲爱的张三，欢迎访问，祝你工作愉快。')->send();
 
   //同时确保能通过模板和内容方式发送。这样做的好处是，可以兼顾到各种代理器(服务商)！
-  PhpSms::make([
-      'YunTongXun' => '123',
-      'SubMail'    => '123'
-  ])
-  ->to('1828****349')
-  ->data(['张三'])
-  ->content('【签名】亲爱的张三，欢迎访问，祝你工作愉快。')
-  ->send();
+  PhpSms::make()
+          ->to('1828****349')
+          ->template([
+              'YunTongXun' => '123',
+              'SubMail'    => '123'
+          ])
+          ->data(['张三'])
+          ->content('【签名】亲爱的张三，欢迎访问，祝你工作愉快。')
+          ->send();
 ```
 
-####4.常用的语法糖
+###4.常用的语法糖
 
-> 更加详情的用法可以参看[phpsms](https://github.com/toplan/phpsms)
+> 更多用法可以参看[phpsms](https://github.com/toplan/phpsms)
 
-   * 发送给谁
+* 创建一条短信实例
+```php
+   $sms = PhpSms::make();
+```
+
+* 创建一个语言验证码实例
+```php
+   $sms = PhpSms::voice($code);
+```
+
+* 发送给谁
 ```php
    $sms = $sms->to('1828*******');
 ```
 
-   * 设置模板ID
+* 设置模板ID
 
-如果你只使用了默认代理器，即没有开启备用代理器机制。你只需要设置默认代理器的模板ID:
+可以指定代理器进行设置或批量设置:
 ```php
    //静态方法设置，并返回sms实例
-   $sms = PhpSms::make('20001');
-   //或
-   $sms = $sms->template('20001');
-```
-
-如果你要开启备用代理器机制，那么需要为只支持模板短信默认/备用代理器设置相应模板ID，这样才能保证这些代理器正常使用。可以这样设置:
-```php
-   //静态方法设置，并返回sms实例
-   $sms = PhpSms::make(['YunTongXun' => '20001', 'SubMail' => 'xxx', ...]);
+   $sms = PhpSms::make(['YunTongXun' => '20001', 'SubMail' => 'xxx', ...]);//必须数组形式
    //设置指定服务商的模板id
-   $sms = $sms->template('YunTongXun', '20001')->template('SubMail' => 'xxx');
+   $sms = $sms->template('YunTongXun', '20001')->template('SubMail', 'xxx');
    //一次性设置多个服务商的模板id
    $sms = $sms->template(['YunTongXun' => '20001', 'SubMail' => 'xxx', ...]);
 ```
 
-  * 设置模板短信的模板数据
+* 设置模板短信的模板数据
 ```php
   $sms = $sms->data([
         'code' => $code,
@@ -156,19 +171,34 @@
       ]);
 ```
 
-  * 设置内容短信的内容
+* 设置内容短信的内容
 
   有些服务商(如YunPian,Luosimao)只支持内容短信(即直接发送短信内容)，不支持模板，那么就需要设置短信内容。
 ```php
   $sms = $sms->content('【签名】亲爱的张三，您的订单号是281xxxx，祝你购物愉快。');
 ```
 
-  * 发送短信
+* 临时制定代理器
+
+  可以正对某条短信/语音验证码指定一个代理器进行发送。
 ```php
-  $sms->send();
+  $sms = $sms->agent('Luosimao');
 ```
 
-##短信队列
+* 发送短信
+```php
+  //遵循是否使用队列
+  $sms->send();
+
+  //绕开队列，强制发送
+  $sms->send(true);
+  //等同于：
+  PhpSms::queue(false);
+  $sms->send();
+  PhpSms::queue(true);
+```
+
+#短信队列
 
 ```php
    //开启队列
@@ -182,11 +212,11 @@
 ```
 
 
-##验证码短信模块
+#验证码短信模块
 
 可以直接访问example.com/sms/info查看该模块是否可用，并可在该页面里观察验证码短信发送数据，方便你进行调试。
 
-####1.[浏览器端]请求发送带验证码短信
+###1.[浏览器端]请求发送带验证码短信
 
 该包已经封装好浏览器端的插件(兼容jquery/zepto)，只需要为发送按钮添加扩展方法即可实现发送短信。
 ```html
@@ -212,7 +242,7 @@
 > **注意:**
 > 如果你使用Luosimao语音验证码，请在配置文件中'Luosimao'中设置'voiceApikey'。
 
-####2.[服务器端]配置短信内容/模板
+###2.[服务器端]配置短信内容/模板
 
 
 * 填写你的验证码短信内容或模板标示符
@@ -244,8 +274,7 @@
   ]
 ```
 
-
-####3.[服务器端]合法性验证
+###3.[服务器端]合法性验证
 
 用户填写验证码并提交表单到服务器时，在你的控制器中需要验证手机号和验证码是否正确，你只需要加上如下代码即可：
 ```php
@@ -256,8 +285,6 @@
         //more...
    ]);
    if ($validator->fails()) {
-       //验证失败的话需要清除session数据，防止用户多次试错
-       \SmsManager::forgetSentInfo();
        return redirect()->back()->withErrors($validator);
    }
 ```
@@ -269,10 +296,10 @@ PS:
 
 **请在语言包validation.php中做好翻译**
 
-##自定义代理器
+#自定义代理器
 
 详情请参看[phpsms](https://github.com/toplan/phpsms)
 
-##License
+#License
 
 MIT
