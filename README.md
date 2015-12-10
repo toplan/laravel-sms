@@ -278,6 +278,7 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
         //more...
    ]);
    if ($validator->fails()) {
+       \SmsManager::forgetSentInfo()
        return redirect()->back()->withErrors($validator);
    }
 ```
@@ -308,14 +309,16 @@ scheme://your-domain.com/sms/voice-verify
 
 ###3. 服务端验证
 
-* 实现存储器
+* 实现存储器:
+
 实现一个接口为`Toplan\Sms\Storage`的存储器，
 并在config/laravel-sms.php中配置存储器。
 ```php
 'storage' => 'Toplan\Sms\SessionStorage',
 ```
 
-* 给每个验证规则后加上参数`$uuid`
+* 给每个验证规则后加上参数`$uuid`:
+
 ```php
    $uuid = $request->input('uuid');
    $validator = Validator::make(Input::all(), [
@@ -323,6 +326,10 @@ scheme://your-domain.com/sms/voice-verify
         'verifyCode' => "required|verify_code:$uuid|confirm_mobile_rule:mobile_required,$uuid",
         //more...
    ]);
+   if ($validator->fails()) {
+       \SmsManager::forgetSentInfo($uuid)
+       return redirect()->back()->withErrors($validator);
+   }
 ```
 
 #自定义代理器
