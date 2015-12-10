@@ -28,7 +28,7 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
 5. 请求请求分发负载均衡(由phpsms提供)。
 6. 备用代理器(由phpsms提供)。
 7. 集成[验证码短信发送/校验模块](#验证码短信模块)，从此告别重复写验证码短信发送与校验的历史。
-8. 验证码发送/验证模块的[json API无session支持](#API无会话支持)。
+8. 验证码发送/验证模块的[json API无session支持](#无会话支持)。
 9. 集成如下第三方短信服务商，你也可[自定义代理器](#自定义代理器)(由phpsms提供)。
 
 | 服务商 | 模板短信 | 内容短信 | 语音验证码 | 最低消费  |  最低消费单价 |
@@ -45,7 +45,7 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
    //安装稳定版本
    composer require 'toplan/laravel-sms:1.0.2',
 
-   //安装2.0版本(测试中，不要用于生产环境)
+   //安装2.0版本
    composer require 'toplan/laravel-sms:~2.0.2',
 
    //安装开发中版本
@@ -289,7 +289,7 @@ PS:
 
 **请在语言包validation.php中做好翻译**
 
-#API无会话支持
+#无会话支持
 
 ###1. 请求url
 * 短信:
@@ -308,7 +308,14 @@ scheme://your-domain.com/sms/voice-verify
 
 ###3. 服务端验证
 
-给每个验证规则后加上参数`$uuid`
+* 实现存储器
+实现一个接口为`Toplan\Sms\Storage`的存储器，
+并在config/laravel-sms.php中配置存储器。
+```php
+'storage' => 'Toplan\Sms\SessionStorage',
+```
+
+* 给每个验证规则后加上参数`$uuid`
 ```php
    $uuid = $request->input('uuid');
    $validator = Validator::make(Input::all(), [
@@ -317,7 +324,6 @@ scheme://your-domain.com/sms/voice-verify
         //more...
    ]);
 ```
-
 
 #自定义代理器
 
