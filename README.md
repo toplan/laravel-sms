@@ -42,11 +42,11 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
 # 安装
 在项目根目录下运行如下composer命令:
 ```php
-   //安装稳定版本
+   //安装1.0版本
    composer require 'toplan/laravel-sms:1.0.2',
 
-   //安装2.0版本
-   composer require 'toplan/laravel-sms:~2.0.2',
+   //安装2.0版本(推荐)
+   composer require 'toplan/laravel-sms:~2.0.5',
 
    //安装开发中版本
    composer require 'toplan/laravel-sms:dev-master'
@@ -110,7 +110,7 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
   //只希望使用模板方式发送短信,可以不设置内容content (如云通讯,Submail)
   PhpSms::make()->to('1828****349')->template('Luosimao', 'xxx')->data(['12345', 5])->send();
 
-  //只希望使用内容方式放送,可以不设置模板id和模板数据data (如云片,luosimao)
+  //只希望使用内容方式发送,可以不设置模板id和模板数据data (如云片,luosimao)
   PhpSms::make()->to('1828****349')->content('【Laravel SMS】亲爱的张三，欢迎访问，祝你工作愉快。')->send();
 
   //同时确保能通过模板和内容方式发送。这样做的好处是，可以兼顾到各种代理器(服务商)！
