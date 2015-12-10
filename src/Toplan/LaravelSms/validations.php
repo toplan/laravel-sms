@@ -2,7 +2,7 @@
 use Toplan\Sms\LaravelSmsException;
 
 Validator::extend('zh_mobile', function($attribute, $value, $parameters) {
-    return preg_match('/^(\+86)*1[3|5|7|8][0-9]{9}$/', $value);
+    return preg_match('/^(\+86)*1[3|4|5|7|8][0-9]{9}$/', $value);
 });
 
 Validator::extend('confirm_mobile_not_change', function ($attribute, $value, $parameters) {
