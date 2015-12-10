@@ -76,7 +76,7 @@ class SmsManagerServiceProvider extends ServiceProvider
             $id = DB::table('sms')->insertGetId([
                 'to' => $data['to'],
                 'temp_id' => json_encode($data['templates']),
-                'data' => json_encode($data['templateData']),
+                'data' => $data['voiceCode'] ?: json_encode($data['templateData']),
                 'content' => $data['content'],
                 'created_at' => date('Y-m-d H:i:s', time())
             ]);

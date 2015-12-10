@@ -1,35 +1,35 @@
 #Laravel Sms
 
-###1. 关于
-`laravel-sms` v2.0是基于[phpsms](https://github.com/toplan/phpsms)针对`laravel`二次封装的短信发送库。
+###1. 关于2.0
+laravel-sms v2.0是基于[phpsms](https://github.com/toplan/phpsms)针对laravel框架二次封装的短信发送库。
 > phpsms的请求负载均衡功能由[task-balancer](https://github.com/toplan/task-balancer)提供。
 
-`phpsms`为`laravel-sms`提供了全套的短信发送机制，而且`phpsms`也有自己的service provider，也就是说你完全可以在`laravel`框架下无障碍的独立使用`phpsms`。
-这也是为什么使用`laravel-sms`会在项目中生产两个配置文件(phpsms.php和laravel-sms.php)的根本原因。
+phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自己的service provider，也就是说你完全可以在laravel框架下无障碍的独立使用phpsms。
+这也是为什么使用laravel-sms会在项目中生产两个配置文件(phpsms.php和laravel-sms.php)的根本原因。
 
-> config/phpsms.php负责配置代理器参数设置以及规划如何最优调度代理器(由phpsms提供)，
+> config/phpsms.php负责配置代理器参数设置以及规划如何最优调度代理器(由phpsms提供)。
 > config/laravel-sms.php则全职负责验证码发送/验证模块的配置(由laravel-sms提供)。
 
 ###2. why me
 
-那么既然有了`phpsms`，为什么还需要`laravel-sms`呢？
-为了更进一步提高开发效率，`laravel-sms`在`phpsms`的基础上针对laravel框架定制好了如下功能：
+那么既然有了phpsms，为什么还需要laravel-sms呢？
+为了更进一步提高开发效率，laravel-sms在phpsms的基础上针对laravel框架定制好了如下功能：
 
-* 队列工作模式
+* 队列工作方式
 * 数据库记录日志
 * 验证码发送/验证模块
 
 # 特点
 
-1. 数据库记录/管理短信数据及其发送情况(可选)。
-2. 兼容模板短信和内容短信。
-3. [短信队列](https://github.com/toplan/laravel-sms#短信队列)。
-4. 请求负载均衡。
-5. 备用代理器。
-6. 集成[验证码短信发送/校验模块](https://github.com/toplan/laravel-sms#验证码短信模块)，分分钟搞定验证码短信发送以及手机号/验证码校验，
-   从此告别重复写验证码短信发送与校验的历史。
-7. 支持语音验证码，使用方法见特性6。
-8. 集成如下第三方短信服务商，你也可[自定义代理器](https://github.com/toplan/laravel-sms#自定义代理器)。
+1. 数据库记录/管理短信数据及其发送情况[可选]。
+2. 支持模板短信和内容短信(由phpsms提供)。
+3. [短信队列](#短信队列)(由phpsms提供)。
+4. 支持语音验证码(由phpsms提供)。
+5. 请求请求分发负载均衡(由phpsms提供)。
+6. 备用代理器(由phpsms提供)。
+7. 集成[验证码短信发送/校验模块](#验证码短信模块)，从此告别重复写验证码短信发送与校验的历史。
+8. 验证码发送/验证模块的[json API无session支持](#API无会话支持)。
+9. 集成如下第三方短信服务商，你也可[自定义代理器](#自定义代理器)(由phpsms提供)。
 
 | 服务商 | 模板短信 | 内容短信 | 语音验证码 | 最低消费  |  最低消费单价 |
 | ----- | :-----: | :-----: | :------: | :-------: | :-----: |
@@ -68,7 +68,7 @@
    'SmsManager' => Toplan\Sms\Facades\SmsManager::class,
 ```
 
-###2.migration生成 & 参数配置
+###2.参数配置
 
    * 请先运行如下命令生成配置文件和migration文件
 ```php
@@ -76,7 +76,7 @@
 ```
 > 说明：
 > 这里会生产两个配置文件，分别为phpsms.php和laravel-sms.php。
-> 其中phpsms.php负责配置代理器参数设置以及规划如何调度代理器。
+> 其中phpsms.php负责配置代理器参数以及规划如何调度代理器。
 > laravel-sms.php则全职负责验证码发送/验证模块的配置。
 
 
@@ -102,13 +102,6 @@
 
    在config/phpsms.php中，找到你想要使用的代理器，并填写好配置信息。
 
->  如果你使用的是Luosimao，请在数组'Luosimao'中按照提示填写配置信息
->  ```php
->     'Luosimao' => [
->          ...
->          'apikey' => 'your api key',
->     ]
->  ```
 
 ###3.Enjoy it!
 
@@ -130,13 +123,16 @@
           ->data(['张三'])
           ->content('【签名】亲爱的张三，欢迎访问，祝你工作愉快。')
           ->send();
+
+  //语音验证码
+  PhpSms::voice($code)->to($to)->send();
 ```
 
 ###4.常用的语法糖
 
 > 更多用法可以参看[phpsms](https://github.com/toplan/phpsms)
 
-* 创建一条短信实例
+* 创建一个短信实例
 ```php
    $sms = PhpSms::make();
 ```
@@ -156,7 +152,7 @@
 可以指定代理器进行设置或批量设置:
 ```php
    //静态方法设置，并返回sms实例
-   $sms = PhpSms::make(['YunTongXun' => '20001', 'SubMail' => 'xxx', ...]);//必须数组形式
+   $sms = PhpSms::make(['YunTongXun' => '20001', 'SubMail' => 'xxx', ...]);
    //设置指定服务商的模板id
    $sms = $sms->template('YunTongXun', '20001')->template('SubMail', 'xxx');
    //一次性设置多个服务商的模板id
@@ -178,9 +174,9 @@
   $sms = $sms->content('【签名】亲爱的张三，您的订单号是281xxxx，祝你购物愉快。');
 ```
 
-* 临时制定代理器
+* 临时指定代理器
 
-  可以正对某条短信/语音验证码指定一个代理器进行发送。
+  可以针对某条短信/语音验证码指定一个代理器进行发送。
 ```php
   $sms = $sms->agent('Luosimao');
 ```
@@ -192,14 +188,11 @@
 
   //绕开队列，强制发送
   $sms->send(true);
-  //等同于：
-  PhpSms::queue(false);
-  $sms->send();
-  PhpSms::queue(true);
 ```
 
 #短信队列
 
+开启/关闭队列的示例如下：
 ```php
    //开启队列
    PhpSms::queue(true);
@@ -262,7 +255,7 @@
    ]
 ```
 
-* 修改或自定义发送前检测规则
+* 修改或自定义发送前检测规则(可选)
 
 配置文件config/laravel-sms.php:
 ```php
@@ -281,7 +274,7 @@
    //验证手机验证码
    $validator = Validator::make(Input::all(), [
         'mobile'     => 'required|confirm_mobile_not_change',
-        'verifyCode' => 'required|verify_code|confirm_mobile_rule:check_mobile_unique',
+        'verifyCode' => 'required|verify_code|confirm_mobile_rule:mobile_required',
         //more...
    ]);
    if ($validator->fails()) {
@@ -295,6 +288,36 @@ PS:
 * `confirm_mobile_rule:{$mobileRule}` 检测是否为非法请求，第一个值为手机号检测规则，必须和你在浏览器端js插件中填写的mobileRule的值一致。
 
 **请在语言包validation.php中做好翻译**
+
+#API无会话支持
+
+###1. 请求url
+* 短信:
+scheme://your-domain.com/sms/verify-code
+
+* 语音:
+scheme://your-domain.com/sms/voice-verify
+
+###2. 参数
+| 参数名  |  必填    | 说明    | 示例      |
+| -----  | :-----: | :------: | :-------: |
+| mobile | 是      | 手机号   | `18280......` |
+| mobileRule | 否  | 手机号检测规则 | 默认为`mobile_required` |
+| seconds | 是     | 请求间隔，单位秒 | `60` |
+| uuid   | 是      | 唯一标识符 |  |
+
+###3. 服务端验证
+
+给每个验证规则后加上参数`$uuid`
+```php
+   $uuid = $request->input('uuid');
+   $validator = Validator::make(Input::all(), [
+        'mobile'     => "required|confirm_mobile_not_change:$uuid",
+        'verifyCode' => "required|verify_code:$uuid|confirm_mobile_rule:mobile_required,$uuid",
+        //more...
+   ]);
+```
+
 
 #自定义代理器
 
