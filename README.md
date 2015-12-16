@@ -5,14 +5,14 @@ laravel-sms v2.0是基于[phpsms](https://github.com/toplan/phpsms)针对laravel
 > phpsms的请求负载均衡功能由[task-balancer](https://github.com/toplan/task-balancer)提供。
 
 phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自己的service provider，也就是说你完全可以在laravel框架下无障碍的独立使用phpsms。
-这也是为什么使用laravel-sms会在项目中生产两个配置文件(phpsms.php和laravel-sms.php)的根本原因。
+这也是为什么使用laravel-sms会在项目中生成两个配置文件(phpsms.php和laravel-sms.php)的根本原因。
 
-> config/phpsms.php负责配置代理器参数设置以及规划如何最优调度代理器(由phpsms提供)。
+> config/phpsms.php负责配置代理器参数以及规划如何最优调度代理器(由phpsms提供)。
 > config/laravel-sms.php则全职负责验证码发送/验证模块的配置(由laravel-sms提供)。
 
 ###2. why me
 
-那么既然有了phpsms，为什么还需要laravel-sms呢？
+既然有了phpsms，为什么还需要laravel-sms呢？
 为了更进一步提高开发效率，laravel-sms在phpsms的基础上针对laravel框架定制好了如下功能：
 
 * 队列工作方式
@@ -39,18 +39,21 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
 | [SUBMAIL](http://submail.cn)           | yes | no  | no      |￥100(1千条) |￥0.100/条|
 | [云之讯](http://www.ucpaas.com/)        | yes | no  | yes     |            |￥0.050/条|
 
-# 安装
+# 安装2.0
 在项目根目录下运行如下composer命令:
 ```php
-   //安装1.0版本
-   composer require 'toplan/laravel-sms:1.0.2',
-
-   //安装2.0版本(推荐)
+   //安装2.0版本
    composer require 'toplan/laravel-sms:~2.0.5',
 
    //安装开发中版本
    composer require 'toplan/laravel-sms:dev-master'
 ```
+
+> **安装1.0**
+> [v1.0文档](https://github.com/toplan/laravel-sms/tree/l5)
+> ```php
+>   composer require 'toplan/laravel-sms:1.0.2',
+> ```
 
 # 快速上手
 
