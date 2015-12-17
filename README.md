@@ -43,13 +43,14 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
 在项目根目录下运行如下composer命令:
 ```php
    //安装2.0版本
-   composer require 'toplan/laravel-sms:~2.0.5',
+   composer require 'toplan/laravel-sms:~2.0.6',
 
    //安装开发中版本
    composer require 'toplan/laravel-sms:dev-master'
 ```
 
 > **安装1.0**
+>
 > [v1.0文档](https://github.com/toplan/laravel-sms/tree/l5)
 > ```php
 >   composer require 'toplan/laravel-sms:1.0.2',
@@ -131,67 +132,9 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
   PhpSms::voice($code)->to($to)->send();
 ```
 
-###4.常用的语法糖
+###4.语法糖
 
-> 更多用法可以参看[phpsms](https://github.com/toplan/phpsms)
-
-* 创建一个短信实例
-```php
-   $sms = PhpSms::make();
-```
-
-* 创建一个语言验证码实例
-```php
-   $sms = PhpSms::voice($code);
-```
-
-* 发送给谁
-```php
-   $sms = $sms->to('1828*******');
-```
-
-* 设置模板ID
-
-可以指定代理器进行设置或批量设置:
-```php
-   //静态方法设置，并返回sms实例
-   $sms = PhpSms::make(['YunTongXun' => '20001', 'SubMail' => 'xxx', ...]);
-   //设置指定服务商的模板id
-   $sms = $sms->template('YunTongXun', '20001')->template('SubMail', 'xxx');
-   //一次性设置多个服务商的模板id
-   $sms = $sms->template(['YunTongXun' => '20001', 'SubMail' => 'xxx', ...]);
-```
-
-* 设置模板短信的模板数据
-```php
-  $sms = $sms->data([
-        'code' => $code,
-        'minutes' => $minutes
-      ]);
-```
-
-* 设置内容短信的内容
-
-  有些服务商(如YunPian,Luosimao)只支持内容短信(即直接发送短信内容)，不支持模板，那么就需要设置短信内容。
-```php
-  $sms = $sms->content('【签名】亲爱的张三，您的订单号是281xxxx，祝你购物愉快。');
-```
-
-* 临时指定代理器
-
-  可以针对某条短信/语音验证码指定一个代理器进行发送。
-```php
-  $sms = $sms->agent('Luosimao');
-```
-
-* 发送短信
-```php
-  //遵循是否使用队列
-  $sms->send();
-
-  //绕开队列，强制发送
-  $sms->send(true);
-```
+**详情请参看[phpsms](https://github.com/toplan/phpsms)**
 
 #短信队列
 
