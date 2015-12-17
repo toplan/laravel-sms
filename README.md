@@ -134,7 +134,7 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
 
 ###4.语法糖
 
-**详情请参看[phpsms](https://github.com/toplan/phpsms)**
+详情请参看[phpsms](https://github.com/toplan/phpsms#api)
 
 #短信队列
 
@@ -280,7 +280,7 @@ scheme://your-domain.com/sms/voice-verify
 
 #自定义代理器
 
-详情请参看[phpsms](https://github.com/toplan/phpsms)
+详情请参看[phpsms](https://github.com/toplan/phpsms#自定义代理器)
 
 #License
 
