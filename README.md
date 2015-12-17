@@ -61,7 +61,7 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
 
 在config/app.php文件中providers数组里加入：
 ```php
-   Toplan\PhpSms\PhpSmsServiceProvide::class,
+   Toplan\PhpSms\PhpSmsServiceProvider::class,
    Toplan\Sms\SmsManagerServiceProvider::class,
 ```
 
@@ -78,7 +78,7 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
    php artisan vendor:publish
 ```
 > 说明：
-> 这里会生产两个配置文件，分别为phpsms.php和laravel-sms.php。
+> 这里会生成两个配置文件，分别为phpsms.php和laravel-sms.php。
 > 其中phpsms.php负责配置代理器参数以及规划如何调度代理器。
 > laravel-sms.php则全职负责验证码发送/验证模块的配置。
 
