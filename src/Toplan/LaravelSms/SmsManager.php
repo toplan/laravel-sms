@@ -6,11 +6,11 @@ use \Validator;
 use \URL;
 class SmsManager
 {
-    const CUSTOM_RULE_FLAG = '[custom_rule_in_server]';
+    const CUSTOM_RULE_FLAG = '_custom_rule_in_server';
 
-    const CAN_RESEND_UNTIL = '[can_resend_until]';
+    const CAN_RESEND_UNTIL = '_can_resend_until';
 
-    const SMS_INFO_KEY = '[sms_info]';
+    const SMS_INFO_KEY = '_sms_info';
 
     /**
      * sent info
@@ -112,16 +112,11 @@ class SmsManager
     /**
      * retrieve sms sent info from storage
      * @param  $uuid
-     * @param  $all
      * @return mixed
      */
-    public function retrieveSentInfo($uuid = null, $all = false)
+    public function retrieveSentInfo($uuid = null)
     {
-        if ($all) {
-            $key = $this->getStoreKey($uuid);
-        } else {
-            $key = $this->getStoreKey($uuid, self::SMS_INFO_KEY);
-        }
+        $key = $this->getStoreKey($uuid, self::SMS_INFO_KEY);
         return $this->storage()->get($key, []);
     }
 
@@ -136,8 +131,22 @@ class SmsManager
     }
 
     /**
+     * retrieve debug info from storage
+     *
+     * @param null $uuid
+     *
+     * @return mixed
+     * @throws LaravelSmsException
+     */
+    public function retrieveDebugInfo($uuid = null)
+    {
+        $key = $this->getStoreKey($uuid);
+        return $this->storage()->get($key, []);
+    }
+
+    /**
      * get store key
-     * support split-> . : + * /
+     * support split character:'.', ':', '+', '*'
      * @return mixed
      */
     public function getStoreKey()
@@ -151,7 +160,7 @@ class SmsManager
             if ($arg) {
                 if (preg_match('/^[.:\+\*]+$/', $arg)) {
                     $split = $arg;
-                } elseif(preg_match('/^[^.:\+\*\s]+$/', $arg)) {
+                } elseif (preg_match('/^[^.:\+\*\s]+$/', $arg)) {
                     array_push($appends, $arg);
                 }
             }
@@ -290,12 +299,13 @@ class SmsManager
     /**
      * forget custom mobile rule
      * @param $uuid
+     * @param $uri
      *
      * @throws LaravelSmsException
      */
-    public function forgetMobileRule($uuid)
+    public function forgetMobileRule($uuid, $uri = '')
     {
-        $key = $this->getStoreKey($uuid, self::CUSTOM_RULE_FLAG);
+        $key = $this->getStoreKey($uuid, self::CUSTOM_RULE_FLAG, $uri);
         $this->storage()->forget($key);
     }
 
@@ -417,6 +427,7 @@ class SmsManager
         if (!$input) {
             return $this->genResult(false, 'no_input_value');
         }
+        $rule = $rule ?: (isset($input['rule']) ? $input['rule'] : '');
         $uuid = isset($input['uuid']) ? $input['uuid'] : null;
         if (!$this->canSend($uuid)) {
             $seconds = $input['seconds'];
@@ -478,5 +489,21 @@ class SmsManager
             return $messages["$name"];
         }
         return $name;
+    }
+
+    /**
+     * overload property
+     *
+     * @param $name
+     *
+     * @return string
+     */
+    public function __get($name)
+    {
+        if ($name == 'CUSTOM_RULE_FLAG') {
+           return self::CUSTOM_RULE_FLAG;
+        }
+
+        return;
     }
 }

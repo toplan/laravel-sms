@@ -155,7 +155,37 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
 
 可以直接访问example.com/sms/info查看该模块是否可用，并可在该页面里观察验证码短信发送数据，方便你进行调试。
 
-###1.[浏览器端]请求发送带验证码短信
+###1.[服务器端]配置短信内容/模板
+
+* 填写你的验证码短信内容或模板标示符
+
+如果你使用的是内容短信(如云片网络,Luosimao)，则使用或修改'verifySmsContent'的值。
+配置文件config/laravel-sms.php:
+```php
+    'verifySmsContent' => '【填写签名】亲爱的用户，您的验证码是%s。有效期为%s分钟，请尽快验证'
+```
+
+如果你使用模板短信(如云通讯,SubMail)，需要到相应代理器中填写模板标示符。
+配置文件config/phpsms.php:
+```php
+   'YunTongXun' => [
+       //模板标示符
+       'verifySmsTemplateId' => 'your template id',
+   ]
+```
+
+* 修改或自定义发送前检测规则(可选)
+
+配置文件config/laravel-sms.php:
+```php
+  'use' => 'mobile_required',
+  'rules' => [
+      'mobile_required' => 'required|zh_mobile',
+      ...
+  ]
+```
+
+###2.[浏览器端]请求发送带验证码短信
 
 该包已经封装好浏览器端的插件(兼容jquery/zepto)，只需要为发送按钮添加扩展方法即可实现发送短信。
 ```html
@@ -181,38 +211,6 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
 > **注意:**
 > 如果你使用Luosimao语音验证码，请在配置文件中'Luosimao'中设置'voiceApikey'。
 
-###2.[服务器端]配置短信内容/模板
-
-
-* 填写你的验证码短信内容或模板标示符
-
-如果你使用的是内容短信(如云片网络,Luosimao)，则使用或修改'verifySmsContent'的值。
-配置文件config/laravel-sms.php:
-```php
-    'verifySmsContent' => '【填写签名】亲爱的用户，您的验证码是%s。有效期为%s分钟，请尽快验证'
-```
-
-如果你使用模板短信(如云通讯,SubMail)，需要到相应代理器中填写模板标示符。
-配置文件config/phpsms.php:
-```php
-   'YunTongXun' => [
-       //模板标示符
-       'verifySmsTemplateId' => 'your template id',
-   ]
-```
-
-* 修改或自定义发送前检测规则(可选)
-
-配置文件config/laravel-sms.php:
-```php
-  'rules' => [
-      //唯一性检测规则
-      'check_mobile_unique' => 'unique:users,mobile',//适用于注册
-      //存在性检测规则
-      'check_mobile_exists' => 'exists:users',//适用于找回密码和系统内业务验证
-  ]
-```
-
 ###3.[服务器端]合法性验证
 
 用户填写验证码并提交表单到服务器时，在你的控制器中需要验证手机号和验证码是否正确，你只需要加上如下代码即可：
@@ -224,6 +222,7 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
         //more...
    ]);
    if ($validator->fails()) {
+       //验证失败后建议清空存储的短信发送信息，防止用户重复试错
        \SmsManager::forgetSentInfo()
        return redirect()->back()->withErrors($validator);
    }
@@ -260,7 +259,7 @@ scheme://your-domain.com/sms/voice-verify
 实现一个接口为`Toplan\Sms\Storage`的存储器，
 并在config/laravel-sms.php中配置存储器。
 ```php
-'storage' => 'Toplan\Sms\SessionStorage',
+'storage' => 'Your\Namespace\SomeStorage',
 ```
 
 * 给每个验证规则后加上参数`$uuid`:
@@ -273,6 +272,7 @@ scheme://your-domain.com/sms/voice-verify
         //more...
    ]);
    if ($validator->fails()) {
+       //验证失败后建议清空存储的短信发送信息，防止用户重复试错
        \SmsManager::forgetSentInfo($uuid)
        return redirect()->back()->withErrors($validator);
    }
