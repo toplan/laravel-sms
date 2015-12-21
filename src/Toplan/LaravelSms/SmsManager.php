@@ -507,20 +507,4 @@ class SmsManager
         }
         return $name;
     }
-
-    /**
-     * overload property
-     *
-     * @param $name
-     *
-     * @return string
-     */
-    public function __get($name)
-    {
-        if ($name == 'CUSTOM_RULE_FLAG') {
-           return self::CUSTOM_RULE_FLAG;
-        }
-
-        return;
-    }
 }

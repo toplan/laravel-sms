@@ -57,6 +57,9 @@ class SmsManagerServiceProvider extends ServiceProvider
      */
     protected function initPhpSms()
     {
+        //export custom rule flag value
+        define('CUSTOM_RULE', SmsManager::CUSTOM_RULE_FLAG);
+
         // define how to use queue
         Sms::queue(function($sms, $data){
             $this->dispatch(new SendReminderSms($sms));
@@ -73,11 +76,12 @@ class SmsManagerServiceProvider extends ServiceProvider
                 return true;
             }
             $data = $task->data ?: [];
-            $id = DB::table('sms')->insertGetId([
+            $id = DB::table('laravel_sms')->insertGetId([
                 'to' => $data['to'],
                 'temp_id' => json_encode($data['templates']),
-                'data' => $data['voiceCode'] ?: json_encode($data['templateData']),
+                'data' => json_encode($data['templateData']),
                 'content' => $data['content'],
+                'voice_code' => $data['voiceCode'],
                 'created_at' => date('Y-m-d H:i:s', time())
             ]);
             $data['smsId'] = $id;
@@ -107,10 +111,10 @@ class SmsManagerServiceProvider extends ServiceProvider
             if ($result['success']) {
                 $dbData['sent_time'] = $finishedAt;
             } else {
-                DB::table('sms')->where('id', $smsId)->increment('fail_times');
+                DB::table('laravel_sms')->where('id', $smsId)->increment('fail_times');
                 $dbData['last_fail_time'] = $finishedAt;
             }
-            DB::table('sms')->where('id', $smsId)->update($dbData);
+            DB::table('laravel_sms')->where('id', $smsId)->update($dbData);
             DB::commit();
         });
     }
