@@ -1,7 +1,7 @@
 #Laravel Sms
 
-###1. 关于2.0
-laravel-sms v2.0是基于[phpsms](https://github.com/toplan/phpsms)针对laravel框架二次封装的短信发送库。
+###1. 关于v2.*
+laravel-sms v2.*是基于[phpsms](https://github.com/toplan/phpsms)针对laravel框架二次封装的短信发送库。
 > phpsms的请求负载均衡功能由[task-balancer](https://github.com/toplan/task-balancer)提供。
 
 phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自己的service provider，也就是说你完全可以在laravel框架下无障碍的独立使用phpsms。
@@ -12,7 +12,7 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
 
 ###2. why me
 
-既然有了phpsms，为什么还需要laravel-sms呢？
+那么既然有了phpsms，为什么还需要laravel-sms呢？
 为了更进一步提高开发效率，laravel-sms在phpsms的基础上针对laravel框架定制好了如下功能：
 
 * 队列工作方式
@@ -39,11 +39,11 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
 | [SUBMAIL](http://submail.cn)           | yes | no  | no      |￥100(1千条) |￥0.100/条|
 | [云之讯](http://www.ucpaas.com/)        | yes | no  | yes     |            |￥0.050/条|
 
-# 安装2.0
+# 安装
 在项目根目录下运行如下composer命令:
 ```php
-   //安装2.0版本
-   composer require 'toplan/laravel-sms:~2.0.6',
+   //安装2.1版本
+   composer require 'toplan/laravel-sms:~2.1.0',
 
    //安装开发中版本
    composer require 'toplan/laravel-sms:dev-master'
@@ -56,7 +56,7 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
 >   composer require 'toplan/laravel-sms:1.0.2',
 > ```
 
-# 快速上手
+# 快速上手v2.*
 
 ###1.注册服务提供器
 
@@ -74,7 +74,8 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
 
 ###2.参数配置
 
-   * 请先运行如下命令生成配置文件和migration文件
+* 请先运行如下命令生成配置文件和migration文件
+
 ```php
    php artisan vendor:publish
 ```
@@ -83,15 +84,15 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
 > 其中phpsms.php负责配置代理器参数以及规划如何调度代理器。
 > laravel-sms.php则全职负责验证码发送/验证模块的配置。
 
+* 在数据库中生成`laravel_sms`表[可选]
 
-   * 在数据库中生成sms表(可选)
 ```php
    php artisan migrate
 ```
 
-   * 设置代理器使用方案
+* 设置代理器使用方案
 
-   请在config/phpsms.php中设置代理服务商。
+请在config/phpsms.php中设置代理服务商。
 ```php
    'enable' => [
         //被使用概率为2/3
@@ -102,14 +103,13 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
    ];
 ```
 
-   * 配置代理服务商的相关参数
+* 配置代理服务商的相关参数
 
-   在config/phpsms.php中，找到你想要使用的代理器，并填写好配置信息。
-
+在config/phpsms.php中，找到你想要使用的代理器，并填写好配置信息。
 
 ###3.Enjoy it!
 
-  在控制器中发送触发短信，如：
+在控制器中发送触发短信，如：
 ```php
   //只希望使用模板方式发送短信,可以不设置内容content (如云通讯,Submail)
   PhpSms::make()->to('1828****349')->template('Luosimao', 'xxx')->data(['12345', 5])->send();
@@ -149,7 +149,6 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
 ```php
    php artisan queue:listen
 ```
-
 
 #验证码短信模块
 
@@ -237,23 +236,22 @@ PS:
 
 #无会话支持
 
-###1. 请求url
+###1. 请求地址
 * 短信:
 scheme://your-domain.com/sms/verify-code
 
 * 语音:
 scheme://your-domain.com/sms/voice-verify
 
-###2. 参数
+###2. 请求参数
 | 参数名  |  必填    | 说明    | 示例      |
 | -----  | :-----: | :------: | :-------: |
-| mobile | 是      | 手机号   | `18280......` |
-| mobileRule | 否  | 手机号检测规则 | 默认为`mobile_required` |
-| seconds | 是     | 请求间隔，单位秒 | `60` |
+| mobile | 是      | 手机号码  | `18280......` |
+| mobileRule | 否  | 手机号检测规则，默认`mobile_required` | `mobile_required` |
+| seconds | 是     | 请求间隔(秒)，默认`60` | `60` |
 | uuid   | 是      | 唯一标识符 |  |
 
 ###3. 服务端验证
-
 * 实现存储器:
 
 实现一个接口为`Toplan\Sms\Storage`的存储器，
@@ -263,7 +261,6 @@ scheme://your-domain.com/sms/voice-verify
 ```
 
 * 给每个验证规则后加上参数`$uuid`:
-
 ```php
    $uuid = $request->input('uuid');
    $validator = Validator::make(Input::all(), [
@@ -278,9 +275,47 @@ scheme://your-domain.com/sms/voice-verify
    }
 ```
 
-#自定义代理器
+#自定义开发
 
+###1. 自定义代理器
 详情请参看[phpsms](https://github.com/toplan/phpsms#自定义代理器)
+
+###2. 自定义Mobile验证规则
+
+* 定义规则
+```php
+//方式1:
+\SmsManager::storeMobileRule('required|zh_mobile|min:13');
+//rule的name默认为当前uri
+
+//方式2:
+\SmsManager::storeMobileRule([
+    'rule' => 'required|zh_mobile|min:13',//必须
+    'uuid' => '...',//可选，用于无会话api,
+    'name' => '...'//可选，给自定义rule取别名，默认为当前uri
+]);
+```
+
+> 存储的自定义规则访问example.com/sms/info查看。
+
+* 删除规则
+```php
+\SmsManager::forgetMobileRule([
+    'name' => '...',//必填
+    'uuid' => '...'//可选，用于无会话api,
+]);
+```
+
+* 验证规则
+```php
+$rule = CUSTOM_RULE;//注意$rule的使用!!!
+$uuid = $request->input('uuid', null);
+$validator = Validator::make($request->all(), [
+    ...
+    'verifyCode' => "required|verify_code:$uuid|confirm_mobile_rule:$rule,$uuid",
+    ...
+]);
+```
 
 #License
 
