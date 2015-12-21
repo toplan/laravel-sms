@@ -6,11 +6,11 @@ use \Validator;
 use \URL;
 class SmsManager
 {
-    const CUSTOM_RULE_FLAG = '[custom_rule_in_server]';
+    const CUSTOM_RULE_FLAG = '_custom_rule_in_server';
 
-    const CAN_RESEND_UNTIL = '[can_resend_until]';
+    const CAN_RESEND_UNTIL = '_can_resend_until';
 
-    const SMS_INFO_KEY = '[sms_info]';
+    const SMS_INFO_KEY = '_sms_info';
 
     /**
      * sent info
@@ -112,16 +112,11 @@ class SmsManager
     /**
      * retrieve sms sent info from storage
      * @param  $uuid
-     * @param  $all
      * @return mixed
      */
-    public function retrieveSentInfo($uuid = null, $all = false)
+    public function retrieveSentInfo($uuid = null)
     {
-        if ($all) {
-            $key = $this->getStoreKey($uuid);
-        } else {
-            $key = $this->getStoreKey($uuid, self::SMS_INFO_KEY);
-        }
+        $key = $this->getStoreKey($uuid, self::SMS_INFO_KEY);
         return $this->storage()->get($key, []);
     }
 
@@ -136,8 +131,22 @@ class SmsManager
     }
 
     /**
+     * retrieve debug info from storage
+     *
+     * @param null $uuid
+     *
+     * @return mixed
+     * @throws LaravelSmsException
+     */
+    public function retrieveDebugInfo($uuid = null)
+    {
+        $key = $this->getStoreKey($uuid);
+        return $this->storage()->get($key, []);
+    }
+
+    /**
      * get store key
-     * support split-> . : + * /
+     * support split character:'.', ':', '+', '*'
      * @return mixed
      */
     public function getStoreKey()
@@ -151,7 +160,7 @@ class SmsManager
             if ($arg) {
                 if (preg_match('/^[.:\+\*]+$/', $arg)) {
                     $split = $arg;
-                } elseif(preg_match('/^[^.:\+\*\s]+$/', $arg)) {
+                } elseif (preg_match('/^[^.:\+\*\s]+$/', $arg)) {
                     array_push($appends, $arg);
                 }
             }
@@ -208,8 +217,8 @@ class SmsManager
             //客户端rule合法，则使用
             $data = $this->getVerifyData('mobile');
             $realRule = $data['rules']["$ruleAlias"];
-        } else if ($customRule = $this->retrieveMobileRule($uuid)){
-            //是否在服务器端存储过rule
+        } else if ($customRule = $this->retrieveMobileRule($uuid, $ruleAlias)){
+            //在服务器端存储过rule
             $this->sentInfo['verify']['mobile']['use'] = self::CUSTOM_RULE_FLAG;
             $realRule = $customRule;
         } else {
@@ -254,48 +263,66 @@ class SmsManager
 
     /**
      * store custom mobile rule
-     * @param      $uuid
-     * @param null $customRule
+     *
+     * @param string|array $data
      *
      * @throws LaravelSmsException
      */
-    public function storeMobileRule($uuid, $customRule = null)
+    public function storeMobileRule($data)
     {
-        if ($customRule === null) {
-            $customRule = $uuid;
-            $uuid = null;
+        $uuid = $name = $rule = null;
+        if (is_array($data)) {
+            $uuid = isset($data['uuid']) ? $data['uuid'] : null;
+            $name = isset($data['name']) ? $data['name'] : null;
+            $rule = isset($data['rule']) ? $data['rule'] : null;
+        } elseif (is_string($data)) {
+            $rule = $data;
         }
-        $parsed = parse_url(URL::current());
-        $currentURI = $parsed['path'];
-        $key = $this->getStoreKey($uuid, self::CUSTOM_RULE_FLAG, $currentURI);
-        $this->storage()->set($key, $customRule);
+        if (!$name) {
+            $parsed = parse_url(URL::current());
+            $name = $parsed['path'];
+        }
+        $key = $this->getStoreKey($uuid, self::CUSTOM_RULE_FLAG, $name);
+        $this->storage()->set($key, $rule);
     }
 
     /**
      * retrieve custom mobile rule
+     *
      * @param $uuid
+     * @param string|null $name
      *
      * @return mixed
      * @throws LaravelSmsException
      */
-    public function retrieveMobileRule($uuid)
+    public function retrieveMobileRule($uuid, $name = null)
     {
-        $parsed = parse_url(URL::previous());
-        $previousURI = $parsed['path'];
-        $key = $this->getStoreKey($uuid, self::CUSTOM_RULE_FLAG, $previousURI);
+        if (!$name) {
+            $parsed = parse_url(URL::previous());
+            $realName = $parsed['path'];
+        } else {
+            $realName = $name;
+        }
+        $key = $this->getStoreKey($uuid, self::CUSTOM_RULE_FLAG, $realName);
         $customRule = $this->storage()->get($key, '');
+        if ($name && !$customRule) {
+            return $this->retrieveMobileRule($uuid, null);
+        }
         return $customRule;
     }
 
     /**
      * forget custom mobile rule
-     * @param $uuid
+     *
+     * @param array $data
      *
      * @throws LaravelSmsException
      */
-    public function forgetMobileRule($uuid)
+    public function forgetMobileRule(array $data = [])
     {
-        $key = $this->getStoreKey($uuid, self::CUSTOM_RULE_FLAG);
+        $uuid = isset($data['uuid']) ? $data['uuid'] : null;
+        $name = isset($data['name']) ? $data['name'] : null;
+        $key = $this->getStoreKey($uuid, self::CUSTOM_RULE_FLAG, $name);
         $this->storage()->forget($key);
     }
 
@@ -417,6 +444,7 @@ class SmsManager
         if (!$input) {
             return $this->genResult(false, 'no_input_value');
         }
+        $rule = $rule ?: (isset($input['rule']) ? $input['rule'] : '');
         $uuid = isset($input['uuid']) ? $input['uuid'] : null;
         if (!$this->canSend($uuid)) {
             $seconds = $input['seconds'];
