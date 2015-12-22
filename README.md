@@ -1,7 +1,8 @@
 #Laravel Sms
 
-###1. 关于v2.*
-laravel-sms v2.*是基于[phpsms](https://github.com/toplan/phpsms)针对laravel框架二次封装的短信发送库。
+###1. 关于v2
+laravel-sms v2是基于[phpsms](https://github.com/toplan/phpsms)针对laravel框架二次封装的短信发送库。
+相较于v1版本，v2是使用新思路全新重构的版本，并且升级备用代理器机制为[代理器均衡调度机制](#2.3代理器均衡调度机制)。
 > phpsms的请求负载均衡功能由[task-balancer](https://github.com/toplan/task-balancer)提供。
 
 phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自己的service provider，也就是说你完全可以在laravel框架下无障碍的独立使用phpsms。
@@ -25,11 +26,10 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
 2. 支持模板短信和内容短信(由phpsms提供)。
 3. [短信队列](#短信队列)(由phpsms提供)。
 4. 支持语音验证码(由phpsms提供)。
-5. 请求请求分发负载均衡(由phpsms提供)。
-6. 备用代理器(由phpsms提供)。
-7. 集成[验证码短信发送/校验模块](#验证码短信模块)，从此告别重复写验证码短信发送与校验的历史。
-8. 验证码发送/验证模块的[json API无session支持](#无会话支持)。
-9. 集成如下第三方短信服务商，你也可[自定义代理器](#自定义代理器)(由phpsms提供)。
+5. [代理器均衡调度机制](#2.3代理器均衡调度机制)(由phpsms提供)。
+6. 集成[验证码短信发送/校验模块](#验证码短信模块)，从此告别重复写验证码短信发送与校验的历史。
+7. 验证码发送/验证模块的[json API无session支持](#无会话支持)。
+8. 集成如下第三方短信服务商，你也可[自定义代理器](#自定义代理器)(由phpsms提供)。
 
 | 服务商 | 模板短信 | 内容短信 | 语音验证码 | 最低消费  |  最低消费单价 |
 | ----- | :-----: | :-----: | :------: | :-------: | :-----: |
@@ -42,7 +42,7 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
 # 安装
 在项目根目录下运行如下composer命令:
 ```php
-   //安装2.1版本
+   //安装2.1版本(推荐)
    composer require 'toplan/laravel-sms:~2.1.0',
 
    //安装开发中版本
@@ -56,7 +56,7 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
 >   composer require 'toplan/laravel-sms:1.0.2',
 > ```
 
-# 快速上手v2.*
+# 快速上手v2
 
 ###1.注册服务提供器
 
@@ -74,7 +74,7 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
 
 ###2.参数配置
 
-* 请先运行如下命令生成配置文件和migration文件
+####2.1 请先运行如下命令生成配置文件和migration文件
 
 ```php
    php artisan vendor:publish
@@ -84,15 +84,15 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
 > 其中phpsms.php负责配置代理器参数以及规划如何调度代理器。
 > laravel-sms.php则全职负责验证码发送/验证模块的配置。
 
-* 在数据库中生成`laravel_sms`表[可选]
+####2.2 在数据库中生成`laravel_sms`表[可选]
 
 ```php
    php artisan migrate
 ```
 
-* 设置代理器使用方案
+####2.3 代理器均衡调度机制
 
-请在config/phpsms.php中设置代理服务商。
+请在config/phpsms.php中设置代理器的均衡调度方案。
 ```php
    'enable' => [
         //被使用概率为2/3
@@ -100,10 +100,18 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
 
         //被使用概率为1/3，且为备用代理器
         'YunPian' => '10 backup',
+
+        //仅为备用代理器
+        'YunTongXun' => '0 backup',
    ];
 ```
 
-* 配置代理服务商的相关参数
+**调度方案解析：**
+如果按照以上配置，那么系统首次会尝试使用`Luosimao`或`YunPian`发送短信，且它们被使用的概率分别为`2/3`和`1/3`。
+如果使用其中一个代理器发送失败，那么会启用备用代理器，按照配置可知备用代理器有`YunPian`和`YunTongXun`，那么会依次调用直到发送成功或无备用代理器可用。
+值得注意的是，如果首次尝试的是`YunPian`，那么备用代理器将会只会使用`YunTongXun`，也就是会排除使用过的代理器。
+
+####2.4 配置代理服务商的相关参数
 
 在config/phpsms.php中，找到你想要使用的代理器，并填写好配置信息。
 
