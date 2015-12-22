@@ -230,7 +230,7 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
    ]);
    if ($validator->fails()) {
        //验证失败后建议清空存储的短信发送信息，防止用户重复试错
-       \SmsManager::forgetSentInfo()
+       \SmsManager::forgetSentInfo();
        return redirect()->back()->withErrors($validator);
    }
 ```
