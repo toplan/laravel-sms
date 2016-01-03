@@ -22,28 +22,21 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
 
 # 特点
 
-1. 数据库记录/管理短信数据及其发送情况[可选]。
-2. 支持模板短信和内容短信(由phpsms提供)。
-3. [短信队列](#短信队列)(由phpsms提供)。
-4. 支持语音验证码(由phpsms提供)。
-5. [代理器均衡调度机制](#24-代理器均衡调度机制)(由phpsms提供)。
-6. 集成[验证码短信发送/校验模块](#验证码短信模块)，从此告别重复写验证码短信发送与校验的历史。
-7. 验证码发送/验证模块的[json API无session支持](#无会话支持)。
-8. 集成如下第三方短信服务商，你也可[自定义代理器](#自定义代理器)(由phpsms提供)。
-
-| 服务商 | 模板短信 | 内容短信 | 语音验证码 | 最低消费  |  最低消费单价 |
-| ----- | :-----: | :-----: | :------: | :-------: | :-----: |
-| [Luosimao](http://luosimao.com)        | no  | yes |  yes    |￥850(1万条) |￥0.085/条|
-| [云片网络](http://www.yunpian.com)       | no | yes  | yes    |￥55(1千条)  |￥0.055/条|
-| [容联·云通讯](http://www.yuntongxun.com) | yes | no  | yes    |充值￥500    |￥0.055/条|
-| [SUBMAIL](http://submail.cn)           | yes | no  | no      |￥100(1千条) |￥0.100/条|
-| [云之讯](http://www.ucpaas.com/)        | yes | no  | yes     |            |￥0.050/条|
+1. 支持模板短信和内容短信(由phpsms提供)。
+2. [短信队列](#短信队列)(由phpsms提供)。
+3. 支持语音验证码(由phpsms提供)。
+4. [代理器均衡调度机制](#24-代理器均衡调度机制)(由phpsms提供)。
+5. 集成[国内主流第三方短信服务商](https://github.com/toplan/phpsms#服务商)(由phpsms提供)
+6. [自定义代理器](https://github.com/toplan/phpsms#自定义代理器)和性感的[寄生代理器](https://github.com/toplan/phpsms#寄生代理器)。(由phpsms提供)。
+7. 数据库记录/管理短信数据及其发送情况[可选]。
+8. 集成[验证码短信发送/校验模块](#验证码短信模块)，从此告别重复写验证码短信发送与校验的历史。
+9. 验证码发送/验证模块的[无session支持](#无会话支持)。
 
 # 安装
 在项目根目录下运行如下composer命令:
 ```php
-   //安装2.1版本(推荐)
-   composer require 'toplan/laravel-sms:~2.1.0',
+   //安装2.2版本(推荐)
+   composer require 'toplan/laravel-sms:~2.2.0',
 
    //安装开发中版本
    composer require 'toplan/laravel-sms:dev-master'
