@@ -82,4 +82,11 @@ return [
     'storage' => 'Toplan\Sms\SessionStorage',
 
     'storePrefixKey' => 'laravel_sms_info',
+
+    /*
+     * -----------------------------------
+     * queue job
+     * -----------------------------------
+     */
+    'queueJob' => 'App\Jobs\SendReminderSms',
 ];

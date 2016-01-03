@@ -61,8 +61,12 @@ class SmsManagerServiceProvider extends ServiceProvider
         define('CUSTOM_RULE', SmsManager::CUSTOM_RULE_FLAG);
 
         // define how to use queue
-        Sms::queue(function($sms, $data){
-            $this->dispatch(new SendReminderSms($sms));
+        $queueJob = config('laravel-sms.queueJob', 'App\Jobs\SendReminderSms');
+        if (!class_exists($queueJob)) {
+            throw new LaravelSmsException("Class [$queueJob] does not exists.");
+        }
+        Sms::queue(function($sms, $data) use ($queueJob){
+            $this->dispatch(new $queueJob($sms));
             return [
                 'success' => true,
                 'after_push_to_queue' => true,

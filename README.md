@@ -325,6 +325,12 @@ $validator = Validator::make($request->all(), [
 ]);
 ```
 
+###3. 自定义队列Job
+
+如果你运行过`php artisan app:name`修改应用名称，或者需要自己实现队列工作逻辑，
+那么你需要自己实现一个Job class，然后在config/laravel-sms.php中键为`queueJob`处配置你使用的Job class哦。
+值得注意的是你的Job class构造函数的第一个参数是`Toplan\PhpSms\Sms`的实例，你只需要调用他的`send()`方法即可。
+
 #License
 
 MIT
