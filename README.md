@@ -36,7 +36,7 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
 在项目根目录下运行如下composer命令:
 ```php
    //安装2.2版本(推荐)
-   composer require 'toplan/laravel-sms:~2.2.0',
+   composer require 'toplan/laravel-sms:~2.2.1',
 
    //安装开发中版本
    composer require 'toplan/laravel-sms:dev-master'
@@ -271,7 +271,7 @@ scheme://your-domain.com/sms/voice-verify
    ]);
    if ($validator->fails()) {
        //验证失败后建议清空存储的短信发送信息，防止用户重复试错
-       \SmsManager::forgetSentInfo($uuid)
+       \SmsManager::forgetSentInfo($uuid);
        return redirect()->back()->withErrors($validator);
    }
 ```

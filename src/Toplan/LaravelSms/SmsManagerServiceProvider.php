@@ -62,10 +62,10 @@ class SmsManagerServiceProvider extends ServiceProvider
 
         // define how to use queue
         $queueJob = config('laravel-sms.queueJob', 'App\Jobs\SendReminderSms');
-        if (!class_exists($queueJob)) {
-            throw new LaravelSmsException("Class [$queueJob] does not exists.");
-        }
         Sms::queue(function($sms, $data) use ($queueJob){
+            if (!class_exists($queueJob)) {
+                throw new LaravelSmsException("Class [$queueJob] does not exists.");
+            }
             $this->dispatch(new $queueJob($sms));
             return [
                 'success' => true,
