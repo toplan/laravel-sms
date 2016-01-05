@@ -350,9 +350,7 @@ class SmsManager
         foreach ($enableAgents as $name => $opts) {
             if (isset($agentsConfig["$name"])) {
                 if (isset($agentsConfig["$name"]['verifySmsTemplateId'])) {
-                    array_push($templates, [
-                        $name => $agentsConfig["$name"]['verifySmsTemplateId']
-                    ]);
+                    $templates[$name] = $agentsConfig["$name"]['verifySmsTemplateId'];
                 }
             }
         }
