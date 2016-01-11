@@ -37,7 +37,7 @@
             data : {
                 _token:opts.token,
                 seconds:opts.seconds,
-                uuid:opts.uuid,
+                token:opts.token,
                 mobile:mobile,
                 mobileRule:opts.mobileRule
             },
@@ -78,7 +78,6 @@
         mobileRule     : '',
         mobileSelector : '',
         seconds        : 60,
-        uuid           : '',
         voice          : false,
         domain         : '',
         alertMsg       : function (msg, type) {

@@ -18,9 +18,12 @@ class SmsController extends Controller
     {
         $mobile = $request->input('mobile', null);
         $rule = $request->input('mobileRule', null);
-        $uuid = $request->input('uuid', null);
+        $token = $request->input('token', null);
+        if (!$token) {
+            $token = $request->input('uuid', null);
+        }
         $seconds = $request->input('seconds', 60);
-        return compact('mobile', 'rule', 'uuid', 'seconds');
+        return compact('mobile', 'rule', 'token', 'seconds');
     }
 
     public function postVoiceVerify(Request $request)
