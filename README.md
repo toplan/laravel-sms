@@ -36,7 +36,7 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
 在项目根目录下运行如下composer命令:
 ```php
    //安装2.2版本(推荐)
-   composer require 'toplan/laravel-sms:~2.2.2',
+   composer require 'toplan/laravel-sms:~2.2.3',
 
    //安装开发中版本
    composer require 'toplan/laravel-sms:dev-master'
@@ -230,8 +230,12 @@ PhpSms::queue(function($sms, $data){
   <script>
      $('#sendVerifySmsButton').sms({
         //laravel csrf token value
-        //该token仅为laravel框架的csrf验证，不是json api所用的token
+        //PS:该token仅为laravel框架的csrf验证，不是无会话json api所用的token
         token          : "{{csrf_token()}}",
+
+        //json api token
+        //PS:如果你使用的是无会话json api，可以这样带上token
+        apiToken       : 'user token string...',
 
         //定义如何获取mobile的值
         mobileSelector : 'input[name="mobile"]',
