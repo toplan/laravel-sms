@@ -1,4 +1,4 @@
-preset: psr2
+preset: recommended
 
 enabled:
   - concat_with_spaces
