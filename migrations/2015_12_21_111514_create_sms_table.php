@@ -1,20 +1,19 @@
 <?php
 
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateSmsTable extends Migration {
-
-	/**
-	 * Run the migrations.
-	 *
-	 * @return void
-	 */
-	public function up()
-	{
-        Schema::create('laravel_sms', function(Blueprint $table)
-            {
+class CreateSmsTable extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::create('laravel_sms', function (Blueprint $table) {
                 //auto increment id
                 $table->increments('id');
                 //to:用于存储手机号
@@ -45,16 +44,15 @@ class CreateSmsTable extends Migration {
                 //2：content用于直接发送短信内容，不使用模板。
                 //3：voice_code用于存储语言验证码code。
             });
-	}
+    }
 
-	/**
-	 * Reverse the migrations.
-	 *
-	 * @return void
-	 */
-	public function down()
-	{
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
         Schema::dropIfExists('laravel_sms');
-	}
-
+    }
 }

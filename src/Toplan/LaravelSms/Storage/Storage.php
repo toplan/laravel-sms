@@ -1,8 +1,9 @@
 <?php
+
 namespace Toplan\Sms;
 
-interface Storage {
-
+interface Storage
+{
     public function set($key, $value);
 
     public function get($key, $default);
