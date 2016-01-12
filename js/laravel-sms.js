@@ -37,7 +37,6 @@
             data : {
                 _token:opts.token,
                 seconds:opts.seconds,
-                token:opts.token,
                 mobile:mobile,
                 mobileRule:opts.mobileRule
             },

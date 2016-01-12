@@ -91,56 +91,56 @@ class SmsManager
 
     /**
      * put sms sent info to storage
-     * @param       $uuid
+     * @param       $token
      * @param array $data
      *
      * @throws LaravelSmsException
      */
-    public function storeSentInfo($uuid, $data = [])
+    public function storeSentInfo($token, $data = [])
     {
-        if (is_array($uuid)) {
-            $data = $uuid;
-            $uuid = null;
+        if (is_array($token)) {
+            $data = $token;
+            $token = null;
         }
         if (is_array($data)) {
             $this->setSentInfo($data);
         }
-        $key = $this->getStoreKey($uuid, self::SMS_INFO_KEY);
+        $key = $this->getStoreKey($token, self::SMS_INFO_KEY);
         $this->storage()->set($key, $this->getSentInfo());
     }
 
     /**
      * retrieve sms sent info from storage
-     * @param  $uuid
+     * @param  $token
      * @return mixed
      */
-    public function retrieveSentInfo($uuid = null)
+    public function retrieveSentInfo($token = null)
     {
-        $key = $this->getStoreKey($uuid, self::SMS_INFO_KEY);
+        $key = $this->getStoreKey($token, self::SMS_INFO_KEY);
         return $this->storage()->get($key, []);
     }
 
     /**
      * forget sms sent info from storage
-     * @param  $uuid
+     * @param  $token
      */
-    public function forgetSentInfo($uuid = null)
+    public function forgetSentInfo($token = null)
     {
-        $key = $this->getStoreKey($uuid, self::SMS_INFO_KEY);
+        $key = $this->getStoreKey($token, self::SMS_INFO_KEY);
         $this->storage()->forget($key);
     }
 
     /**
      * retrieve debug info from storage
      *
-     * @param null $uuid
+     * @param null $token
      *
      * @return mixed
      * @throws LaravelSmsException
      */
-    public function retrieveDebugInfo($uuid = null)
+    public function retrieveDebugInfo($token = null)
     {
-        $key = $this->getStoreKey($uuid);
+        $key = $this->getStoreKey($token);
         return $this->storage()->get($key, []);
     }
 
@@ -205,11 +205,11 @@ class SmsManager
     /**
      * get real rule by name
      * @param $ruleAlias
-     * @param $uuid
+     * @param $token
      *
      * @return mixed
      */
-    public function getRealMobileRule($ruleAlias = '', $uuid = null)
+    public function getRealMobileRule($ruleAlias = '', $token = null)
     {
         $realRule = '';
         //尝试使用用户从客户端传递过来的rule
@@ -217,7 +217,7 @@ class SmsManager
             //客户端rule合法，则使用
             $data = $this->getVerifyData('mobile');
             $realRule = $data['rules']["$ruleAlias"];
-        } else if ($customRule = $this->retrieveMobileRule($uuid, $ruleAlias)){
+        } else if ($customRule = $this->retrieveMobileRule($token, $ruleAlias)){
             //在服务器端存储过rule
             $this->sentInfo['verify']['mobile']['use'] = self::CUSTOM_RULE_FLAG;
             $realRule = $customRule;
@@ -270,9 +270,9 @@ class SmsManager
      */
     public function storeMobileRule($data)
     {
-        $uuid = $name = $rule = null;
+        $token = $name = $rule = null;
         if (is_array($data)) {
-            $uuid = isset($data['uuid']) ? $data['uuid'] : null;
+            $token = isset($data['token']) ? $data['token'] : null;
             $name = isset($data['name']) ? $data['name'] : null;
             $rule = isset($data['rule']) ? $data['rule'] : null;
         } elseif (is_string($data)) {
@@ -282,20 +282,20 @@ class SmsManager
             $parsed = parse_url(URL::current());
             $name = $parsed['path'];
         }
-        $key = $this->getStoreKey($uuid, self::CUSTOM_RULE_FLAG, $name);
+        $key = $this->getStoreKey($token, self::CUSTOM_RULE_FLAG, $name);
         $this->storage()->set($key, $rule);
     }
 
     /**
      * retrieve custom mobile rule
      *
-     * @param $uuid
+     * @param $token
      * @param string|null $name
      *
      * @return mixed
      * @throws LaravelSmsException
      */
-    public function retrieveMobileRule($uuid, $name = null)
+    public function retrieveMobileRule($token, $name = null)
     {
         if (!$name) {
             $parsed = parse_url(URL::previous());
@@ -303,10 +303,10 @@ class SmsManager
         } else {
             $realName = $name;
         }
-        $key = $this->getStoreKey($uuid, self::CUSTOM_RULE_FLAG, $realName);
+        $key = $this->getStoreKey($token, self::CUSTOM_RULE_FLAG, $realName);
         $customRule = $this->storage()->get($key, '');
         if ($name && !$customRule) {
-            return $this->retrieveMobileRule($uuid, null);
+            return $this->retrieveMobileRule($token, null);
         }
         return $customRule;
     }
@@ -320,9 +320,9 @@ class SmsManager
      */
     public function forgetMobileRule(array $data = [])
     {
-        $uuid = isset($data['uuid']) ? $data['uuid'] : null;
+        $token = isset($data['token']) ? $data['token'] : null;
         $name = isset($data['name']) ? $data['name'] : null;
-        $key = $this->getStoreKey($uuid, self::CUSTOM_RULE_FLAG, $name);
+        $key = $this->getStoreKey($token, self::CUSTOM_RULE_FLAG, $name);
         $this->storage()->forget($key);
     }
 
@@ -396,14 +396,14 @@ class SmsManager
 
     /**
      * 设置可以发送短信的时间
-     * @param int $uuid
+     * @param int $token
      * @param int $seconds
      *
      * @return int
      */
-    public function storeCanSendTime($uuid, $seconds = 60)
+    public function setResendTime($token, $seconds = 60)
     {
-        $key = $this->getStoreKey($uuid, self::CAN_RESEND_UNTIL);
+        $key = $this->getStoreKey($token, self::CAN_RESEND_UNTIL);
         $time = time() + $seconds;
         $this->storage()->set($key, $time);
         return $time;
@@ -411,23 +411,23 @@ class SmsManager
 
     /**
      * 获取可以发送短信的时间
-     * @param int $uuid
+     * @param int $token
      * @return mixed
      */
-    protected function getCanSendTimeFromStorage($uuid = null)
+    protected function getCanSendTimeFromStorage($token = null)
     {
-        $key = $this->getStoreKey($uuid, self::CAN_RESEND_UNTIL);
+        $key = $this->getStoreKey($token, self::CAN_RESEND_UNTIL);
         return $this->storage()->get($key, 0);
     }
 
     /**
      * 判断能否发送
-     * @param  $uuid
+     * @param  $token
      * @return bool
      */
-    public function canSend($uuid = null)
+    public function canSend($token = null)
     {
-        return $this->getCanSendTimeFromStorage($uuid) <= time();
+        return $this->getCanSendTimeFromStorage($token) <= time();
     }
 
     /**
@@ -443,13 +443,13 @@ class SmsManager
             return $this->genResult(false, 'no_input_value');
         }
         $rule = $rule ?: (isset($input['rule']) ? $input['rule'] : '');
-        $uuid = isset($input['uuid']) ? $input['uuid'] : null;
-        if (!$this->canSend($uuid)) {
+        $token = isset($input['token']) ? $input['token'] : null;
+        if (!$this->canSend($token)) {
             $seconds = $input['seconds'];
             return $this->genResult(false, 'request_invalid', [$seconds]);
         }
         if ($this->isCheck('mobile')) {
-            $realRule = $this->getRealMobileRule($rule, $uuid);
+            $realRule = $this->getRealMobileRule($rule, $token);
             $validator = Validator::make($input, [
                 'mobile' => $realRule
             ]);
