@@ -1,4 +1,5 @@
 <?php
+
 namespace Toplan\Sms;
 
 class SessionStorage implements Storage
@@ -6,7 +7,7 @@ class SessionStorage implements Storage
     public function set($key, $value)
     {
         session([
-            $key => $value
+            $key => $value,
         ]);
     }
 
