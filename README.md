@@ -36,7 +36,7 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
 在项目根目录下运行如下composer命令:
 ```php
    //安装2.2版本(推荐)
-   composer require 'toplan/laravel-sms:~2.2.2',
+   composer require 'toplan/laravel-sms:~2.2.3',
 
    //安装开发中版本
    composer require 'toplan/laravel-sms:dev-master'
@@ -139,16 +139,52 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
 
 #短信队列
 
+###1. 启用/关闭队列
+
+判断当前队列状态：
+```php
+$enable = PhpSms::queue();//return true of false
+```
+
 开启/关闭队列的示例如下：
 ```php
-   //开启队列
-   PhpSms::queue(true);
-   //关闭队列
-   PhpSms::queue(false);
+//开启队列
+PhpSms::queue(true);
+//关闭队列
+PhpSms::queue(false);
 ```
-  如果你开启了队列，需要运行如下命名监听队列
+
+如果你开启了队列，需要运行如下命名监听队列
 ```php
-   php artisan queue:listen
+php artisan queue:listen
+```
+
+###2. 队列自定义
+
+如果你运行过`php artisan app:name`修改应用名称，或者需要自己实现队列工作逻辑，那么你需要进行自定义队列Job或者自定义队列流程（任选一种）。
+
+* 方式1：自定义队列Job
+
+该方式需要你自己实现一个Job class，然后在config/laravel-sms.php中键为`queueJob`处配置你使用的Job class哦。
+值得注意的是你的Job class构造函数的第一个参数是`Toplan\PhpSms\Sms`的实例，你只需要调用他的`send()`方法即可。
+
+* 方式2：自定义队列流程
+
+在发送短信前，你可以重新定义你的队列流程哦！
+
+```php
+//example:
+PhpSms::queue(function($sms, $data){
+    ...
+    //假设如此推入队列:
+    $this->dispatch(new yourQueueJobClass($sms));
+    ...
+    //请务必返回如下数据用以标记推入队列成功(否则会报错)：
+    return [
+        'success' => true,
+        'after_push_to_queue' => true,
+    ];
+});
 ```
 
 #验证码短信模块
@@ -193,14 +229,23 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
   <script src="/path/to/laravel-sms.js"></script>
   <script>
      $('#sendVerifySmsButton').sms({
-        //token value
+        //laravel csrf token value
+        //PS:该token仅为laravel框架的csrf验证，不是无会话json api所用的token
         token          : "{{csrf_token()}}",
+
+        //json api token
+        //PS:如果你使用的是无会话json api，可以这样带上token
+        apiToken       : 'user token string...',
+
         //定义如何获取mobile的值
         mobileSelector : 'input[name="mobile"]',
+
         //定义手机号的检测规则,当然你还可以到配置文件中自定义你想要的任何规则
         mobileRule     : 'mobile_required',
+
         //是否请求语音验证码
         voice          : false,
+
         //定义服务器有消息返回时如何展示，默认为alert
         alertMsg       :  function (msg, type) {
             alert(msg);
@@ -250,10 +295,10 @@ scheme://your-domain.com/sms/voice-verify
 | mobile | 是      | 手机号码  | `18280......` |
 | mobileRule | 否  | 手机号检测规则，默认`mobile_required` | `mobile_required` |
 | seconds | 是     | 请求间隔(秒)，默认`60` | `60` |
-| uuid   | 是      | 唯一标识符 |  |
+| token   | 是     | 唯一标识符 |  |
 
 ###3. 服务端验证
-* 实现存储器:
+* step1. 实现存储器:
 
 实现一个接口为`Toplan\Sms\Storage`的存储器，
 并在config/laravel-sms.php中配置存储器。
@@ -261,22 +306,22 @@ scheme://your-domain.com/sms/voice-verify
 'storage' => 'Your\Namespace\SomeStorage',
 ```
 
-* 给每个验证规则后加上参数`$uuid`:
+* step2. 给每个验证规则后加上参数`$token`:
 ```php
-   $uuid = $request->input('uuid');
+   $token = $request->input('token');
    $validator = Validator::make(Input::all(), [
-        'mobile'     => "required|confirm_mobile_not_change:$uuid",
-        'verifyCode' => "required|verify_code:$uuid|confirm_mobile_rule:mobile_required,$uuid",
+        'mobile'     => "required|confirm_mobile_not_change:$token",
+        'verifyCode' => "required|verify_code:$token|confirm_mobile_rule:mobile_required,$token",
         //more...
    ]);
    if ($validator->fails()) {
        //验证失败后建议清空存储的短信发送信息，防止用户重复试错
-       \SmsManager::forgetSentInfo($uuid);
+       \SmsManager::forgetSentInfo($token);
        return redirect()->back()->withErrors($validator);
    }
 ```
 
-#自定义开发
+#更多
 
 ###1. 自定义代理器
 详情请参看[phpsms](https://github.com/toplan/phpsms#自定义代理器)
@@ -292,7 +337,7 @@ scheme://your-domain.com/sms/voice-verify
 //方式2:
 \SmsManager::storeMobileRule([
     'rule' => 'required|zh_mobile|min:13',//必须
-    'uuid' => '...',//可选，用于无会话api,
+    'token' => '...',//可选，用于无会话api,
     'name' => '...'//可选，给自定义rule取别名，默认为当前uri
 ]);
 ```
@@ -303,26 +348,20 @@ scheme://your-domain.com/sms/voice-verify
 ```php
 \SmsManager::forgetMobileRule([
     'name' => '...',//必填
-    'uuid' => '...'//可选，用于无会话api,
+    'token' => '...'//可选，用于无会话api,
 ]);
 ```
 
 * 验证规则
 ```php
 $rule = CUSTOM_RULE;//注意$rule的使用!!!
-$uuid = $request->input('uuid', null);
+$token = $request->input('token', null);
 $validator = Validator::make($request->all(), [
     ...
-    'verifyCode' => "required|verify_code:$uuid|confirm_mobile_rule:$rule,$uuid",
+    'verifyCode' => "required|verify_code:$token|confirm_mobile_rule:$rule,$token",
     ...
 ]);
 ```
-
-###3. 自定义队列Job
-
-如果你运行过`php artisan app:name`修改应用名称，或者需要自己实现队列工作逻辑，
-那么你需要自己实现一个Job class，然后在config/laravel-sms.php中键为`queueJob`处配置你使用的Job class哦。
-值得注意的是你的Job class构造函数的第一个参数是`Toplan\PhpSms\Sms`的实例，你只需要调用他的`send()`方法即可。
 
 #License
 

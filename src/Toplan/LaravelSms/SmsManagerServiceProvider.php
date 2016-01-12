@@ -1,11 +1,11 @@
 <?php
+
 namespace Toplan\Sms;
 
-use App\Jobs\SendReminderSms;
+use DB;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Support\ServiceProvider;
 use Toplan\PhpSms\Sms;
-use DB;
 
 class SmsManagerServiceProvider extends ServiceProvider
 {
@@ -18,12 +18,12 @@ class SmsManagerServiceProvider extends ServiceProvider
     {
         //publish a config file
         $this->publishes([
-            __DIR__ . '/../../config/laravel-sms.php' => config_path('laravel-sms.php')
+            __DIR__ . '/../../config/laravel-sms.php' => config_path('laravel-sms.php'),
         ], 'config');
 
         //publish migrations
         $this->publishes([
-            __DIR__ . '/../../../migrations/' => database_path('/migrations')
+            __DIR__ . '/../../../migrations/' => database_path('/migrations'),
         ], 'migrations');
 
         //route file
@@ -47,7 +47,7 @@ class SmsManagerServiceProvider extends ServiceProvider
         $this->initPhpSms();
 
         // store to container
-        $this->app->singleton('SmsManager', function(){
+        $this->app->singleton('SmsManager', function () {
             return new SmsManager();
         });
     }
@@ -62,31 +62,32 @@ class SmsManagerServiceProvider extends ServiceProvider
 
         // define how to use queue
         $queueJob = config('laravel-sms.queueJob', 'App\Jobs\SendReminderSms');
-        Sms::queue(function($sms, $data) use ($queueJob){
+        Sms::queue(function ($sms, $data) use ($queueJob) {
             if (!class_exists($queueJob)) {
                 throw new LaravelSmsException("Class [$queueJob] does not exists.");
             }
             $this->dispatch(new $queueJob($sms));
+
             return [
-                'success' => true,
+                'success'             => true,
                 'after_push_to_queue' => true,
             ];
         });
 
         // before send hook
         // store sms data to database
-        Sms::beforeSend(function($task){
+        Sms::beforeSend(function ($task) {
             if (!config('laravel-sms.database_enable', false)) {
                 return true;
             }
             $data = $task->data ?: [];
             $id = DB::table('laravel_sms')->insertGetId([
-                'to' => $data['to'],
-                'temp_id' => json_encode($data['templates']),
-                'data' => json_encode($data['templateData']),
-                'content' => $data['content'],
+                'to'         => $data['to'],
+                'temp_id'    => json_encode($data['templates']),
+                'data'       => json_encode($data['templateData']),
+                'content'    => $data['content'],
                 'voice_code' => $data['voiceCode'],
-                'created_at' => date('Y-m-d H:i:s', time())
+                'created_at' => date('Y-m-d H:i:s', time()),
             ]);
             $data['smsId'] = $id;
             $task->data($data);
@@ -94,7 +95,7 @@ class SmsManagerServiceProvider extends ServiceProvider
 
         // after send hook
         // update sms data in database
-        Sms::afterSend(function($task, $result){
+        Sms::afterSend(function ($task, $result) {
             if (!config('laravel-sms.database_enable', false)) {
                 return true;
             }
