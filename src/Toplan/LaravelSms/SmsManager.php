@@ -1,9 +1,11 @@
 <?php
+
 namespace Toplan\Sms;
 
 use Toplan\PhpSms\Sms;
-use \Validator;
-use \URL;
+use URL;
+use Validator;
+
 class SmsManager
 {
     const CUSTOM_RULE_FLAG = '_custom_rule_in_server';
@@ -13,41 +15,44 @@ class SmsManager
     const SMS_INFO_KEY = '_sms_info';
 
     /**
-     * sent info
+     * sent info.
+     *
      * @var
      */
     protected $sentInfo;
 
     /**
-     * storage
+     * storage.
+     *
      * @var
      */
     protected static $storage;
 
     /**
-     * construct
+     * construct.
      */
-	public function __construct()
+    public function __construct()
     {
         $this->init();
     }
 
     /**
-     * sms manager init
+     * sms manager init.
      */
     private function init()
     {
         $this->sentInfo = [
-                'sent' => false,
-                'mobile' => '',
-                'code' => '',
+                'sent'          => false,
+                'mobile'        => '',
+                'code'          => '',
                 'deadline_time' => 0,
-                'verify' => config('laravel-sms.verify', []),
+                'verify'        => config('laravel-sms.verify', []),
             ];
     }
 
     /**
-     * get sent info
+     * get sent info.
+     *
      * @return mixed
      */
     public function getSentInfo()
@@ -56,9 +61,10 @@ class SmsManager
     }
 
     /**
-     * set sent data
+     * set sent data.
+     *
      * @param array $key
-     * @param null $data
+     * @param null  $data
      */
     public function setSentInfo($key, $data = null)
     {
@@ -72,9 +78,11 @@ class SmsManager
     }
 
     /**
-     * get storage
-     * @return null
+     * get storage.
+     *
      * @throws LaravelSmsException
+     *
+     * @return null
      */
     public function storage()
     {
@@ -84,13 +92,15 @@ class SmsManager
         $className = config('laravel-sms.storage', 'Toplan\Sms\SessionStorage');
         if (class_exists($className)) {
             self::$storage = new $className();
+
             return self::$storage;
         }
         throw new LaravelSmsException("Generator storage failed, don`t find class [$className]");
     }
 
     /**
-     * put sms sent info to storage
+     * put sms sent info to storage.
+     *
      * @param       $uuid
      * @param array $data
      *
@@ -110,18 +120,22 @@ class SmsManager
     }
 
     /**
-     * retrieve sms sent info from storage
+     * retrieve sms sent info from storage.
+     *
      * @param  $uuid
+     *
      * @return mixed
      */
     public function retrieveSentInfo($uuid = null)
     {
         $key = $this->getStoreKey($uuid, self::SMS_INFO_KEY);
+
         return $this->storage()->get($key, []);
     }
 
     /**
-     * forget sms sent info from storage
+     * forget sms sent info from storage.
+     *
      * @param  $uuid
      */
     public function forgetSentInfo($uuid = null)
@@ -131,22 +145,25 @@ class SmsManager
     }
 
     /**
-     * retrieve debug info from storage
+     * retrieve debug info from storage.
      *
      * @param null $uuid
      *
-     * @return mixed
      * @throws LaravelSmsException
+     *
+     * @return mixed
      */
     public function retrieveDebugInfo($uuid = null)
     {
         $key = $this->getStoreKey($uuid);
+
         return $this->storage()->get($key, []);
     }
 
     /**
      * get store key
-     * support split character:'.', ':', '+', '*'
+     * support split character:'.', ':', '+', '*'.
+     *
      * @return mixed
      */
     public function getStoreKey()
@@ -166,17 +183,20 @@ class SmsManager
             }
         }
         if ($appends) {
-            $prefix .= $split . implode($split, $appends);
+            $prefix .= $split.implode($split, $appends);
         }
+
         return $prefix;
     }
 
     /**
-     * get verify config
+     * get verify config.
+     *
      * @param $name
      *
-     * @return mixed
      * @throws LaravelSmsException
+     *
+     * @return mixed
      */
     protected function getVerifyData($name)
     {
@@ -190,7 +210,8 @@ class SmsManager
     }
 
     /**
-     * whether contain a character validation rule
+     * whether contain a character validation rule.
+     *
      * @param $name
      * @param $ruleName
      *
@@ -199,11 +220,13 @@ class SmsManager
     public function hasRule($name, $ruleName)
     {
         $data = $this->getVerifyData($name);
+
         return isset($data['rules']["$ruleName"]);
     }
 
     /**
-     * get real rule by name
+     * get real rule by name.
+     *
      * @param $ruleAlias
      * @param $uuid
      *
@@ -217,7 +240,7 @@ class SmsManager
             //客户端rule合法，则使用
             $data = $this->getVerifyData('mobile');
             $realRule = $data['rules']["$ruleAlias"];
-        } else if ($customRule = $this->retrieveMobileRule($uuid, $ruleAlias)){
+        } elseif ($customRule = $this->retrieveMobileRule($uuid, $ruleAlias)) {
             //在服务器端存储过rule
             $this->sentInfo['verify']['mobile']['use'] = self::CUSTOM_RULE_FLAG;
             $realRule = $customRule;
@@ -229,24 +252,29 @@ class SmsManager
                 $realRule = $data['rules']["$ruleName"];
             }
         }
+
         return $realRule;
     }
 
     /**
-     * get used rule`s alias
+     * get used rule`s alias.
+     *
      * @param $name
      *
-     * @return mixed
      * @throws LaravelSmsException
+     *
+     * @return mixed
      */
     public function getUsedRuleAlias($name)
     {
         $data = $this->getVerifyData($name);
+
         return $data['use'];
     }
 
     /**
-     * manual set verify rule
+     * manual set verify rule.
+     *
      * @param $name
      * @param $value
      *
@@ -256,13 +284,15 @@ class SmsManager
     {
         if ($this->hasRule($name, $value)) {
             $this->sentInfo['verify']["$name"]['use'] = $value;
+
             return true;
         }
+
         return false;
     }
 
     /**
-     * store custom mobile rule
+     * store custom mobile rule.
      *
      * @param string|array $data
      *
@@ -287,13 +317,14 @@ class SmsManager
     }
 
     /**
-     * retrieve custom mobile rule
+     * retrieve custom mobile rule.
      *
      * @param $uuid
      * @param string|null $name
      *
-     * @return mixed
      * @throws LaravelSmsException
+     *
+     * @return mixed
      */
     public function retrieveMobileRule($uuid, $name = null)
     {
@@ -308,11 +339,12 @@ class SmsManager
         if ($name && !$customRule) {
             return $this->retrieveMobileRule($uuid, null);
         }
+
         return $customRule;
     }
 
     /**
-     * forget custom mobile rule
+     * forget custom mobile rule.
      *
      * @param array $data
      *
@@ -327,7 +359,8 @@ class SmsManager
     }
 
     /**
-     * whether to verify character data
+     * whether to verify character data.
+     *
      * @param string $name
      *
      * @return mixed
@@ -335,11 +368,13 @@ class SmsManager
     public function isCheck($name = 'mobile')
     {
         $data = $this->getVerifyData($name);
-        return !!$data['enable'];
+
+        return (bool) $data['enable'];
     }
 
     /**
-     * get verify sms templates id
+     * get verify sms templates id.
+     *
      * @return array
      */
     public function getVerifySmsTemplates()
@@ -354,11 +389,13 @@ class SmsManager
                 }
             }
         }
+
         return $templates;
     }
 
     /**
-     * get verify sms content
+     * get verify sms content.
+     *
      * @return mixed
      */
     public function getVerifySmsContent()
@@ -367,7 +404,8 @@ class SmsManager
     }
 
     /**
-     * generate verify code
+     * generate verify code.
+     *
      * @param null $length
      * @param null $characters
      *
@@ -382,11 +420,13 @@ class SmsManager
         for ($i = 0; $i < $length; ++$i) {
             $randomString .= $characters[mt_rand(0, $charLength - 1)];
         }
+
         return $randomString;
     }
 
     /**
-     * get code valid time (minutes)
+     * get code valid time (minutes).
+     *
      * @return mixed
      */
     public function getCodeValidTime()
@@ -395,7 +435,8 @@ class SmsManager
     }
 
     /**
-     * 设置可以发送短信的时间
+     * 设置可以发送短信的时间.
+     *
      * @param int $uuid
      * @param int $seconds
      *
@@ -406,23 +447,29 @@ class SmsManager
         $key = $this->getStoreKey($uuid, self::CAN_RESEND_UNTIL);
         $time = time() + $seconds;
         $this->storage()->set($key, $time);
+
         return $time;
     }
 
     /**
-     * 获取可以发送短信的时间
+     * 获取可以发送短信的时间.
+     *
      * @param int $uuid
+     *
      * @return mixed
      */
     protected function getCanSendTimeFromStorage($uuid = null)
     {
         $key = $this->getStoreKey($uuid, self::CAN_RESEND_UNTIL);
+
         return $this->storage()->get($key, 0);
     }
 
     /**
      * 判断能否发送
+     *
      * @param  $uuid
+     *
      * @return bool
      */
     public function canSend($uuid = null)
@@ -431,13 +478,14 @@ class SmsManager
     }
 
     /**
-     * validator
+     * validator.
+     *
      * @param array  $input
      * @param string $rule
      *
      * @return array
      */
-    public function validator(Array $input, $rule = '')
+    public function validator(array $input, $rule = '')
     {
         if (!$input) {
             return $this->genResult(false, 'no_input_value');
@@ -446,35 +494,39 @@ class SmsManager
         $uuid = isset($input['uuid']) ? $input['uuid'] : null;
         if (!$this->canSend($uuid)) {
             $seconds = $input['seconds'];
+
             return $this->genResult(false, 'request_invalid', [$seconds]);
         }
         if ($this->isCheck('mobile')) {
             $realRule = $this->getRealMobileRule($rule, $uuid);
             $validator = Validator::make($input, [
-                'mobile' => $realRule
+                'mobile' => $realRule,
             ]);
             if ($validator->fails()) {
                 $msg = $validator->errors()->first();
                 $rule = $this->getUsedRuleAlias('mobile');
+
                 return $this->genResult(false, $rule, $msg);
             }
         }
+
         return $this->genResult(true, 'success');
     }
 
     /**
-     * generator validator result
+     * generator validator result.
+     *
      * @param        $pass
      * @param        $type
      * @param string $message
-     * @param Array  $data
+     * @param array  $data
      *
      * @return array
      */
     public function genResult($pass, $type, $message = '', $data = [])
     {
         $result = [];
-        $result['success'] = !!$pass;
+        $result['success'] = (bool) $pass;
         $result['type'] = $type;
         if (is_array($message)) {
             $data = $message;
@@ -484,15 +536,17 @@ class SmsManager
         if ($message && is_array($data) && count($data)) {
             try {
                 $message = vsprintf($message, $data);
-            } catch(\Exception $e) {
+            } catch (\Exception $e) {
             }
         }
         $result['message'] = $message;
+
         return $result;
     }
 
     /**
-     * get notify message
+     * get notify message.
+     *
      * @param $name
      *
      * @return null
@@ -503,6 +557,7 @@ class SmsManager
         if (array_key_exists($name, $messages)) {
             return $messages["$name"];
         }
+
         return $name;
     }
 }

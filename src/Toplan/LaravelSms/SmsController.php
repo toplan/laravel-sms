@@ -1,9 +1,10 @@
 <?php
+
 namespace Toplan\Sms;
 
-use \SmsManager;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use SmsManager;
 
 class SmsController extends Controller
 {
@@ -20,6 +21,7 @@ class SmsController extends Controller
         $rule = $request->input('mobileRule', null);
         $uuid = $request->input('uuid', null);
         $seconds = $request->input('seconds', 60);
+
         return compact('mobile', 'rule', 'uuid', 'seconds');
     }
 
@@ -65,17 +67,17 @@ class SmsController extends Controller
         }
 
         //send verify sms
-        $code     = SmsManager::generateCode();
-        $minutes  = SmsManager::getCodeValidTime();
+        $code = SmsManager::generateCode();
+        $minutes = SmsManager::getCodeValidTime();
         $templates = SmsManager::getVerifySmsTemplates();
         $template = SmsManager::getVerifySmsContent();
         try {
-            $content  = vsprintf($template, [$code, $minutes]);
+            $content = vsprintf($template, [$code, $minutes]);
         } catch (\Exception $e) {
             $content = $template;
         }
         $result = $this->phpSms->make($templates)->to($mobile)
-                         ->data(['code' => $code,'minutes' => $minutes])
+                         ->data(['code' => $code, 'minutes' => $minutes])
                          ->content($content)->send();
         if ($result['success']) {
             $data = SmsManager::getSentInfo();
