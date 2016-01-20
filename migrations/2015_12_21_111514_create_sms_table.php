@@ -19,11 +19,11 @@ class CreateSmsTable extends Migration
                 //to:用于存储手机号
                 $table->string('to')->default('');
                 //temp_id:存储模板标记，用于存储任何第三方服务商提供的短信模板标记/id
-                $table->text('temp_id')->default('');
+                $table->string('temp_id')->default('');
                 //data:模板短信的模板数据，建议json格式
-                $table->text('data')->default('');
+                $table->string('data')->default('');
                 //content:内容
-                $table->text('content')->default('');
+                $table->string('content')->default('');
                 //voice_code:语言验证码code
                 $table->string('voice_code')->default('');
                 //发送失败次数

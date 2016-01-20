@@ -85,8 +85,8 @@ class SmsManagerServiceProvider extends ServiceProvider
                 'to'         => $data['to'],
                 'temp_id'    => json_encode($data['templates']),
                 'data'       => json_encode($data['templateData']),
-                'content'    => $data['content'],
-                'voice_code' => $data['voiceCode'],
+                'content'    => $data['content'] ?: '',
+                'voice_code' => $data['voiceCode'] ?: '',
                 'created_at' => date('Y-m-d H:i:s', time()),
             ]);
             $data['smsId'] = $id;
