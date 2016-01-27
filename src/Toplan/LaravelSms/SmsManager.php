@@ -309,8 +309,12 @@ class SmsManager
             $rule = $data;
         }
         if (!$name) {
-            $parsed = parse_url(URL::current());
-            $name = $parsed['path'];
+            try {
+                $parsed = parse_url(URL::current());
+                $name = $parsed['path'];
+            } catch (\Exception $e) {
+                throw new LaravelSmsException('store the custom mobile failed, please set a name for custom rule.');
+            }
         }
         $key = $this->getStoreKey($token, self::CUSTOM_RULE_FLAG, $name);
         $this->storage()->set($key, $rule);
@@ -329,8 +333,12 @@ class SmsManager
     public function retrieveMobileRule($token, $name = null)
     {
         if (!$name) {
-            $parsed = parse_url(URL::previous());
-            $realName = $parsed['path'];
+            try {
+                $parsed = parse_url(URL::previous());
+                $realName = $parsed['path'];
+            } catch (\Exception $e) {
+                return null;
+            }
         } else {
             $realName = $name;
         }
