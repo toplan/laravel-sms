@@ -173,7 +173,7 @@ class SmsManager
         $split = '.';
         $appends = [];
         foreach ($args as $arg) {
-            $arg = (String) $arg;
+            $arg = (string) $arg;
             if ($arg) {
                 if (preg_match('/^[.:\+\*]+$/', $arg)) {
                     $split = $arg;
@@ -337,7 +337,7 @@ class SmsManager
                 $parsed = parse_url(URL::previous());
                 $realName = $parsed['path'];
             } catch (\Exception $e) {
-                return null;
+                return;
             }
         } else {
             $realName = $name;
