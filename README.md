@@ -36,7 +36,7 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
 在项目根目录下运行如下composer命令:
 ```php
    //安装2.2版本(推荐)
-   composer require 'toplan/laravel-sms:~2.2.6',
+   composer require 'toplan/laravel-sms:~2.2.7',
 
    //安装开发中版本
    composer require 'toplan/laravel-sms:dev-master'
@@ -141,7 +141,7 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
 
 ###1. 启用/关闭队列
 
-判断当前队列状态：
+`laravel-sms`已实现的短信队列默认是关闭的,判断当前队列状态：
 ```php
 $enable = PhpSms::queue();//return true of false
 ```
@@ -170,14 +170,14 @@ php artisan queue:listen
 
 * 方式2：自定义队列流程
 
-在发送短信前，你可以重新定义你的队列流程哦！
+在发送短信前，你可以完全重新定义你的队列流程哦！
 
 ```php
 //example:
 PhpSms::queue(function($sms, $data){
     ...
     //假设如此推入队列:
-    $this->dispatch(new yourQueueJobClass($sms));
+    $this->dispatch(new YourQueueJobClass($sms));
     ...
     //请务必返回如下数据用以标记推入队列成功(否则会报错)：
     return [
