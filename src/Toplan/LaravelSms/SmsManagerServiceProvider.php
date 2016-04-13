@@ -58,7 +58,7 @@ class SmsManagerServiceProvider extends ServiceProvider
     protected function initPhpSms()
     {
         //export custom rule flag value
-        define('CUSTOM_RULE', SmsManager::CUSTOM_RULE_FLAG);
+        if (! defined('CUSTOM_RULE')) define('CUSTOM_RULE', SmsManager::CUSTOM_RULE_FLAG);
 
         // define how to use queue
         $queueJob = config('laravel-sms.queueJob', 'App\Jobs\SendReminderSms');
