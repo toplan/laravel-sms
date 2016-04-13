@@ -58,7 +58,7 @@ class SmsManagerServiceProvider extends ServiceProvider
     protected function initPhpSms()
     {
         //export custom rule flag value
-        if (! defined('CUSTOM_RULE')) {
+        if (!defined('CUSTOM_RULE')) {
             define('CUSTOM_RULE', SmsManager::CUSTOM_RULE_FLAG);
         }
 
