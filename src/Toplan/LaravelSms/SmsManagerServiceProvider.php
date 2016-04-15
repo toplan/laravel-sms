@@ -5,7 +5,7 @@ namespace Toplan\Sms;
 use DB;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Support\ServiceProvider;
-use Toplan\PhpSms\Sms;
+use PhpSms as PS;
 
 class SmsManagerServiceProvider extends ServiceProvider
 {
@@ -64,7 +64,7 @@ class SmsManagerServiceProvider extends ServiceProvider
 
         // define how to use queue
         $queueJob = config('laravel-sms.queueJob', 'App\Jobs\SendReminderSms');
-        Sms::queue(false, function ($sms, $data) use ($queueJob) {
+        PS::queue(false, function ($sms, $data) use ($queueJob) {
             if (!class_exists($queueJob)) {
                 throw new LaravelSmsException("Class [$queueJob] does not exists.");
             }
@@ -78,7 +78,7 @@ class SmsManagerServiceProvider extends ServiceProvider
 
         // before send hook
         // store sms data to database
-        Sms::beforeSend(function ($task) {
+        PS::beforeSend(function ($task) {
             if (!config('laravel-sms.database_enable', false)) {
                 return true;
             }
@@ -97,7 +97,7 @@ class SmsManagerServiceProvider extends ServiceProvider
 
         // after send hook
         // update sms data in database
-        Sms::afterSend(function ($task, $result) {
+        PS::afterSend(function ($task, $result) {
             if (!config('laravel-sms.database_enable', false)) {
                 return true;
             }
