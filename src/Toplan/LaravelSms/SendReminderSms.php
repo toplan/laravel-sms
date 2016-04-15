@@ -1,25 +1,25 @@
 <?php
 
-namespace App\Jobs;
+namespace Toplan\Sms;
 
+use App\Jobs\Job;
 use Illuminate\Contracts\Bus\SelfHandling;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\SerializesModels;
 use Toplan\PhpSms\Sms;
 
 class SendReminderSms extends Job implements SelfHandling, ShouldQueue
 {
-    use InteractsWithQueue, SerializesModels;
+    use InteractsWithQueue;
 
     protected $sms;
 
     /**
      * Create a new job instance.
      *
-     * @return void
+     * @param Sms $sms
      */
-    public function __construct($sms)
+    public function __construct(Sms $sms)
     {
         $this->sms = $sms;
     }
@@ -31,8 +31,6 @@ class SendReminderSms extends Job implements SelfHandling, ShouldQueue
      */
     public function handle()
     {
-        if ($this->sms instanceof Sms) {
-            $this->sms->send();
-        }
+        $this->sms->send();
     }
 }

@@ -87,5 +87,5 @@ return [
      * queue job
      * -----------------------------------
      */
-    'queueJob' => 'App\Jobs\SendReminderSms',
+    'queueJob' => 'Toplan\Sms\SendReminderSms',
 ];
