@@ -9,21 +9,13 @@ Validator::extend('zh_mobile', function ($attribute, $value, $parameters) {
 Validator::extend('confirm_mobile_not_change', function ($attribute, $value, $parameters) {
     $token = isset($parameters[0]) ? $parameters[0] : null;
     $smsData = SmsManager::retrieveSentInfo($token);
-    if ($smsData && $smsData['mobile'] === $value) {
-        return true;
-    }
-
-    return false;
+    return $smsData && $smsData['mobile'] === $value;
 });
 
 Validator::extend('verify_code', function ($attribute, $value, $parameters) {
     $token = isset($parameters[0]) ? $parameters[0] : null;
     $smsData = SmsManager::retrieveSentInfo($token);
-    if ($smsData && $smsData['deadline_time'] >= time() && $smsData['code'] === $value) {
-        return true;
-    }
-
-    return false;
+    return $smsData && $smsData['deadline_time'] >= time() && $smsData['code'] === $value;
 });
 
 Validator::extend('confirm_mobile_rule', function ($attribute, $value, $parameters) {
@@ -32,9 +24,5 @@ Validator::extend('confirm_mobile_rule', function ($attribute, $value, $paramete
     }
     $token = isset($parameters[1]) ? $parameters[1] : null;
     $smsData = SmsManager::retrieveSentInfo($token);
-    if ($smsData && $smsData['verify']['mobile']['use'] === $parameters[0]) {
-        return true;
-    }
-
-    return false;
+    return $smsData && $smsData['verify']['mobile']['use'] === $parameters[0];
 });

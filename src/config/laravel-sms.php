@@ -1,44 +1,43 @@
 <?php
 
 return [
+    /*
+     | -----------------------------------
+     | 路由中间件
+     | -----------------------------------
+     */
+    'middleware' => 'web',
 
     /*
-     * -----------------------------------
-     * 是否数据库记录日志
-     * -----------------------------------
+     | -----------------------------------
+     | 是否数据库记录日志
+     | -----------------------------------
      */
     'database_enable' => false,
 
     /*
-     * -----------------------------------
-     * 验证码发送前合法性验证
-     * -----------------------------------
+     | -----------------------------------
+     | 验证码发送前数据合法性验证的验证规则
+     | -----------------------------------
      */
     'verify' => [
         'mobile' => [
             'enable' => true,
-
-            //default rule
+            //default static rule
             'use' => 'mobile_required',
-
-            //available rules
+            //available static rules
             'rules' => [
-
                 'mobile_required' => 'required|zh_mobile',
-
                 'check_mobile_unique' => 'required|zh_mobile|unique:users,mobile',
-
                 'check_mobile_exists' => 'required|zh_mobile|exists:users',
-
-                //add your rules here...
             ],
         ],
     ],
 
     /*
-     * -----------------------------------
-     * 验证码模块提示信息
-     * -----------------------------------
+     | -----------------------------------
+     | 验证码模块提示信息
+     | -----------------------------------
      */
     'notifies' => [
         // 频繁请求无效的提示
@@ -58,34 +57,31 @@ return [
     ],
 
     /*
-     * -----------------------------------
-     * 验证码短信相关配置
-     * -----------------------------------
-     * verifySmsContent: 验证码短信通用内容
-     * codeLength: 验证码长度
-     * codeValidTime: 验证码有效时间长度，单位为分钟(minutes)
+     | -----------------------------------
+     | 验证码短信相关配置
+     | -----------------------------------
+     | verifySmsContent: 验证码短信通用内容
+     | codeLength: 验证码长度
+     | codeValidTime: 验证码有效时间长度，单位为分钟(minutes)
      */
     'verifySmsContent' => '【your app signature】亲爱的用户，您的验证码是%s。有效期为%s分钟，请尽快验证',
-
     'codeLength' => 5,
-
     'codeValidTime' => 5,
 
     /*
-     * -----------------------------------
-     * Storage system
-     * -----------------------------------
-     * storePrefixKey: 存储key的prefix
-     * storage: 存储方式
+     | -----------------------------------
+     | 存储系统配置
+     | -----------------------------------
+     | prefix: 存储key的prefix
+     | storage: 存储方式,内置可选的有'Toplan\Sms\SessionStorage'和'Toplan\Sms\CacheStorage'
      */
+    'prefix' => 'laravel_sms',
     'storage' => 'Toplan\Sms\SessionStorage',
 
-    'storePrefixKey' => 'laravel_sms_info',
-
     /*
-     * -----------------------------------
-     * queue job
-     * -----------------------------------
+     | -----------------------------------
+     | 队列任务
+     | -----------------------------------
      */
     'queueJob' => 'Toplan\Sms\SendReminderSms',
 ];
