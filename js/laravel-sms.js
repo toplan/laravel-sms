@@ -35,11 +35,11 @@
             url  : url,
             type : 'post',
             data : {
-                _token:opts.token,
-                token:opts.apiToken,
-                seconds:opts.seconds,
-                mobile:mobile,
-                mobileRule:opts.mobileRule
+                _token: opts.token,
+                token: opts.apiToken,
+                seconds: opts.seconds,
+                mobile: mobile,
+                mobileRule: opts.mobileRule
             },
             success : function (data) {
                if (data.success) {
@@ -61,9 +61,7 @@
     function timer(elem, seconds, btnContent){
         if(seconds >= 0){
             setTimeout(function(){
-                //显示倒计时
                 elem.html(seconds + ' 秒后再次发送');
-                //递归
                 seconds -= 1;
                 timer(elem, seconds, btnContent);
             }, 1000);
@@ -85,5 +83,4 @@
             alert(msg);
         }
     };
-
 })(window.jQuery || window.Zepto);
