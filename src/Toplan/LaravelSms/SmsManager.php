@@ -509,6 +509,7 @@ class SmsManager
 
     /**
      * 根据模版和数据合成字符串
+     *
      * @param string $template
      * @param array  $data
      *
