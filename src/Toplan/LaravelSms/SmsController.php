@@ -16,13 +16,13 @@ class SmsController extends Controller
             return response()->json($verifyResult);
         }
 
-        $mobile  = $request->input('mobile', null);
-        $token   = $request->input('token', null);
+        $mobile = $request->input('mobile', null);
+        $token = $request->input('token', null);
         $seconds = $request->input('seconds', 60);
 
-        $code      = Manager::generateCode();
+        $code = Manager::generateCode();
         $templates = Manager::getVoiceTemplates();
-        $result    = Sms::voice($code)->template($templates)->data(['code' => $code])->to($mobile)->send();
+        $result = Sms::voice($code)->template($templates)->data(['code' => $code])->to($mobile)->send();
         if ($result === null || $result['success']) {
             $data = Manager::getSentInfo();
             $data['sent'] = true;
@@ -46,16 +46,16 @@ class SmsController extends Controller
             return response()->json($verifyResult);
         }
 
-        $mobile  = $request->input('mobile', null);
-        $token   = $request->input('token', null);
+        $mobile = $request->input('mobile', null);
+        $token = $request->input('token', null);
         $seconds = $request->input('seconds', 60);
 
-        $code        = Manager::generateCode();
-        $minutes     = Manager::getCodeValidTime();
-        $templates   = Manager::getSmsTemplates();
+        $code = Manager::generateCode();
+        $minutes = Manager::getCodeValidTime();
+        $templates = Manager::getSmsTemplates();
         $contentTemp = Manager::getVerifySmsContent();
-        $content     = Manager::vsprintf($contentTemp, [$code, $minutes]);
-        $result      = Sms::make($templates)->to($mobile)->data(['code' => $code, 'minutes' => $minutes])->content($content)->send();
+        $content = Manager::vsprintf($contentTemp, [$code, $minutes]);
+        $result = Sms::make($templates)->to($mobile)->data(['code' => $code, 'minutes' => $minutes])->content($content)->send();
         if ($result === null || $result['success']) {
             $data = Manager::getSentInfo();
             $data['sent'] = true;
