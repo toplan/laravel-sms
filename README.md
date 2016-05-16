@@ -320,7 +320,7 @@ scheme://your-domain/sms/voice-verify
 'middleware' => 'api',
 ```
 
-- 3.2 配置存储器
+- 3.2 配置存储器[可选]
 
 在`config/laravel-sms.php`中配置存储器。
 
@@ -377,7 +377,7 @@ if ($validator->fails()) {
 
 - 2.3.1 客户端
 
-设置`mobileRule`为上面定义的`name`, 如果为空则默认为当前uri
+设置`mobileRule`为上面定义验证规则时填写的`name`, 如果为空则默认为当前uri。
 
 - 2.3.2 服务器端
 

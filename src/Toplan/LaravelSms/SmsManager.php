@@ -102,10 +102,10 @@ class SmsManager
             return $className;
         }
         $middleware = config('laravel-sms.middleware', 'web');
-        if ($middleware === 'web' || in_array('web', $middleware)) {
+        if ($middleware === 'web' || (is_array($middleware) && in_array('web', $middleware))) {
             return 'Toplan\Sms\SessionStorage';
         }
-        if ($middleware === 'api' || in_array('api', $middleware)) {
+        if ($middleware === 'api' || (is_array($middleware) && in_array('api', $middleware))) {
             return 'Toplan\Sms\CacheStorage';
         }
     }
@@ -158,10 +158,10 @@ class SmsManager
         if ($validator->fails()) {
             $messages = $validator->errors();
             foreach (self::getValidFields() as $field) {
-                $msg = $messages->first($field);
-                if (empty($msg)) {
+                if (!$messages->has($field)) {
                     continue;
                 }
+                $msg = $messages->first($field);
                 $rule = $this->getUsedRule($field);
 
                 return self::genResult(false, $rule, $msg);

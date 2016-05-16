@@ -9,27 +9,16 @@ use SmsManager as Manager;
 
 class SmsController extends Controller
 {
-    private function parseInput($request)
-    {
-        $all = $request->all();
-        $mobile = $request->input('mobile', null);
-        $token = $request->input('token', null);
-        if (!$token) {
-            $token = $request->input('uuid', null);
-        }
-        $seconds = $request->input('seconds', 60);
-
-        return array_merge($all, compact('mobile', 'token', 'seconds'));
-    }
-
     public function postVoiceVerify(Request $request)
     {
-        extract($input = $this->parseInput($request));
-
-        $verifyResult = Manager::validate($input);
+        $verifyResult = Manager::validate($request->all());
         if (!$verifyResult['success']) {
             return response()->json($verifyResult);
         }
+
+        $mobile = $request->input('mobile', null);
+        $token = $request->input('token', null);
+        $seconds = $request->input('seconds', 60);
 
         $code = Manager::generateCode();
         $templates = Manager::getVoiceTemplates();
@@ -52,12 +41,14 @@ class SmsController extends Controller
 
     public function postSendCode(Request $request)
     {
-        extract($input = $this->parseInput($request));
-
-        $verifyResult = Manager::validate($input);
+        $verifyResult = Manager::validate($request->all());
         if (!$verifyResult['success']) {
             return response()->json($verifyResult);
         }
+
+        $mobile = $request->input('mobile', null);
+        $token = $request->input('token', null);
+        $seconds = $request->input('seconds', 60);
 
         $code = Manager::generateCode();
         $minutes = Manager::getCodeValidTime();
