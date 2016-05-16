@@ -33,7 +33,7 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
 在项目根目录下运行如下composer命令:
 ```php
 //安装v2版本(推荐)
-composer require 'toplan/laravel-sms:~2.4',
+composer require 'toplan/laravel-sms:^2.4.0',
 
 //安装开发中版本
 composer require 'toplan/laravel-sms:dev-master'
