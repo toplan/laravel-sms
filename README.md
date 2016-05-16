@@ -198,7 +198,7 @@ PhpSms::queue(function($sms, $data){
 
 如果你使用了内容短信(如云片网络,Luosimao)，则使用或修改'verifySmsContent'的值。
 
-> 配置文件config/laravel-sms.php
+> 配置文件为config/laravel-sms.php
 
 ```php
     'verifySmsContent' => '【填写签名】亲爱的用户，您的验证码是%s。有效期为%s分钟，请尽快验证'
@@ -206,7 +206,7 @@ PhpSms::queue(function($sms, $data){
 
 如果你使用了模板短信(如云通讯,SubMail)/模版语音(如阿里大鱼)，需要到相应代理器中填写模板标示符。
 
-> 配置文件config/phpsms.php
+> 配置文件为config/phpsms.php
 
 ```php
 'YunTongXun' => [
@@ -221,7 +221,7 @@ PhpSms::queue(function($sms, $data){
 
 - 配置静态mobile验证规则[可选]
 
-> 配置文件config/laravel-sms.php
+> 配置文件为config/laravel-sms.php
 
 ```php
 ...
