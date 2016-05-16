@@ -316,7 +316,7 @@ class SmsManager
      * 存储发送相关信息
      *
      * @param string|null $token
-     * @param array $data
+     * @param array       $data
      *
      * @throws LaravelSmsException
      */
@@ -359,7 +359,7 @@ class SmsManager
      * 设置可以发送的时间戳
      *
      * @param string|null $token
-     * @param int $seconds
+     * @param int         $seconds
      *
      * @return int
      */
