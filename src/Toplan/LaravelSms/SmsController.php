@@ -6,21 +6,20 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use PhpSms as Sms;
 use SmsManager as Manager;
-use Toplan\Sms\SmsManager as S;
 
 class SmsController extends Controller
 {
     private function parseInput($request)
     {
+        $all = $request->all();
         $mobile = $request->input('mobile', null);
-        $rule = $request->input('mobileRule', null);
         $token = $request->input('token', null);
         if (!$token) {
             $token = $request->input('uuid', null);
         }
         $seconds = $request->input('seconds', 60);
 
-        return compact('mobile', 'rule', 'token', 'seconds');
+        return array_merge($all, compact('mobile', 'token', 'seconds'));
     }
 
     public function postVoiceVerify(Request $request)
@@ -33,7 +32,7 @@ class SmsController extends Controller
         }
 
         $code = Manager::generateCode();
-        $templates = Manager::getTemplatesByKey(S::VOICE_VERIFY_TEMPLATE_KEY);
+        $templates = Manager::getVoiceTemplates();
         $result = Sms::voice($code)->template($templates)->data(['code' => $code])->to($mobile)->send();
         if ($result === null || $result['success']) {
             $data = Manager::getSentInfo();
@@ -42,7 +41,7 @@ class SmsController extends Controller
             $data['code'] = $code;
             $data['deadline_time'] = time() + (15 * 60);
             Manager::storeSentInfo($token, $data);
-            Manager::storeCanResendUntil($token, $seconds);
+            Manager::storeCanResendAfter($token, $seconds);
             $verifyResult = Manager::genResult(true, 'voice_send_success');
         } else {
             $verifyResult = Manager::genResult(false, 'voice_send_failure');
@@ -62,7 +61,7 @@ class SmsController extends Controller
 
         $code = Manager::generateCode();
         $minutes = Manager::getCodeValidTime();
-        $templates = Manager::getTemplatesByKey(S::VERIFY_SMS_TEMPLATE_KEY);
+        $templates = Manager::getSmsTemplates();
         $contentTemp = Manager::getVerifySmsContent();
         $content = Manager::vsprintf($contentTemp, [$code, $minutes]);
         $result = Sms::make($templates)->to($mobile)->data(['code' => $code, 'minutes' => $minutes])->content($content)->send();
@@ -73,7 +72,7 @@ class SmsController extends Controller
             $data['code'] = $code;
             $data['deadline_time'] = time() + ($minutes * 60);
             Manager::storeSentInfo($token, $data);
-            Manager::storeCanResendUntil($token, $seconds);
+            Manager::storeCanResendAfter($token, $seconds);
             $verifyResult = Manager::genResult(true, 'sms_send_success');
         } else {
             $verifyResult = Manager::genResult(false, 'sms_send_failure');
@@ -91,7 +90,7 @@ class SmsController extends Controller
         echo $html;
         $token = $token ?: $request->input('token', null);
         if (config('app.debug')) {
-            dump(Manager::retrieveDebugInfo($token));
+            dump(Manager::retrieveAll($token));
         } else {
             echo '<p align="center" style="color: red;">现在是非调试模式，无法查看验证码短信数据</p>';
         }

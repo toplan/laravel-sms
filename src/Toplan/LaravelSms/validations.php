@@ -27,5 +27,5 @@ Validator::extend('confirm_mobile_rule', function ($attribute, $value, $paramete
     $token = isset($parameters[1]) ? $parameters[1] : null;
     $smsData = SmsManager::retrieveSentInfo($token);
 
-    return $smsData && $smsData['verify']['mobile']['use'] === $parameters[0];
+    return $smsData && $smsData['verify']['mobile'] === $parameters[0];
 });
