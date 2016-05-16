@@ -132,7 +132,7 @@ class SmsManager
     /**
      * 验证数据
      *
-     * @param array  $input
+     * @param array $input
      *
      * @return array
      */
@@ -375,8 +375,9 @@ class SmsManager
      *
      * @param string|null $token
      *
-     * @return mixed
      * @throws LaravelSmsException
+     *
+     * @return mixed
      */
     public static function retrieveCanResendTime($token)
     {
@@ -439,8 +440,9 @@ class SmsManager
      * @param string $field
      * @param mixed  $token
      *
-     * @return mixed
      * @throws LaravelSmsException
+     *
+     * @return mixed
      */
     public static function retrieveAllRule($field, $token = null)
     {
@@ -479,6 +481,7 @@ class SmsManager
         $customRule = isset($customRules[$realName]) ? $customRules[$realName] : '';
         if ($name && !$customRule) {
             $data['name'] = null;
+
             return self::retrieveRule($field, $data);
         }
 
