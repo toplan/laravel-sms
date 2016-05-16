@@ -28,6 +28,7 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
 7. 数据库记录/管理短信数据及其发送情况[可选]。
 8. 集成[验证码短信发送/校验模块](#验证码短信模块)，从此告别重复写验证码短信发送与校验的历史。
 9. 验证码发送/验证模块的[无session支持](#无会话支持)。
+10. [动态(自定义)验证规则](#自定义验证规则)。
 
 # 安装
 在项目根目录下运行如下composer命令:
@@ -221,18 +222,19 @@ PhpSms::queue(function($sms, $data){
 ]
 ```
 
-- 配置手机号静态验证规则[可选]
+- 配置静态验证规则[可选]
 
 > 配置文件为config/laravel-sms.php.
 
 ```php
-...
-    'use' => 'mobile_required',
-    'rules' => [
-        'mobile_required' => 'required|zh_mobile',
+'verify' => [
+    'mobile' => [
+        'enable'  => true,
+        'default' => ...,
         ...
-    ]
-...
+    ],
+    ...
+]
 ```
 
 ###2.[浏览器端]请求发送带验证码短信
@@ -306,7 +308,7 @@ scheme://your-domain/sms/voice-verify
 | 参数名  | 必填     | 说明        | 默认值       |
 | ------ | :-----: | :---------: | :---------: |
 | mobile | 是      | 手机号码      |             |
-| mobileRule | 否  | 手机号检测规则 | mobile_required |
+| mobileRule | 否  | 手机号检测规则 | ''          |
 | seconds | 是     | 请求间隔(秒)  | 60          |
 | token   | 是     | 唯一标识符    |             |
 
@@ -320,15 +322,7 @@ scheme://your-domain/sms/voice-verify
 'middleware' => 'api',
 ```
 
-- 3.2 配置存储器[可选]
-
-在`config/laravel-sms.php`中配置存储器。
-
-```php
-'storage' => 'Toplan\Sms\CacheStorage',
-```
-
-- 3.3 给每个验证规则后加上参数`$token`
+- 3.2 给每个验证规则后加上参数`$token`
 
 ```php
 $token = $request->input('token');
@@ -345,7 +339,7 @@ if ($validator->fails()) {
 
 #更多
 
-###1. 动态(自定义)验证规则
+###1. 自定义验证规则
 
 - 2.1 定义规则
 
