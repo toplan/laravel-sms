@@ -28,12 +28,13 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
 7. 数据库记录/管理短信数据及其发送情况[可选]。
 8. 集成[验证码短信发送/校验模块](#验证码短信模块)，从此告别重复写验证码短信发送与校验的历史。
 9. 验证码发送/验证模块的[无session支持](#无会话支持)。
+10. [动态(自定义)验证规则](#自定义验证规则)。
 
 # 安装
 在项目根目录下运行如下composer命令:
 ```php
 //安装v2版本(推荐)
-composer require 'toplan/laravel-sms:^2.4.0',
+composer require 'toplan/laravel-sms:~2.4',
 
 //安装开发中版本
 composer require 'toplan/laravel-sms:dev-master'
@@ -109,6 +110,8 @@ php artisan migrate
 
 在控制器中发送触发短信，如下所示：
 ```php
+use PhpSms;
+
 // 接收人手机号
 $to = '1828****349';
 // 短信模版
@@ -219,18 +222,19 @@ PhpSms::queue(function($sms, $data){
 ]
 ```
 
-- 配置静态mobile验证规则[可选]
+- 配置静态验证规则[可选]
 
-> 配置文件为config/laravel-sms.php
+> 配置文件为config/laravel-sms.php.
 
 ```php
-...
-    'use' => 'mobile_required',
-    'rules' => [
-        'mobile_required' => 'required|zh_mobile',
+'verify' => [
+    'mobile' => [
+        'enable'  => true,
+        'default' => ...,
         ...
-    ]
-...
+    ],
+    ...
+]
 ```
 
 ###2.[浏览器端]请求发送带验证码短信
@@ -304,7 +308,7 @@ scheme://your-domain/sms/voice-verify
 | 参数名  | 必填     | 说明        | 默认值       |
 | ------ | :-----: | :---------: | :---------: |
 | mobile | 是      | 手机号码      |             |
-| mobileRule | 否  | 手机号检测规则 | mobile_required |
+| mobileRule | 否  | 手机号检测规则 | ''          |
 | seconds | 是     | 请求间隔(秒)  | 60          |
 | token   | 是     | 唯一标识符    |             |
 
@@ -314,15 +318,11 @@ scheme://your-domain/sms/voice-verify
 
 在`config/laravel-sms.php`中配置`middleware`。
 
-- 3.2 配置存储器
-
-在`config/laravel-sms.php`中配置存储器。
-
 ```php
-'storage' => 'Toplan\Sms\CacheStorage',
+'middleware' => 'api',
 ```
 
-- 3.3 给每个验证规则后加上参数`$token`
+- 3.2 给每个验证规则后加上参数`$token`
 
 ```php
 $token = $request->input('token');
@@ -339,18 +339,18 @@ if ($validator->fails()) {
 
 #更多
 
-###1. 动态Mobile验证规则
+###1. 自定义验证规则
 
 - 2.1 定义规则
 
 ```php
 //方式1:
-\SmsManager::storeMobileRule('required|zh_mobile|min:13');
+\SmsManager::storeRule('mobile', 'required|zh_mobile|unique:users,mobile,NULL,id,account_id,1');
 //rule的name默认为当前uri
 
 //方式2:
-\SmsManager::storeMobileRule([
-    'rule' => 'required|zh_mobile|min:13',//必须
+\SmsManager::storeRule('mobile', [
+    'rule' => 'required|zh_mobile|min:13|unique:users,mobile,NULL,id,account_id,1',//必须
     'token' => '...',//可选，用于无会话api,
     'name' => '...'//可选，给自定义rule取别名，默认为当前uri
 ]);
@@ -361,13 +361,19 @@ if ($validator->fails()) {
 - 2.2 删除规则
 
 ```php
-\SmsManager::forgetMobileRule([
+\SmsManager::forgetRule('mobile', [
     'name' => '...',//必填
     'token' => '...'//可选，用于无会话api,
 ]);
 ```
 
-- 2.3 验证规则
+- 2.3 使用
+
+- 2.3.1 客户端
+
+设置`mobileRule`为上面定义验证规则时填写的`name`, 如果为空则默认为当前uri。
+
+- 2.3.2 服务器端
 
 ```php
 $rule = CUSTOM_RULE;
