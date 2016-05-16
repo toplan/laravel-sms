@@ -78,13 +78,36 @@ class SmsManager
         if (self::$store) {
             return self::$store;
         }
-        $className = config('laravel-sms.storage', 'Toplan\Sms\SessionStorage');
-        if (class_exists($className)) {
-            self::$store = new $className();
-
-            return self::$store;
+        $className = self::getStorageClassName();
+        if (!class_exists($className)) {
+            throw new LaravelSmsException("Failed to generator store, the class [$className] is not exists.");
         }
-        throw new LaravelSmsException("Generator store failed, dont find class [$className].");
+        $store = new $className();
+        if (!($store instanceof Storage)) {
+            throw new LaravelSmsException("Failed to generator store, the class [$className] do not implement the interface [Toplan\\Sms\\Storage].");
+        }
+
+        return self::$store = $store;
+    }
+
+    /**
+     * 获取存储器类名
+     *
+     * @return string
+     */
+    protected static function getStorageClassName()
+    {
+        $className = config('laravel-sms.storage', null);
+        if ($className && is_string($className)) {
+            return $className;
+        }
+        $middleware = config('laravel-sms.middleware', 'web');
+        if ($middleware === 'web' || in_array('web', $middleware)) {
+            return 'Toplan\Sms\SessionStorage';
+        }
+        if ($middleware === 'api' || in_array('api', $middleware)) {
+            return 'Toplan\Sms\CacheStorage';
+        }
     }
 
     /**
@@ -133,10 +156,16 @@ class SmsManager
         }
         $validator = Validator::make($input, $dataForValidator);
         if ($validator->fails()) {
-            $msg = $validator->errors()->first();
-            $rule = $this->getUsedRuleAlias('mobile');
+            $messages = $validator->errors();
+            foreach (self::getValidFields() as $field) {
+                $msg = $messages->first($field);
+                if (empty($msg)) {
+                    continue;
+                }
+                $rule = $this->getUsedRule($field);
 
-            return self::genResult(false, $rule, $msg);
+                return self::genResult(false, $rule, $msg);
+            }
         }
 
         return self::genResult(true, 'success');
@@ -157,15 +186,15 @@ class SmsManager
     }
 
     /**
-     * 是否检查指定的项目
+     * 是否检查指定的数据
      *
-     * @param string $name
+     * @param string $field
      *
      * @return bool
      */
-    protected static function isCheck($name = 'mobile')
+    protected static function isCheck($field)
     {
-        $data = self::getVerifyData($name);
+        $data = self::getVerifyData($field);
 
         return (bool) $data['enable'];
     }
@@ -178,25 +207,25 @@ class SmsManager
      * 最后尝试使用配置文件中默认rule
      *
      * @param string      $field
-     * @param string      $ruleAlias
+     * @param string      $ruleName
      * @param string|null $token
      *
      * @return string
      */
-    protected function getRealRule($field, $ruleAlias, $token = null)
+    protected function getRealRule($field, $ruleName, $token = null)
     {
         $realRule = '';
         $data = self::getVerifyData($field);
-        if ($this->setUsedRuleAlias($field, $ruleAlias)) {
-            $realRule = $data['rules']["$ruleAlias"];
+        if ($this->useRule($field, $ruleName)) {
+            $realRule = $data['rules'][$ruleName];
         } elseif ($customRule = self::retrieveRule($field, [
             'token' => $token,
-            'name'  => $ruleAlias,
+            'name'  => $ruleName,
         ])) {
-            $this->setUsedRuleAlias($field, self::CUSTOM_RULE_KEY);
+            $this->useRule($field, self::CUSTOM_RULE_KEY);
             $realRule = $customRule;
-        } elseif ($this->setUsedRuleAlias($field, self::getDefaultStaticRuleAlias($field))) {
-            $realRule = $data['rules'][self::getDefaultStaticRuleAlias($field)];
+        } elseif ($this->useRule($field, self::getDefaultStaticRule($field))) {
+            $realRule = $data['rules'][self::getDefaultStaticRule($field)];
         }
 
         return $realRule;
@@ -205,29 +234,29 @@ class SmsManager
     /**
      * 获取使用的规则的别名
      *
-     * @param string $name
+     * @param string $field
      *
      * @throws LaravelSmsException
      *
      * @return string
      */
-    protected function getUsedRuleAlias($name)
+    protected function getUsedRule($field)
     {
-        return $this->sentInfo['verify']["$name"];
+        return $this->sentInfo['verify'][$field];
     }
 
     /**
-     * 通过别名设置使用的验证规则
+     * 通过规则名称设置指定数据使用的验证规则
      *
-     * @param $name
+     * @param $field
      * @param $value
      *
      * @return mixed
      */
-    protected function setUsedRuleAlias($name, $value)
+    protected function useRule($field, $value)
     {
-        if (self::hasStaticRule($name, $value) || $value === self::CUSTOM_RULE_KEY) {
-            $this->sentInfo['verify']["$name"] = $value;
+        if (self::hasStaticRule($field, $value) || $value === self::CUSTOM_RULE_KEY) {
+            $this->sentInfo['verify'][$field] = $value;
 
             return true;
         }
@@ -238,28 +267,28 @@ class SmsManager
     /**
      * 是否含有指定字段的静态验证规则
      *
-     * @param $name
+     * @param $field
      * @param $ruleName
      *
      * @return bool
      */
-    protected static function hasStaticRule($name, $ruleName)
+    protected static function hasStaticRule($field, $ruleName)
     {
-        $data = self::getVerifyData($name);
+        $data = self::getVerifyData($field);
 
-        return isset($data['rules']["$ruleName"]);
+        return isset($data['rules'][$ruleName]);
     }
 
     /**
      * 获取指定字段的默认静态规则的别名
      *
-     * @param string $name
+     * @param string $field
      *
      * @return string
      */
-    protected static function getDefaultStaticRuleAlias($name)
+    protected static function getDefaultStaticRule($field)
     {
-        $data = self::getVerifyData($name);
+        $data = self::getVerifyData($field);
 
         return isset($data['default']) ? $data['default'] :
             (isset($data['use']) ? $data['use'] : '');
@@ -268,19 +297,19 @@ class SmsManager
     /**
      * 获取验证配置
      *
-     * @param string $name
+     * @param string $field
      *
      * @throws LaravelSmsException
      *
      * @return array
      */
-    protected static function getVerifyData($name)
+    protected static function getVerifyData($field)
     {
         $data = config('laravel-sms.verify', []);
-        if (isset($data["$name"])) {
-            return $data["$name"];
+        if (isset($data["$field"])) {
+            return $data["$field"];
         }
-        throw new LaravelSmsException("Dont find verify data for field [$name] in config file.");
+        throw new LaravelSmsException("Dont find verify data for field [$field] in config file.");
     }
 
     /**
@@ -380,11 +409,11 @@ class SmsManager
                 $parsed = parse_url(url()->current());
                 $name = $parsed['path'];
             } catch (\Exception $e) {
-                throw new LaravelSmsException('Store the custom mobile failed, please set a name for custom rule.');
+                throw new LaravelSmsException("Failed to store the custom mobile for field [$field], please set a name for custom rule.");
             }
         }
         $allRules = self::retrieveAllRule($field, $token);
-        $allRules["$name"] = (string) $rule;
+        $allRules[$name] = (string) $rule;
         $key = self::genKey($token, self::CUSTOM_RULE_KEY, $field);
         self::store()->set($key, $allRules);
     }
@@ -399,7 +428,8 @@ class SmsManager
     protected static function validateFieldName($name)
     {
         if (!in_array($name, self::getValidFields())) {
-            throw new LaravelSmsException("The field name [$name] is illegal.");
+            $names = implode(',', self::getValidFields());
+            throw new LaravelSmsException("The field name [$name] is illegal, must be one of [$names].");
         }
     }
 
@@ -440,13 +470,13 @@ class SmsManager
                 $parsed = parse_url(url()->previous());
                 $realName = $parsed['path'];
             } catch (\Exception $e) {
-                return;
+                return '';
             }
         } else {
             $realName = $name;
         }
         $customRules = self::retrieveAllRule($field, $data);
-        $customRule = isset($customRules["$realName"]) ? $customRules["$realName"] : '';
+        $customRule = isset($customRules[$realName]) ? $customRules[$realName] : '';
         if ($name && !$customRule) {
             $data['name'] = null;
             return self::retrieveRule($field, $data);
@@ -532,9 +562,9 @@ class SmsManager
         $scheme = PhpSms::scheme();
         $config = PhpSms::config();
         foreach (array_keys($scheme) as $name) {
-            if (isset($config["$name"])) {
-                if (isset($config["$name"]["$key"])) {
-                    $templates[$name] = $config["$name"]["$key"];
+            if (isset($config[$name])) {
+                if (isset($config[$name][$key])) {
+                    $templates[$name] = $config[$name][$key];
                 }
             }
         }
@@ -647,19 +677,5 @@ class SmsManager
         }
 
         return $name;
-    }
-
-    /**
-     * Properties override
-     *
-     * @param $name
-     *
-     * @return mixed
-     */
-    public function __get($name)
-    {
-        if (isset($this->$name)) {
-            return $this->$name;
-        }
     }
 }
