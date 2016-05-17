@@ -309,7 +309,7 @@ scheme://your-domain/sms/voice-verify
 
 ###3. 服务端验证
 
-3.1 配置路由中间件
+- 配置路由中间件
 
 在`config/laravel-sms.php`中配置`middleware`。
 
@@ -317,7 +317,7 @@ scheme://your-domain/sms/voice-verify
 'middleware' => 'api',
 ```
 
-3.2 给每个验证规则后加上参数`$token`
+- 给每个验证规则后加上参数`$token`
 
 ```php
 $token = $request->input('token');
@@ -332,9 +332,7 @@ if ($validator->fails()) {
 }
 ```
 
-#更多
-
-###动态验证规则
+#动态验证规则
 
 - 2.1 定义规则
 
@@ -364,11 +362,11 @@ if ($validator->fails()) {
 
 - 2.3 使用
 
-2.3.1 客户端
+客户端:
 
 设置`mobileRule`为上面定义验证规则时填写的`name`, 如果为空则默认为当前uri。
 
-2.3.2 服务器端
+服务器端:
 
 ```php
 $rule = CUSTOM_RULE; //或者LARAVEL_SMS_CUSTOM_RULE
@@ -379,10 +377,6 @@ $validator = Validator::make($request->all(), [
     ...
 ]);
 ```
-
-###自定义代理器
-
-详情请参看[phpsms](https://github.com/toplan/phpsms#自定义代理器)
 
 #License
 

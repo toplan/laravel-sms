@@ -40,11 +40,11 @@ class SmsManager
     {
         $fields = self::getVerifiableFields();
         $this->sentInfo = [
-            'sent'       => false,
-            'mobile'     => null,
-            'code'       => null,
-            'deadline'   => 0,
-            'usedRule'   => array_fill_keys($fields, ''),
+            'sent'     => false,
+            'mobile'   => null,
+            'code'     => null,
+            'deadline' => 0,
+            'usedRule' => array_fill_keys($fields, ''),
         ];
     }
 
@@ -158,17 +158,20 @@ class SmsManager
             return self::genResult(false, 'no_input_value');
         }
         $token = isset($input['token']) ? $input['token'] : null;
+
         $dataForValidator = [];
-        foreach (self::getVerifiableFields() as $field) {
+        $fields = self::getVerifiableFields();
+        foreach ($fields as $field) {
             if (self::isCheck($field)) {
                 $rule = isset($input[$field . 'Rule']) ? $input[$field . 'Rule'] : '';
                 $dataForValidator[$field] = $this->getRealRule($field, $rule, $token);
             }
         }
         $validator = Validator::make($input, $dataForValidator);
+
         if ($validator->fails()) {
             $messages = $validator->errors();
-            foreach (self::getVerifiableFields() as $field) {
+            foreach ($fields as $field) {
                 if (!$messages->has($field)) {
                     continue;
                 }
