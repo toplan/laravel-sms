@@ -40,10 +40,10 @@ class SmsManager
     {
         $fields = self::getVerifiableFields();
         $this->sentInfo = [
-            'sent'     => false,
-            'mobile'   => null,
-            'code'     => null,
-            'deadline' => 0,
+            'sent'       => false,
+            'mobile'     => null,
+            'code'       => null,
+            'deadline'   => 0,
             'usedRule'   => array_fill_keys($fields, ''),
         ];
     }
