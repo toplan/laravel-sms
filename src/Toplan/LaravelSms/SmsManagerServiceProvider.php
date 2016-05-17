@@ -62,8 +62,8 @@ class SmsManagerServiceProvider extends ServiceProvider
         if (!defined('CUSTOM_RULE')) {
             define('CUSTOM_RULE', SmsManager::CUSTOM_RULE_KEY);
         }
-        if (!defined('LARAVEL_SMS_MOBILE_CUSTOM_RULE')) {
-            define('LARAVEL_SMS_MOBILE_CUSTOM_RULE', SmsManager::CUSTOM_RULE_KEY);
+        if (!defined('LARAVEL_SMS_CUSTOM_RULE')) {
+            define('LARAVEL_SMS_CUSTOM_RULE', SmsManager::CUSTOM_RULE_KEY);
         }
     }
 

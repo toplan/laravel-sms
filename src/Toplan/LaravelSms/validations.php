@@ -20,12 +20,15 @@ Validator::extend('verify_code', function ($attribute, $value, $parameters) {
     return $smsData && $smsData['deadline_time'] >= time() && $smsData['code'] === $value;
 });
 
-Validator::extend('confirm_mobile_rule', function ($attribute, $value, $parameters) {
-    if (!isset($parameters[0])) {
-        throw new LaravelSmsException('Please give validator rule [confirm_mobile_rule] a parameter');
-    }
-    $token = isset($parameters[1]) ? $parameters[1] : null;
-    $smsData = SmsManager::retrieveSentInfo($token);
+$fields = SmsManager::getVerifiableFields();
+foreach ($fields as $field) {
+    Validator::extend('confirm_' . $field . '_rule', function ($attribute, $value, $parameters) use ($field) {
+        if (!isset($parameters[0])) {
+            throw new LaravelSmsException('Please give validator rule [confirm_mobile_rule] a parameter');
+        }
+        $token = isset($parameters[1]) ? $parameters[1] : null;
+        $smsData = SmsManager::retrieveSentInfo($token);
 
-    return $smsData && $smsData['verify']['mobile'] === $parameters[0];
-});
+        return $smsData && $smsData['verify'][$field] === $parameters[0];
+    });
+}
