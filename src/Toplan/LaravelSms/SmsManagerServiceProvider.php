@@ -62,8 +62,8 @@ class SmsManagerServiceProvider extends ServiceProvider
         if (!defined('CUSTOM_RULE')) {
             define('CUSTOM_RULE', SmsManager::CUSTOM_RULE_KEY);
         }
-        if (!defined('LARAVEL_SMS_MOBILE_CUSTOM_RULE')) {
-            define('LARAVEL_SMS_MOBILE_CUSTOM_RULE', SmsManager::CUSTOM_RULE_KEY);
+        if (!defined('LARAVEL_SMS_CUSTOM_RULE')) {
+            define('LARAVEL_SMS_CUSTOM_RULE', SmsManager::CUSTOM_RULE_KEY);
         }
     }
 
@@ -83,7 +83,7 @@ class SmsManagerServiceProvider extends ServiceProvider
 
         // store sms data into the database before sending
         PhpSms::beforeSend(function ($task) {
-            if (!config('laravel-sms.database_enable', false)) {
+            if (!config('laravel-sms.dbLogs', false)) {
                 return true;
             }
             $data = $task->data ?: [];
@@ -101,7 +101,7 @@ class SmsManagerServiceProvider extends ServiceProvider
 
         // update sms data in the database after sending
         PhpSms::afterSend(function ($task, $result) {
-            if (!config('laravel-sms.database_enable', false)) {
+            if (!config('laravel-sms.dbLogs', false)) {
                 return true;
             }
             $microTime = $result['time']['finished_at'];

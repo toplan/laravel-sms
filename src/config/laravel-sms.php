@@ -3,10 +3,12 @@
 return [
     /*
     |--------------------------------------------------------------------------
-    | 路由中间件
+    | 路由组中间件
     |--------------------------------------------------------------------------
     |
-    | 如:'web', 'api'
+    | 内置路由组'sms'的中间件
+    | 如果是web应用建议为'web'
+    | 如果是api应用(无session),建议为'api'
     |
     */
     'middleware' => 'web',
@@ -16,8 +18,11 @@ return [
     | 是否数据库记录日志
     |--------------------------------------------------------------------------
     |
+    | 若需开启此功能,需要先生成一个内置的'laravel_sms'表
+    | 运行'php artisan migrate'命令可以自动生成
+    |
     */
-    'database_enable' => false,
+    'dbLogs' => false,
 
     /*
     |--------------------------------------------------------------------------
@@ -71,12 +76,12 @@ return [
     |
     | verifySmsContent : 验证码短信通用内容
     | codeLength       : 验证码长度
-    | codeValidTime    : 验证码有效时间长度，单位为分钟(minutes)
+    | codeValidMinutes : 验证码有效时间长度，单位为分钟(minutes)
     |
     */
     'verifySmsContent' => '【your app signature】亲爱的用户，您的验证码是%s。有效期为%s分钟，请尽快验证',
     'codeLength'       => 5,
-    'codeValidTime'    => 5,
+    'codeValidMinutes' => 5,
 
     /*
     |--------------------------------------------------------------------------
@@ -84,11 +89,11 @@ return [
     |--------------------------------------------------------------------------
     |
     | prefix  : 存储key的prefix
-    | storage : 存储方式,是一个实现了'Toplan\Sms\Storage'接口的类的类名,
-    |           内置可选的值有'Toplan\Sms\SessionStorage'和'Toplan\Sms\CacheStorage',
-    |           如果不填写storage,那么系统会自动根据路由中间件(middleware)的配置值选择存储器,
-    |           如果中间件含有'web',会选择使用'Toplan\Sms\SessionStorage',
-    |           如果中间件含有'api',会选择使用'Toplan\Sms\CacheStorage'.
+    | storage : 存储方式,是一个实现了'Toplan\Sms\Storage'接口的类的类名
+    |           内置可选的值有'Toplan\Sms\SessionStorage'和'Toplan\Sms\CacheStorage'
+    |           如果不填写storage,那么系统会自动根据路由组中间件(middleware)的配置值选择存储器
+    |           如果中间件含有'web',会选择使用'Toplan\Sms\SessionStorage'
+    |           如果中间件含有'api',会选择使用'Toplan\Sms\CacheStorage'
     |
     */
     'prefix'  => 'laravel_sms',
