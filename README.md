@@ -334,7 +334,7 @@ if ($validator->fails()) {
 
 #动态验证规则
 
-- 2.1 定义规则
+###1. 定义规则
 
 ```php
 //方式1:
@@ -351,7 +351,7 @@ if ($validator->fails()) {
 
 > 存储的自定义规则访问example.com/sms/info查看。
 
-- 2.2 删除规则
+###2. 删除规则
 
 ```php
 \SmsManager::forgetRule('mobile', [
@@ -360,13 +360,13 @@ if ($validator->fails()) {
 ]);
 ```
 
-- 2.3 使用
+###3. 使用
 
-客户端:
+- 客户端:
 
-设置`mobileRule`为上面定义验证规则时填写的`name`, 如果为空则默认为当前uri。
+设置`mobileRule`参数为要使用的动态验证规则的`name`, 如果为空则默认为当前uri。
 
-服务器端:
+- 服务器端:
 
 ```php
 $rule = CUSTOM_RULE; //或者LARAVEL_SMS_CUSTOM_RULE
