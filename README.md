@@ -362,11 +362,11 @@ if ($validator->fails()) {
 
 ###3. 使用
 
-- 客户端:
+- 客户端
 
 设置`mobileRule`参数为要使用的动态验证规则的`name`, 如果为空则默认为当前uri。
 
-- 服务器端:
+- 服务器端
 
 ```php
 $rule = CUSTOM_RULE; //或者LARAVEL_SMS_CUSTOM_RULE
