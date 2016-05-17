@@ -28,7 +28,7 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
 - 数据库记录/管理短信数据及其发送情况[可选]。
 - 集成[验证码短信发送/校验模块](#验证码短信模块)，从此告别重复写验证码短信发送与校验的历史。
 - 验证码发送/验证模块的[无session支持](#无会话支持)。
-- [动态(自定义)数据验证规则](#动态验证规则)。
+- 灵活的[动态(自定义)数据验证规则](#动态验证规则)。
 
 # 安装
 在项目根目录下运行如下composer命令:
@@ -377,7 +377,7 @@ if ($validator->fails()) {
 - 2.3.2 服务器端
 
 ```php
-$rule = CUSTOM_RULE;
+$rule = CUSTOM_RULE; //或者LARAVEL_SMS_CUSTOM_RULE
 $token = $request->input('token', null);
 $validator = Validator::make($request->all(), [
     ...
