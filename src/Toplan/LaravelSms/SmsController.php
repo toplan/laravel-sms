@@ -74,10 +74,12 @@ class SmsController extends Controller
 
     public function getInfo(Request $request, $token = null)
     {
-        $html = '<meta charset="UTF-8"/><h2 align="center" style="margin-top: 20px;">Laravel Sms</h2>';
-        $html .= '<p style="color: #666;"><a href="https://github.com/toplan/laravel-sms" target="_blank">laravel-sms源码</a>托管在GitHub，欢迎你的使用。如有问题和建议，欢迎提供issue。</p>';
+        $html = '<meta charset="UTF-8"/><h2 align="center" style="margin-top: 30px;margin-bottom: 0;">Laravel Sms</h2>';
+        $html .= '<p style="margin-bottom: 30px;font-size: 13px;color: #888;" align="center">' . SmsManager::VERSION . '</p>';
+        $html .= '<p><a href="https://github.com/toplan/laravel-sms" target="_blank">laravel-sms源码</a>托管在GitHub，欢迎你的使用。如有问题和建议，欢迎提供issue。</p>';
+        $html .= '<p>本页面路由: scheme://your-domain/sms/info<span style="color: #aaa;">/{token?}</spanst></p>';
         $html .= '<hr>';
-        $html .= '<p>你可以在调试模式(设置config/app.php中的debug为true)下查看到存储在session中的验证码短信相关数据(方便你进行调试)：</p>';
+        $html .= '<p>你可以在调试模式(设置config/app.php中的debug为true)下查看到存储在存储器中的验证码短信/语音相关数据:</p>';
         echo $html;
         $token = $token ?: $request->input('token', null);
         if (config('app.debug')) {

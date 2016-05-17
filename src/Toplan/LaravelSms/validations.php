@@ -24,7 +24,7 @@ $fields = SmsManager::getVerifiableFields();
 foreach ($fields as $field) {
     Validator::extend('confirm_' . $field . '_rule', function ($attribute, $value, $parameters) use ($field) {
         if (!isset($parameters[0])) {
-            throw new LaravelSmsException('Please give validator rule [confirm_mobile_rule] a parameter');
+            throw new LaravelSmsException('Please give validator rule [confirm_' . $field . '_rule] at least one parameter!');
         }
         $token = isset($parameters[1]) ? $parameters[1] : null;
         $smsData = SmsManager::retrieveSentInfo($token);

@@ -7,6 +7,8 @@ use Validator;
 
 class SmsManager
 {
+    const VERSION = '2.4.0';
+
     const CUSTOM_RULE_KEY = '_custom_rule_in_server';
 
     const CAN_RESEND_UNTIL_KEY = '_can_resend_until';
@@ -84,7 +86,7 @@ class SmsManager
         }
         $store = new $className();
         if (!($store instanceof Storage)) {
-            throw new LaravelSmsException("Failed to generator store, the class [$className] do not implement the interface [Toplan\\Sms\\Storage].");
+            throw new LaravelSmsException("Failed to generator store, the class [$className] does not implement the interface [Toplan\\Sms\\Storage].");
         }
 
         return self::$store = $store;
@@ -251,7 +253,7 @@ class SmsManager
      * @param $field
      * @param $value
      *
-     * @return mixed
+     * @return bool
      */
     protected function useRule($field, $value)
     {
@@ -335,7 +337,7 @@ class SmsManager
      *
      * @param string|null $token
      *
-     * @return mixed
+     * @return array
      */
     public static function retrieveSentInfo($token = null)
     {
@@ -442,7 +444,7 @@ class SmsManager
      *
      * @throws LaravelSmsException
      *
-     * @return mixed
+     * @return array
      */
     public static function retrieveAllRule($field, $token = null)
     {
@@ -588,15 +590,15 @@ class SmsManager
     /**
      * 根据配置文件中的长度生成验证码
      *
-     * @param null $length
-     * @param null $characters
+     * @param int|null    $length
+     * @param string|null $characters
      *
      * @return string
      */
     public static function generateCode($length = null, $characters = null)
     {
-        $length = $length ?: (int) config('laravel-sms.codeLength');
-        $characters = $characters ?: '0123456789';
+        $length = (int) ($length ?: config('laravel-sms.codeLength', 5));
+        $characters = (string) ($characters ?: '0123456789');
         $charLength = strlen($characters);
         $randomString = '';
         for ($i = 0; $i < $length; ++$i) {
@@ -613,7 +615,7 @@ class SmsManager
      */
     public static function getCodeValidTime()
     {
-        return config('laravel-sms.codeValidTime', 5);
+        return (int) config('laravel-sms.codeValidTime', 5);
     }
 
     /**
