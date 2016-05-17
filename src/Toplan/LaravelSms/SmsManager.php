@@ -36,13 +36,13 @@ class SmsManager
      */
     public function __construct()
     {
-        $verifyFields = self::getValidFields();
+        $fields = self::getVerifiableFields();
         $this->sentInfo = [
             'sent'          => false,
             'mobile'        => null,
             'code'          => null,
             'deadline_time' => 0,
-            'verify'        => array_fill_keys($verifyFields, ''),
+            'verify'        => array_fill_keys($fields, ''),
         ];
     }
 
@@ -51,7 +51,7 @@ class SmsManager
      *
      * @return array
      */
-    public static function getValidFields()
+    public static function getVerifiableFields()
     {
         return array_keys(config('laravel-sms.verify', []));
     }
@@ -148,7 +148,7 @@ class SmsManager
             return self::genResult(false, 'request_invalid', [$seconds]);
         }
         $dataForValidator = [];
-        foreach (self::getValidFields() as $field) {
+        foreach (self::getVerifiableFields() as $field) {
             if (self::isCheck($field)) {
                 $rule = isset($input[$field . 'Rule']) ? $input[$field . 'Rule'] : '';
                 $dataForValidator[$field] = $this->getRealRule($field, $rule, $token);
@@ -157,7 +157,7 @@ class SmsManager
         $validator = Validator::make($input, $dataForValidator);
         if ($validator->fails()) {
             $messages = $validator->errors();
-            foreach (self::getValidFields() as $field) {
+            foreach (self::getVerifiableFields() as $field) {
                 if (!$messages->has($field)) {
                     continue;
                 }
@@ -356,7 +356,7 @@ class SmsManager
     }
 
     /**
-     * 设置可以发送的时间戳
+     * 设置多少秒后才能再次请求发生
      *
      * @param string|null $token
      * @param int $seconds
@@ -371,19 +371,19 @@ class SmsManager
     }
 
     /**
-     * 从存储器中获取可发送时间戳
+     * 从存储器中获取可再次发送的截止时间
      *
      * @param string|null $token
      *
      * @throws LaravelSmsException
      *
-     * @return mixed
+     * @return int
      */
     public static function retrieveCanResendTime($token)
     {
         $key = self::genKey($token, self::CAN_RESEND_UNTIL_KEY);
 
-        return self::store()->get($key, 0);
+        return (int) self::store()->get($key, 0);
     }
 
     /**
@@ -428,8 +428,8 @@ class SmsManager
      */
     protected static function validateFieldName($name)
     {
-        if (!in_array($name, self::getValidFields())) {
-            $names = implode(',', self::getValidFields());
+        if (!in_array($name, self::getVerifiableFields())) {
+            $names = implode(',', self::getVerifiableFields());
             throw new LaravelSmsException("The field name [$name] is illegal, must be one of [$names].");
         }
     }
@@ -524,7 +524,7 @@ class SmsManager
         $data[self::SMS_INFO_KEY] = self::retrieveSentInfo($token);
         $data[self::CAN_RESEND_UNTIL_KEY] = self::retrieveCanResendTime($token);
         $data[self::CUSTOM_RULE_KEY] = [];
-        $fields = self::getValidFields();
+        $fields = self::getVerifiableFields();
         foreach ($fields as $field) {
             $data[self::CUSTOM_RULE_KEY][$field] = self::retrieveAllRule($field, $token);
         }

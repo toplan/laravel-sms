@@ -19,16 +19,16 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
 
 # 特点
 
-1. 支持模板短信和内容短信(由phpsms提供)。
-2. [短信队列](#短信队列)(由phpsms提供)。
-3. 支持语音验证码(由phpsms提供)。
-4. [代理器均衡调度机制](#24-代理器均衡调度机制)(由phpsms提供)。
-5. 集成[国内主流第三方短信服务商](https://github.com/toplan/phpsms#服务商)(由phpsms提供)
-6. [自定义代理器](https://github.com/toplan/phpsms#自定义代理器)和性感的[寄生代理器](https://github.com/toplan/phpsms#寄生代理器)。(由phpsms提供)。
-7. 数据库记录/管理短信数据及其发送情况[可选]。
-8. 集成[验证码短信发送/校验模块](#验证码短信模块)，从此告别重复写验证码短信发送与校验的历史。
-9. 验证码发送/验证模块的[无session支持](#无会话支持)。
-10. [动态(自定义)验证规则](#自定义验证规则)。
+- 支持模板短信和内容短信(由phpsms提供)。
+- [短信队列](#短信队列)(由phpsms提供)。
+- 支持语音验证码(由phpsms提供)。
+- [代理器均衡调度机制](#24-代理器均衡调度机制)(由phpsms提供)。
+- 集成[国内主流第三方短信服务商](https://github.com/toplan/phpsms#服务商)(由phpsms提供)
+- [自定义代理器](https://github.com/toplan/phpsms#自定义代理器)和性感的[寄生代理器](https://github.com/toplan/phpsms#寄生代理器)。(由phpsms提供)。
+- 数据库记录/管理短信数据及其发送情况[可选]。
+- 集成[验证码短信发送/校验模块](#验证码短信模块)，从此告别重复写验证码短信发送与校验的历史。
+- 验证码发送/验证模块的[无session支持](#无会话支持)。
+- [动态(自定义)数据验证规则](#动态验证规则)。
 
 # 安装
 在项目根目录下运行如下composer命令:
@@ -70,7 +70,7 @@ Toplan\Sms\SmsManagerServiceProvider::class,
 ```php
  php artisan vendor:publish
 ```
-> 说明：
+
 > 这里会生成两个配置文件，分别为phpsms.php和laravel-sms.php。
 > 其中phpsms.php负责配置代理器参数以及规划如何调度代理器。
 > laravel-sms.php则全职负责验证码发送/验证模块的配置。
@@ -154,7 +154,8 @@ PhpSms::voice('89093')->to($to)->send();
 
 `laravel-sms`已实现的短信队列默认是关闭的,判断当前队列状态：
 ```php
-$enable = PhpSms::queue();//return true of false
+$enable = PhpSms::queue();
+//return true of false
 ```
 
 开启/关闭队列的示例如下：
@@ -224,7 +225,7 @@ PhpSms::queue(function($sms, $data){
 
 - 配置静态验证规则[可选]
 
-> 配置文件为config/laravel-sms.php.
+> 配置文件为config/laravel-sms.php，你还可以配置[动态验证规则](#动态验证规则)
 
 ```php
 'verify' => [
@@ -308,8 +309,8 @@ scheme://your-domain/sms/voice-verify
 | 参数名  | 必填     | 说明        | 默认值       |
 | ------ | :-----: | :---------: | :---------: |
 | mobile | 是      | 手机号码      |             |
-| mobileRule | 否  | 手机号检测规则 | ''          |
-| seconds | 是     | 请求间隔(秒)  | 60          |
+| mobileRule | 否  | 手机号检测规则 | `''`        |
+| seconds | 是     | 请求间隔(秒)  | `60`        |
 | token   | 是     | 唯一标识符    |             |
 
 ###3. 服务端验证
@@ -339,7 +340,7 @@ if ($validator->fails()) {
 
 #更多
 
-###1. 自定义验证规则
+###动态验证规则
 
 - 2.1 定义规则
 
@@ -385,7 +386,7 @@ $validator = Validator::make($request->all(), [
 ]);
 ```
 
-###2. 自定义代理器
+###自定义代理器
 
 详情请参看[phpsms](https://github.com/toplan/phpsms#自定义代理器)
 
