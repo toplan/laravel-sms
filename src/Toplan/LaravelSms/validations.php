@@ -17,7 +17,7 @@ Validator::extend('verify_code', function ($attribute, $value, $parameters) {
     $token = isset($parameters[0]) ? $parameters[0] : null;
     $smsData = SmsManager::retrieveSentInfo($token);
 
-    return $smsData && $smsData['deadline_time'] >= time() && $smsData['code'] === $value;
+    return $smsData && $smsData['deadline'] >= time() && $smsData['code'] === $value;
 });
 
 $fields = SmsManager::getVerifiableFields();
@@ -29,6 +29,6 @@ foreach ($fields as $field) {
         $token = isset($parameters[1]) ? $parameters[1] : null;
         $smsData = SmsManager::retrieveSentInfo($token);
 
-        return $smsData && $smsData['verify'][$field] === $parameters[0];
+        return $smsData && $smsData['usedRule'][$field] === $parameters[0];
     });
 }

@@ -17,7 +17,7 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
 - 数据库记录日志
 - 验证码发送/验证模块
 
-# 特点
+#特点
 
 - 支持模板短信和内容短信(由phpsms提供)。
 - [短信队列](#短信队列)(由phpsms提供)。
@@ -28,9 +28,10 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
 - 数据库记录/管理短信数据及其发送情况[可选]。
 - 集成[验证码短信发送/校验模块](#验证码短信模块)，从此告别重复写验证码短信发送与校验的历史。
 - 验证码发送/验证模块的[无session支持](#无会话支持)。
-- 灵活的[动态(自定义)数据验证规则](#动态验证规则)。
+- 灵活的[动态(自定义)数据验证](#动态验证规则)。
 
-# 安装
+#安装
+
 在项目根目录下运行如下composer命令:
 ```php
 //安装v2版本(推荐)
@@ -40,14 +41,7 @@ composer require 'toplan/laravel-sms:~2.4',
 composer require 'toplan/laravel-sms:dev-master'
 ```
 
-> **安装1.0**
->
-> [v1.0文档](https://github.com/toplan/laravel-sms/tree/l5)
-> ```php
->   composer require 'toplan/laravel-sms:1.0.2',
-> ```
-
-# 快速上手v2
+#快速上手v2
 
 ###1.注册服务提供器
 
@@ -68,7 +62,7 @@ Toplan\Sms\SmsManagerServiceProvider::class,
 - 生成配置文件和migration文件
 
 ```php
- php artisan vendor:publish
+php artisan vendor:publish
 ```
 
 > 这里会生成两个配置文件，分别为phpsms.php和laravel-sms.php。
@@ -101,10 +95,10 @@ php artisan migrate
 ];
 ```
 
-**调度方案解析：**
-如果按照以上配置，那么系统首次会尝试使用`Luosimao`或`YunPian`发送短信，且它们被使用的概率分别为`2/3`和`1/3`。
-如果使用其中一个代理器发送失败，那么会启用备用代理器，按照配置可知备用代理器有`YunPian`和`YunTongXun`，那么会依次调用直到发送成功或无备用代理器可用。
-值得注意的是，如果首次尝试的是`YunPian`，那么备用代理器将会只会使用`YunTongXun`，也就是会排除使用过的代理器。
+> **调度方案解析：**
+> 如果按照以上配置，那么系统首次会尝试使用`Luosimao`或`YunPian`发送短信，且它们被使用的概率分别为`2/3`和`1/3`。
+> 如果使用其中一个代理器发送失败，那么会启用备用代理器，按照配置可知备用代理器有`YunPian`和`YunTongXun`，那么会依次调用直到发送成功或无备用代理器可用。
+> 值得注意的是，如果首次尝试的是`YunPian`，那么备用代理器将会只会使用`YunTongXun`，也就是会排除使用过的代理器。
 
 ###3.Enjoy it!
 
@@ -152,17 +146,17 @@ PhpSms::voice('89093')->to($to)->send();
 
 ###1. 启用/关闭队列
 
-`laravel-sms`已实现的短信队列默认是关闭的,判断当前队列状态：
+Laravel Sms已实现的短信队列默认是关闭的,判断当前队列状态：
 ```php
-$enable = PhpSms::queue();
-//return true of false
+$enable = PhpSms::queue(); //true of false
 ```
 
 开启/关闭队列的示例如下：
 ```php
-//开启队列
+//开启队列:
 PhpSms::queue(true);
-//关闭队列
+
+//关闭队列:
 PhpSms::queue(false);
 ```
 
@@ -304,18 +298,18 @@ scheme://your-domain/sms/verify-code
 - 1.2 语音:
 scheme://your-domain/sms/voice-verify
 
-###2. 请求参数
+###2. 基础参数
 
 | 参数名  | 必填     | 说明        | 默认值       |
 | ------ | :-----: | :---------: | :---------: |
+| token   | 是     | 唯一标识符    |             |
 | mobile | 是      | 手机号码      |             |
 | mobileRule | 否  | 手机号检测规则 | `''`        |
-| seconds | 是     | 请求间隔(秒)  | `60`        |
-| token   | 是     | 唯一标识符    |             |
+| seconds | 否     | 请求间隔(秒)  | `60`        |
 
 ###3. 服务端验证
 
-- 3.1 配置路由中间件
+3.1 配置路由中间件
 
 在`config/laravel-sms.php`中配置`middleware`。
 
@@ -323,7 +317,7 @@ scheme://your-domain/sms/voice-verify
 'middleware' => 'api',
 ```
 
-- 3.2 给每个验证规则后加上参数`$token`
+3.2 给每个验证规则后加上参数`$token`
 
 ```php
 $token = $request->input('token');
@@ -370,11 +364,11 @@ if ($validator->fails()) {
 
 - 2.3 使用
 
-- 2.3.1 客户端
+2.3.1 客户端
 
 设置`mobileRule`为上面定义验证规则时填写的`name`, 如果为空则默认为当前uri。
 
-- 2.3.2 服务器端
+2.3.2 服务器端
 
 ```php
 $rule = CUSTOM_RULE; //或者LARAVEL_SMS_CUSTOM_RULE

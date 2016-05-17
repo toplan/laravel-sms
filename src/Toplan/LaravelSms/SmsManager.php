@@ -40,11 +40,11 @@ class SmsManager
     {
         $fields = self::getVerifiableFields();
         $this->sentInfo = [
-            'sent'          => false,
-            'mobile'        => null,
-            'code'          => null,
-            'deadline_time' => 0,
-            'verify'        => array_fill_keys($fields, ''),
+            'sent'     => false,
+            'mobile'   => null,
+            'code'     => null,
+            'deadline' => 0,
+            'usedRule'   => array_fill_keys($fields, ''),
         ];
     }
 
@@ -132,6 +132,20 @@ class SmsManager
     }
 
     /**
+     * 是否可发送短信/语音
+     *
+     * @param string|null $token
+     *
+     * @return bool
+     */
+    public static function sendable($token)
+    {
+        $time = self::retrieveCanResendTime($token);
+
+        return $time <= time();
+    }
+
+    /**
      * 验证数据
      *
      * @param array $input
@@ -144,11 +158,6 @@ class SmsManager
             return self::genResult(false, 'no_input_value');
         }
         $token = isset($input['token']) ? $input['token'] : null;
-        if (!self::sendable($token)) {
-            $seconds = $input['seconds'];
-
-            return self::genResult(false, 'request_invalid', [$seconds]);
-        }
         $dataForValidator = [];
         foreach (self::getVerifiableFields() as $field) {
             if (self::isCheck($field)) {
@@ -171,20 +180,6 @@ class SmsManager
         }
 
         return self::genResult(true, 'success');
-    }
-
-    /**
-     * 是否可发送短信/语音
-     *
-     * @param string|null $token
-     *
-     * @return bool
-     */
-    protected static function sendable($token)
-    {
-        $time = self::retrieveCanResendTime($token);
-
-        return $time <= time();
     }
 
     /**
@@ -244,7 +239,7 @@ class SmsManager
      */
     protected function getUsedRule($field)
     {
-        return $this->sentInfo['verify'][$field];
+        return $this->sentInfo['usedRule'][$field];
     }
 
     /**
@@ -258,7 +253,7 @@ class SmsManager
     protected function useRule($field, $value)
     {
         if (self::hasStaticRule($field, $value) || $value === self::CUSTOM_RULE_KEY) {
-            $this->sentInfo['verify'][$field] = $value;
+            $this->sentInfo['usedRule'][$field] = $value;
 
             return true;
         }
@@ -578,13 +573,15 @@ class SmsManager
     }
 
     /**
-     * 从配置文件获取短信内容
+     * 生成短信内容
+     *
+     * @param array $data
      *
      * @return string
      */
-    public static function getVerifySmsContent()
+    public static function generateSmsContent(array $data = [])
     {
-        return config('laravel-sms.verifySmsContent');
+        return self::vsprintf(config('laravel-sms.verifySmsContent'), $data);
     }
 
     /**
@@ -613,9 +610,9 @@ class SmsManager
      *
      * @return int
      */
-    public static function getCodeValidTime()
+    public static function getCodeValidMinutes()
     {
-        return (int) config('laravel-sms.codeValidTime', 5);
+        return (int) config('laravel-sms.codeValidMinutes', 5);
     }
 
     /**
