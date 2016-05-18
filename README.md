@@ -19,27 +19,30 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
 
 #特点
 
-- 支持模板短信和内容短信(由phpsms提供)。
-- [短信队列](#短信队列)(由phpsms提供)。
-- 支持语音验证码(由phpsms提供)。
-- [代理器均衡调度机制](#24-代理器均衡调度机制)(由phpsms提供)。
-- 集成[国内主流第三方短信服务商](https://github.com/toplan/phpsms#服务商)(由phpsms提供)
-- [自定义代理器](https://github.com/toplan/phpsms#自定义代理器)和性感的[寄生代理器](https://github.com/toplan/phpsms#寄生代理器)。(由phpsms提供)。
-- 数据库记录/管理短信数据及其发送情况[可选]。
-- 集成[验证码短信发送/校验模块](#验证码短信模块)，从此告别重复写验证码短信发送与校验的历史。
-- 验证码发送/验证模块的[无session支持](#无会话支持)。
-- 灵活的[动态(自定义)数据验证](#动态验证规则)。
+- 支持模板短信和内容短信 (由phpsms提供)
+- [短信队列](#短信队列) (由phpsms提供)
+- 支持语音验证码 (由phpsms提供)
+- [代理器均衡调度机制](#24-代理器均衡调度机制) (由phpsms提供)
+- 集成[国内主流第三方短信服务商](https://github.com/toplan/phpsms#服务商) (由phpsms提供)
+- [自定义代理器](https://github.com/toplan/phpsms#自定义代理器)和性感的[寄生代理器](https://github.com/toplan/phpsms#寄生代理器) (由phpsms提供)
+- 数据库记录/管理短信数据及其发送情况[可选]
+- 集成[验证码短信发送/校验模块](#验证码短信模块)，从此告别重复写验证码短信发送与校验的历史
+- 验证码发送/验证模块的[无session支持](#无会话支持)
+- 灵活的[动态(自定义)数据验证](#动态验证规则)
 
 #安装
 
 在项目根目录下运行如下composer命令:
 ```php
 //安装v2版本(推荐)
-composer require 'toplan/laravel-sms:~2.4',
+composer require 'toplan/laravel-sms:2.4.*',
 
 //安装开发中版本
 composer require 'toplan/laravel-sms:dev-master'
 ```
+
+> 安装过旧版本(<2.4.0)的童鞋,在更新到2.4.0+版本时,建议先删除原有的`config/laravel-sms.php`文件,
+> 然后再运行`php artisan vendor:publish`命令。
 
 #快速上手v2
 

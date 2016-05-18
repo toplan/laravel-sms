@@ -82,7 +82,7 @@ class SmsManager
         }
         $className = self::getStorageClassName();
         if (!class_exists($className)) {
-            throw new LaravelSmsException("Failed to generator store, the class [$className] is not exists.");
+            throw new LaravelSmsException("Failed to generator store, the class [$className] does not exists.");
         }
         $store = new $className();
         if (!($store instanceof Storage)) {
@@ -196,11 +196,11 @@ class SmsManager
     {
         $data = self::getVerifyData($field);
 
-        return (bool) $data['enable'];
+        return isset($data['enable']) && $data['enable'];
     }
 
     /**
-     * 根据规则别名获取真实的验证规则
+     * 根据规则名获取真实的验证规则
      *
      * 首先尝试使用用户从客户端传递过来的rule
      * 其次尝试使用在服务器端存储过rule
@@ -306,10 +306,10 @@ class SmsManager
     protected static function getVerifyData($field)
     {
         $data = config('laravel-sms.verify', []);
-        if (isset($data["$field"])) {
-            return $data["$field"];
+        if (isset($data[$field])) {
+            return $data[$field];
         }
-        throw new LaravelSmsException("Dont find verify data for field [$field] in config file.");
+        throw new LaravelSmsException("Don't find verify data for the field [$field] in config file, please define it.");
     }
 
     /**
@@ -387,7 +387,7 @@ class SmsManager
     }
 
     /**
-     * 存储手机号的自定义验证规则
+     * 存储指定字段的指定名称的动态验证规则
      *
      * @param string       $field
      * @param string|array $data
@@ -428,14 +428,15 @@ class SmsManager
      */
     protected static function validateFieldName($name)
     {
-        if (!in_array($name, self::getVerifiableFields())) {
-            $names = implode(',', self::getVerifiableFields());
+        $fields = self::getVerifiableFields();
+        if (!in_array($name, $fields)) {
+            $names = implode(',', $fields);
             throw new LaravelSmsException("The field name [$name] is illegal, must be one of [$names].");
         }
     }
 
     /**
-     * 获取存储的所有手机号验证规则
+     * 从存储中获取指定字段的所有验证规则
      *
      * @param string $field
      * @param mixed  $token
@@ -455,7 +456,7 @@ class SmsManager
     }
 
     /**
-     * 获取手机号的自定义验证规则
+     * 从存储器中获取指定字段的指定名称的动态验证规则
      *
      * @param string $field
      * @param array  $data
@@ -489,7 +490,7 @@ class SmsManager
     }
 
     /**
-     * 删除手机号的自定义验证规则
+     * 从存储器中删除指定字段的指定名称的动态验证规则
      *
      * @param string $field
      * @param array  $data
@@ -510,7 +511,7 @@ class SmsManager
     }
 
     /**
-     * 从存储器中获取所有数据
+     * 从存储器中获取指定用户的所有数据
      *
      * @param string|null $token
      *
@@ -533,7 +534,7 @@ class SmsManager
     }
 
     /**
-     * 获取验证码短信的模版id
+     * 获取验证码短信的所有模版id
      *
      * @return array
      */
@@ -543,7 +544,7 @@ class SmsManager
     }
 
     /**
-     * 获取语音验证码的模版id
+     * 获取语音验证码的所有模版id
      *
      * @return array
      */
@@ -553,7 +554,7 @@ class SmsManager
     }
 
     /**
-     * 从配置信息中获取模版id
+     * 从配置信息中获取指定键名的所有模版id
      *
      * @param string $key
      *
@@ -576,7 +577,7 @@ class SmsManager
     }
 
     /**
-     * 生成短信内容
+     * 生成验证码短信通用内容
      *
      * @param array $data
      *
