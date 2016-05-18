@@ -13,9 +13,9 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
 
 那么既然有了phpsms，为什么还需要laravel-sms呢？为了更进一步提高开发效率，laravel-sms利用phpsms提供的接口为laravel框架定制好了如下功能：
 
-- 队列工作方式
 - 数据库记录日志
-- 验证码发送/验证模块
+- 队列工作方式
+- 验证码发送与验证模块
 
 #特点
 
@@ -26,7 +26,7 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
 - 集成[国内主流第三方短信服务商](https://github.com/toplan/phpsms#服务商) (由phpsms提供)
 - [自定义代理器](https://github.com/toplan/phpsms#自定义代理器)和性感的[寄生代理器](https://github.com/toplan/phpsms#寄生代理器) (由phpsms提供)
 - 数据库记录/管理短信数据及其发送情况[可选]
-- 集成[验证码短信发送/校验模块](#验证码短信模块)，从此告别重复写验证码短信发送与校验的历史
+- 集成[验证码短信发送/校验模块](#验证码模块)，从此告别重复写验证码短信发送与校验的历史
 - 验证码发送/验证模块的[无session支持](#无会话支持)
 - 灵活的[动态(自定义)数据验证](#动态验证规则)
 
@@ -71,12 +71,6 @@ php artisan vendor:publish
 > 这里会生成两个配置文件，分别为phpsms.php和laravel-sms.php。
 > 其中phpsms.php负责配置代理器参数以及规划如何调度代理器。
 > laravel-sms.php则全职负责验证码发送/验证模块的配置。
-
-- 在数据库中生成`laravel_sms`表[可选]
-
-```php
-php artisan migrate
-```
 
 - 配置代理器参数
 
@@ -141,9 +135,23 @@ PhpSms::make()->to($to)
 PhpSms::voice('89093')->to($to)->send();
 ```
 
-#API
+#数据库日志
 
-详情请参看[toplan/phpsms - API](https://github.com/toplan/phpsms#api)
+###1. 生成默认表
+
+运行如下命令在数据库中生成`laravel_sms`表。
+
+```php
+php artisan migrate
+```
+
+###2. 开启权限
+
+在配置文件`config/laravel-sms.php`中设置`dbLogs`为`true`。
+
+```php
+'dbLogs' => true,
+```
 
 #短信队列
 
@@ -189,7 +197,7 @@ PhpSms::queue(function($sms, $data){
 });
 ```
 
-#验证码短信模块
+#验证码模块
 
 可以直接访问example.com/sms/info查看该模块是否可用，并可在该页面里观察验证码短信发送数据，方便你进行调试。
 

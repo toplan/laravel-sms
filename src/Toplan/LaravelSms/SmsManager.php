@@ -27,6 +27,13 @@ class SmsManager
     protected static $store;
 
     /**
+     * The access token for api
+     *
+     * @var String|null
+     */
+    protected $token;
+
+    /**
      * The information of sent sms
      *
      * @var array
@@ -35,8 +42,10 @@ class SmsManager
 
     /**
      * Constructor
+     *
+     * @param string|null $token
      */
-    public function __construct()
+    public function __construct($token = null)
     {
         $fields = self::getVerifiableFields();
         $this->sentInfo = [
@@ -46,6 +55,7 @@ class SmsManager
             'deadline' => 0,
             'usedRule' => array_fill_keys($fields, ''),
         ];
+        $this->token = $token;
     }
 
     /**

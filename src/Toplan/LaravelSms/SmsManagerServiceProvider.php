@@ -49,8 +49,13 @@ class SmsManagerServiceProvider extends ServiceProvider
         $this->initPhpSms();
 
         // store to container
-        $this->app->singleton('SmsManager', function () {
-            return new SmsManager();
+        $this->app->singleton('SmsManager', function ($app) {
+            $token = $app->request->input('access_token', null);
+            if (empty($token)) {
+                $token = $app->request->header('access-token', null);
+            }
+
+            return new SmsManager($token);
         });
     }
 
