@@ -36,7 +36,7 @@
             type : 'post',
             data : {
                 _token: opts.token,
-                token: opts.apiToken,
+                access_token: opts.accessToken,
                 seconds: opts.seconds,
                 mobile: mobile,
                 mobileRule: opts.mobileRule
@@ -73,7 +73,7 @@
 
     $.fn.sms.default = {
         token          : '',
-        apiToken       : '',
+        accessToken    : '',
         mobileRule     : '',
         mobileSelector : '',
         seconds        : 60,

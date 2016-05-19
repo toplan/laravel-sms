@@ -41,8 +41,10 @@ composer require 'toplan/laravel-sms:2.4.*',
 composer require 'toplan/laravel-sms:dev-master'
 ```
 
-> 安装过旧版本(<2.4.0)的童鞋,在更新到2.4.0+版本时,建议先删除原有的`config/laravel-sms.php`文件,
-> 然后再运行`php artisan vendor:publish`命令。
+#公告
+
+安装过旧版本(<2.4.0)的童鞋,在更新到2.4.0+版本时,建议先删除原有的`config/laravel-sms.php`文件,
+然后再运行`php artisan vendor:publish`命令,使用前请务必阅读此文档,因为相比与2.4.0之前的版本有较大变化。
 
 #快速上手v2
 
@@ -233,11 +235,13 @@ PhpSms::queue(function($sms, $data){
 > 配置文件为config/laravel-sms.php，你还可以配置[动态验证规则](#动态验证规则)
 
 ```php
-'verify' => [
+'validation' => [
     'mobile' => [
         'enable'  => true,
         'default' => ...,
-        ...
+        'staticRules' => [
+            ...
+        ]
     ],
     ...
 ]
@@ -255,9 +259,9 @@ $('#sendVerifySmsButton').sms({
     //PS:该token仅为laravel框架的csrf验证，不是无会话json api所用的token
     token          : "{{csrf_token()}}",
 
-    //json api token
-    //PS:如果你使用的是无会话json api，可以这样带上token
-    apiToken       : 'user token string...',
+    //access token for api
+    //PS:如果你使用的是无会话json api，可以这样带上access token
+    accessToken    : 'user token string...',
 
     //定义如何获取mobile的值
     mobileSelector : 'input[name="mobile"]',
@@ -280,15 +284,17 @@ $('#sendVerifySmsButton').sms({
 
 用户填写验证码并提交表单到服务器时，在你的控制器中需要验证手机号和验证码是否正确，你只需要加上如下代码即可：
 ```php
+use SmsManager;
+...
 //验证手机验证码
 $validator = Validator::make($request->all(), [
     'mobile'     => 'required|confirm_mobile_not_change',
-    'verifyCode' => 'required|verify_code|confirm_mobile_rule:mobile_required',
+    'verifyCode' => 'required|verify_code|confirm_rule:mobile,mobile_required',
     //more...
 ]);
 if ($validator->fails()) {
    //验证失败后建议清空存储的短信发送信息，防止用户重复试错
-   \SmsManager::forgetSentInfo();
+   SmsManager::forgetStatus();
    return redirect()->back()->withErrors($validator);
 }
 ```
@@ -296,8 +302,52 @@ if ($validator->fails()) {
 Note:
 - `confirm_mobile_not_change` 验证用户手机号是否变更。
 - `verify_code` 验证验证码是否合法。
-- `confirm_mobile_rule:{$mobileRule}` 检测是否为非法请求，第一个值为手机号检测规则，必须和你在浏览器端js插件中填写的`mobileRule`的值一致。
+- `confirm_rule:mobile,{$mobileRule}` 检测是否为非法请求，第一个值为手机号检测规则，必须和你在浏览器端js插件中填写的`mobileRule`的值一致。
 - 请在语言包validation.php中做好翻译。
+
+#动态验证规则
+
+###1. 定义动态规则
+
+```php
+//方式1:
+\SmsManager::storeRule('mobile', 'required|zh_mobile|unique:users,mobile,NULL,id,account_id,1');
+//rule的name默认为当前uri
+
+//方式2:
+\SmsManager::storeRule('mobile', 'myRuleName', 'required|zh_mobile|unique:users,mobile,NULL,id,account_id,1');
+
+//方式3
+\SmsManager::storeRule('mobile', [
+    'myRuleName' => 'required|zh_mobile|unique:users,mobile,NULL,id,account_id,1',
+    'myRuleName2' => ...,
+]);
+```
+
+> **小技巧:**存储的动态验证规则访问example.com/sms/info查看。
+
+###2. 删除动态规则
+
+```php
+\SmsManager::forgetRule('mobile', 'myRuleName');
+```
+
+###3. 使用动态规则
+
+- 客户端
+
+设置`mobileRule`参数为要使用的动态验证规则的`name`值, 如果为空则默认为当前uri。
+
+- 服务器端
+
+```php
+$rule = CUSTOM_RULE; //或者LARAVEL_SMS_CUSTOM_RULE
+$validator = Validator::make($request->all(), [
+    ...
+    'verifyCode' => "required|verify_code:$token|confirm_rule:mobile,$rule",
+    ...
+]);
+```
 
 #无会话支持
 
@@ -313,80 +363,17 @@ scheme://your-domain/sms/voice-verify
 
 | 参数名  | 必填     | 说明        | 默认值       |
 | ------ | :-----: | :---------: | :---------: |
-| token   | 是     | 唯一标识符    |             |
+| access_token | 是   | 植入header或参数中均可|   |
 | mobile | 是      | 手机号码      |             |
 | mobileRule | 否  | 手机号检测规则 | `''`        |
 | seconds | 否     | 请求间隔(秒)  | `60`        |
 
-###3. 服务端验证
+###3. 服务端准备
 
-- 配置路由中间件
-
-在`config/laravel-sms.php`中配置`middleware`。
+在`config/laravel-sms.php`中配置路由器组中间件`middleware`。
 
 ```php
 'middleware' => 'api',
-```
-
-- 给每个验证规则后加上参数`$token`
-
-```php
-$token = $request->input('token');
-$validator = Validator::make($request->all(), [
-    'mobile'     => "required|confirm_mobile_not_change:$token",
-    'verifyCode' => "required|verify_code:$token|confirm_mobile_rule:mobile_required,$token",
-]);
-if ($validator->fails()) {
-   //验证失败后建议清空存储的短信发送信息，防止用户重复试错
-   \SmsManager::forgetSentInfo($token);
-   return redirect()->back()->withErrors($validator);
-}
-```
-
-#动态验证规则
-
-###1. 定义规则
-
-```php
-//方式1:
-\SmsManager::storeRule('mobile', 'required|zh_mobile|unique:users,mobile,NULL,id,account_id,1');
-//rule的name默认为当前uri
-
-//方式2:
-\SmsManager::storeRule('mobile', [
-    'rule' => 'required|zh_mobile|min:13|unique:users,mobile,NULL,id,account_id,1',//必须
-    'token' => '...',//可选，用于无会话api,
-    'name' => '...'//可选，给自定义rule取别名，默认为当前uri
-]);
-```
-
-> 存储的自定义规则访问example.com/sms/info查看。
-
-###2. 删除规则
-
-```php
-\SmsManager::forgetRule('mobile', [
-    'name' => '...',//必填
-    'token' => '...'//可选，用于无会话api,
-]);
-```
-
-###3. 使用
-
-- 客户端
-
-设置`mobileRule`参数为要使用的动态验证规则的`name`, 如果为空则默认为当前uri。
-
-- 服务器端
-
-```php
-$rule = CUSTOM_RULE; //或者LARAVEL_SMS_CUSTOM_RULE
-$token = $request->input('token', null);
-$validator = Validator::make($request->all(), [
-    ...
-    'verifyCode' => "required|verify_code:$token|confirm_mobile_rule:$rule,$token",
-    ...
-]);
 ```
 
 #License
