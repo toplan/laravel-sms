@@ -6,39 +6,38 @@ return [
     | 路由组中间件
     |--------------------------------------------------------------------------
     |
-    | 内置路由组'sms'的中间件
-    | 如果是web应用建议为'web'
-    | 如果是api应用(无session),建议为'api'
+    | 可在此配置内置路由组'sms'的中间件,
+    | 如果是web应用建议为'web',
+    | 如果是api应用(无session),建议为'api'。
     |
     */
     'middleware' => 'web',
 
     /*
     |--------------------------------------------------------------------------
-    | 是否数据库记录日志
+    | 是否数据库记录发送日志
     |--------------------------------------------------------------------------
     |
-    | 若需开启此功能,需要先生成一个内置的'laravel_sms'表
-    | 运行'php artisan migrate'命令可以自动生成
+    | 若需开启此功能,需要先生成一个内置的'laravel_sms'表,
+    | 运行'php artisan migrate'命令可以自动生成。
     |
     */
     'dbLogs' => false,
 
     /*
     |--------------------------------------------------------------------------
-    | 静态验证规则
+    | 数据验证管理
     |--------------------------------------------------------------------------
     |
-    | 用于验证码发送前数据合法性验证
+    | 设置从客户端传来的需要验证的数据字段(本库将其称为field),
+    | 并管理其启用状态(enable),默认静态验证规则(default)以及所有可用静态验证规则(staticRules)。
     |
     */
-    'verify' => [
+    'validation' => [
         'mobile' => [
             'enable' => true,
-            //default static rule:
             'default' => 'mobile_required',
-            //available static rules:
-            'rules' => [
+            'staticRules' => [
                 'mobile_required'     => 'required|zh_mobile',
                 'check_mobile_unique' => 'required|zh_mobile|unique:users,mobile',
                 'check_mobile_exists' => 'required|zh_mobile|exists:users',
@@ -89,11 +88,11 @@ return [
     |--------------------------------------------------------------------------
     |
     | prefix  : 存储key的prefix
-    | storage : 存储方式,是一个实现了'Toplan\Sms\Storage'接口的类的类名
-    |           内置可选的值有'Toplan\Sms\SessionStorage'和'Toplan\Sms\CacheStorage'
-    |           如果不填写storage,那么系统会自动根据路由组中间件(middleware)的配置值选择存储器
-    |           如果中间件含有'web',会选择使用'Toplan\Sms\SessionStorage'
-    |           如果中间件含有'api',会选择使用'Toplan\Sms\CacheStorage'
+    | storage : 存储方式,是一个实现了'Toplan\Sms\Storage'接口的类的类名,
+    |           内置可选的值有'Toplan\Sms\SessionStorage'和'Toplan\Sms\CacheStorage',
+    |           如果不填写storage,那么系统会自动根据路由组中间件(middleware)的配置值选择存储器,
+    |           如果中间件含有'web',会选择使用'Toplan\Sms\SessionStorage',
+    |           如果中间件含有'api',会选择使用'Toplan\Sms\CacheStorage'。
     |
     */
     'prefix'  => 'laravel_sms',
