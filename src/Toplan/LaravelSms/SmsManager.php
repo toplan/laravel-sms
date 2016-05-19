@@ -11,7 +11,7 @@ class SmsManager
 
     const STATUS_KEY = '_status';
 
-    const CUSTOM_RULE_KEY = '_custom_rule_in_server';
+    const CUSTOM_RULE_KEY = '_dynamic_rules';
 
     const CAN_RESEND_UNTIL_KEY = '_can_resend_until';
 
@@ -366,8 +366,6 @@ class SmsManager
      *
      * @param string $field
      * @param string $name
-     *
-     * @throws LaravelSmsException
      *
      * @return string
      */

@@ -22,12 +22,11 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
 ###3. 由PhpSms提供的特性
 
 - 支持模板短信和内容短信
-- [短信队列](#短信队列)
+- 松散耦合的队列接口
 - 支持语音验证码
-- [代理器均衡调度机制](#24-代理器均衡调度机制)
+- 代理器均衡调度机制
 - 集成[国内主流第三方短信服务商](https://github.com/toplan/phpsms#服务商)
-- [自定义代理器](https://github.com/toplan/phpsms#自定义代理器)和性感的[寄生代理器](https://github.com/toplan/phpsms#寄生代理器)
-- 集成[验证码短信发送/校验模块](#验证码模块)，
+- [自定义代理器](https://github.com/toplan/phpsms#自定义代理器)和[寄生代理器](https://github.com/toplan/phpsms#寄生代理器)
 
 #安装
 
@@ -379,30 +378,33 @@ $validator = Validator::make($request->all(), [
 
 #无会话支持
 
-###1. 请求地址
-
-- 1.1 短信:
-scheme://your-domain/sms/verify-code
-
-- 1.2 语音:
-scheme://your-domain/sms/voice-verify
-
-###2. 基础参数
-
-| 参数名  | 必填     | 说明        | 默认值       |
-| ------ | :-----: | :---------: | :---------: |
-| access_token | 是   | 植入header或参数中均可|   |
-| mobile | 是      | 手机号码      |             |
-| mobileRule | 否  | 手机号检测规则 | `''`        |
-| interval | 否     | 请求间隔时间(秒)  | `60`        |
-
-###3. 服务端准备
+###1. 服务端准备
 
 在`config/laravel-sms.php`中配置路由器组中间件`middleware`。
 
 ```php
 'middleware' => 'api',
 ```
+
+###2. 请求地址
+
+- 短信:
+scheme://your-domain/sms/verify-code
+
+- 语音:
+scheme://your-domain/sms/voice-verify
+
+###3. Access Token
+
+Access Token值可以带在请求参数`access_token`中,也可以设置在请求头中的`Access-Token`上。
+
+###4. 基础参数
+
+| 参数名  | 必填     | 说明        | 默认值       |
+| ------ | :-----: | :---------: | :---------: |
+| mobile | 是      | 手机号码      |             |
+| mobileRule | 否  | 手机号检测规则 | `''`        |
+| interval | 否    | 请求间隔时间(秒)  | `60`        |
 
 #License
 
