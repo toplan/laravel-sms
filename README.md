@@ -13,22 +13,21 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
 
 那么既然有了phpsms，为什么还需要laravel-sms呢？为了更进一步提高开发效率，laravel-sms利用phpsms提供的接口为laravel框架定制好了如下功能：
 
-- 数据库记录日志
-- 队列工作方式
-- 验证码发送与验证模块
+- [数据库记录日志](#数据库日志)
+- 集成[短信队列](#短信队列)
+- 集成[验证码发送与验证模块](#验证码模块),从此告别重复写验证码短信发送与校验的历史
+- 灵活的[动态(自定义)验证规则](#动态验证规则)
+- 验证码发送与验证模块的[无session支持](#无会话支持)
 
-#特点
+###3. 由PhpSms提供的特性
 
-- 支持模板短信和内容短信 (由phpsms提供)
-- [短信队列](#短信队列) (由phpsms提供)
-- 支持语音验证码 (由phpsms提供)
-- [代理器均衡调度机制](#24-代理器均衡调度机制) (由phpsms提供)
-- 集成[国内主流第三方短信服务商](https://github.com/toplan/phpsms#服务商) (由phpsms提供)
-- [自定义代理器](https://github.com/toplan/phpsms#自定义代理器)和性感的[寄生代理器](https://github.com/toplan/phpsms#寄生代理器) (由phpsms提供)
-- 数据库记录/管理短信数据及其发送情况[可选]
-- 集成[验证码短信发送/校验模块](#验证码模块)，从此告别重复写验证码短信发送与校验的历史
-- 验证码发送/验证模块的[无session支持](#无会话支持)
-- 灵活的[动态(自定义)数据验证](#动态验证规则)
+- 支持模板短信和内容短信
+- [短信队列](#短信队列)
+- 支持语音验证码
+- [代理器均衡调度机制](#24-代理器均衡调度机制)
+- 集成[国内主流第三方短信服务商](https://github.com/toplan/phpsms#服务商)
+- [自定义代理器](https://github.com/toplan/phpsms#自定义代理器)和性感的[寄生代理器](https://github.com/toplan/phpsms#寄生代理器)
+- 集成[验证码短信发送/校验模块](#验证码模块)，
 
 #安装
 
@@ -41,10 +40,10 @@ composer require 'toplan/laravel-sms:2.4.*',
 composer require 'toplan/laravel-sms:dev-master'
 ```
 
-#公告
+#公告!!!
 
-安装过旧版本(<2.4.0)的童鞋,在更新到2.4.0+版本时,建议先删除原有的`config/laravel-sms.php`文件,
-然后再运行`php artisan vendor:publish`命令,使用前请务必阅读此文档,因为相比与2.4.0之前的版本有较大变化。
+安装过旧版本(<2.4.0)的童鞋,在更新到2.4.0+版本时,务必先删除原有的`config/laravel-sms.php`文件和`laravel-sms.js`文件(如果有用到),
+然后再运行`php artisan vendor:publish`命令,而且在使用新版本前请再阅读下此文档,因为2.4.0版本有较大变化。
 
 #快速上手v2
 
@@ -136,6 +135,32 @@ PhpSms::make()->to($to)
 // 语言验证码
 PhpSms::voice('89093')->to($to)->send();
 ```
+
+#API
+
+###retrieveStatus()
+
+获取发送状态
+
+###forgetStatus()
+
+删除发送状态
+
+###storeRule($field[, $name], $rule)
+
+定义数据(field)的动态验证规则
+
+###retrieveRules($field)
+
+获取某项数据的所有动态验证规则
+
+###retrieveRule($field, $name)
+
+获取某项数据的指定名称的动态验证规则
+
+###forgetRule($field, $name)
+
+删除某项数据的指定名称的动态验证规则
 
 #数据库日志
 
@@ -255,19 +280,21 @@ PhpSms::queue(function($sms, $data){
 <script src="/path/to/laravel-sms.js"></script>
 <script>
 $('#sendVerifySmsButton').sms({
-    //laravel csrf token value
-    //PS:该token仅为laravel框架的csrf验证，不是无会话json api所用的token
+    //laravel csrf token
+    //PS:该token仅为laravel框架的csrf验证，不是access_token!
     token          : "{{csrf_token()}}",
 
     //access token for api
-    //PS:如果你使用的是无会话json api，可以这样带上access token
     accessToken    : 'user token string...',
 
     //定义如何获取mobile的值
     mobileSelector : 'input[name="mobile"]',
 
-    //定义手机号的检测规则,当然你还可以到配置文件中自定义你想要的任何规则
+    //手机号的检测规则
     mobileRule     : 'mobile_required',
+
+    //请求间隔时间
+    interval       : 60
 
     //是否请求语音验证码
     voice          : false,
@@ -325,6 +352,7 @@ Note:
 ```
 
 > **小技巧:**存储的动态验证规则访问example.com/sms/info查看。
+> 值得注意的是,动态规则名称最好不要和静态规则同名,因为会优先使用静态规则。
 
 ###2. 删除动态规则
 
@@ -366,7 +394,7 @@ scheme://your-domain/sms/voice-verify
 | access_token | 是   | 植入header或参数中均可|   |
 | mobile | 是      | 手机号码      |             |
 | mobileRule | 否  | 手机号检测规则 | `''`        |
-| seconds | 否     | 请求间隔(秒)  | `60`        |
+| interval | 否     | 请求间隔时间(秒)  | `60`        |
 
 ###3. 服务端准备
 

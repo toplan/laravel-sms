@@ -37,13 +37,13 @@
             data : {
                 _token: opts.token,
                 access_token: opts.accessToken,
-                seconds: opts.seconds,
+                interval: opts.interval,
                 mobile: mobile,
                 mobileRule: opts.mobileRule
             },
             success : function (data) {
                if (data.success) {
-                   timer(elem, opts.seconds, opts.btnContent)
+                   timer(elem, opts.interval, opts.btnContent)
                } else {
                    elem.html(opts.btnContent);
                    elem.prop('disabled', false);
@@ -76,7 +76,7 @@
         accessToken    : '',
         mobileRule     : '',
         mobileSelector : '',
-        seconds        : 60,
+        interval       : 60,
         voice          : false,
         domain         : '',
         alertMsg       : function (msg, type) {
