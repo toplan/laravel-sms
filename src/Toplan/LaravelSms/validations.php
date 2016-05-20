@@ -20,6 +20,14 @@ Validator::extend('confirm_rule', function ($attribute, $value, $parameters) {
     $status = SmsManager::retrieveStatus();
     $field = isset($parameters[0]) ? $parameters[0] : null;
     $name = isset($parameters[1]) ? $parameters[1] : null;
+    if (empty($name)) {
+        try {
+            $parsed = parse_url(url()->previous());
+            $name = $parsed['path'];
+        } catch (\Exception $e) {
+            //swallow exception
+        }
+    }
 
     return $status && isset($status['usedRule'][$field]) && $status['usedRule'][$field] === $name;
 });

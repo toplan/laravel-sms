@@ -26,7 +26,7 @@
     };
 
     function sendSms(opts, elem) {
-        var mobile = $(opts.mobileSelector).val();
+        var mobile = $(opts.mobile_selector).val();
         var url = opts.domain + '/sms/verify-code';
         if (opts.voice) {
             url = opts.domain + '/sms/voice-verify';
@@ -36,10 +36,10 @@
             type : 'post',
             data : {
                 _token: opts.token,
-                access_token: opts.accessToken,
+                access_token: opts.access_token,
                 interval: opts.interval,
                 mobile: mobile,
-                mobileRule: opts.mobileRule
+                mobile_rule: opts.mobile_rule
             },
             success : function (data) {
                if (data.success) {
@@ -53,7 +53,7 @@
             error: function(xhr, type){
                 elem.html(opts.btnContent);
                 elem.prop('disabled', false);
-                opts.alertMsg('请求失败，请重试');
+                opts.alertMsg('请求失败，请重试', 'request_failure');
             }
         });
     }
@@ -72,14 +72,14 @@
     }
 
     $.fn.sms.default = {
-        token          : '',
-        accessToken    : '',
-        mobileRule     : '',
-        mobileSelector : '',
-        interval       : 60,
-        voice          : false,
-        domain         : '',
-        alertMsg       : function (msg, type) {
+        token           : '',
+        access_token    : '',
+        mobile_rule     : '',
+        mobile_selector : '',
+        interval        : 60,
+        voice           : false,
+        domain          : '',
+        alertMsg        : function (msg, type) {
             alert(msg);
         }
     };

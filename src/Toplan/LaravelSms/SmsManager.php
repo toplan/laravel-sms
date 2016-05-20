@@ -64,7 +64,7 @@ class SmsManager
             'to'       => null,
             'code'     => null,
             'deadline' => 0,
-            'usedRule' => array_fill_keys($fields, ''),
+            'usedRule' => array_fill_keys($fields, null),
         ];
     }
 
@@ -102,7 +102,7 @@ class SmsManager
         $fields = self::getFields();
         foreach ($fields as $field) {
             if (self::whetherValidateFiled($field)) {
-                $ruleName = isset($data[$field . 'Rule']) ? $data[$field . 'Rule'] : '';
+                $ruleName = isset($data[$field . '_rule']) ? $data[$field . '_rule'] : '';
                 $dataForValidator[$field] = $this->getRealRuleByName($field, $ruleName);
             }
         }
@@ -137,18 +137,29 @@ class SmsManager
      */
     protected function getRealRuleByName($field, $ruleName)
     {
-        $data = self::getValidationConfigByField($field);
-        if ($this->useRule($field, $ruleName)) {
-            return $data['staticRules'][$ruleName];
-        } elseif ($customRule = $this->retrieveRule($field, $ruleName)) {
-            $this->useRule($field, self::CUSTOM_RULE_KEY);
-
-            return $customRule;
-        } else {
-            $default = self::getNameOfDefaultStaticRule($field);
-            if ($this->useRule($field, $default)) {
-                return $data['staticRules'][$default];
+        if (empty($ruleName) || !is_string($ruleName)) {
+            try {
+                $parsed = parse_url(url()->previous());
+                $ruleName = $parsed['path'];
+            } catch (\Exception $e) {
+                $ruleName = '';
             }
+        }
+        if ($staticRule = $this->getStaticRule($field, $ruleName)) {
+            $this->useRule($field, $ruleName);
+
+            return $staticRule;
+        }
+        if ($dynamicRule = $this->retrieveRule($field, $ruleName)) {
+            $this->useRule($field, $ruleName);
+
+            return $dynamicRule;
+        }
+        $default = self::getNameOfDefaultStaticRule($field);
+        if ($staticRule = $this->getStaticRule($field, $default)) {
+            $this->useRule($field, $default);
+
+            return $staticRule;
         }
 
         return '';
@@ -173,18 +184,10 @@ class SmsManager
      *
      * @param string $field
      * @param string $name
-     *
-     * @return bool
      */
     protected function useRule($field, $name)
     {
-        if (self::hasStaticRule($field, $name) || $name === self::CUSTOM_RULE_KEY) {
-            $this->status['usedRule'][$field] = $name;
-
-            return true;
-        }
-
-        return false;
+        $this->status['usedRule'][$field] = $name;
     }
 
     /**
@@ -213,10 +216,10 @@ class SmsManager
             $this->storeStatus($this->status);
             $this->setCanResendAfter($interval);
 
-            return self::generateResult(true, 'sms_send_success');
+            return self::generateResult(true, 'sms_sent_success');
         }
 
-        return self::generateResult(false, 'sms_send_failure');
+        return self::generateResult(false, 'sms_sent_failure');
     }
 
     /**
@@ -243,10 +246,10 @@ class SmsManager
             $this->storeStatus($this->status);
             $this->setCanResendAfter($interval);
 
-            return self::generateResult(true, 'voice_send_success');
+            return self::generateResult(true, 'voice_sent_success');
         }
 
-        return self::generateResult(false, 'voice_send_failure');
+        return self::generateResult(false, 'voice_sent_failure');
     }
 
     /**
@@ -371,23 +374,9 @@ class SmsManager
      */
     public function retrieveRule($field, $name)
     {
-        if (empty($name) || !is_string($name)) {
-            try {
-                $parsed = parse_url(url()->previous());
-                $realName = $parsed['path'];
-            } catch (\Exception $e) {
-                return '';
-            }
-        } else {
-            $realName = $name;
-        }
-        $customRules = $this->retrieveRules($field);
-        $customRule = isset($customRules[$realName]) ? $customRules[$realName] : '';
-        if ($name && !$customRule) {
-            return $this->retrieveRule($field, null);
-        }
+        $allRules = $this->retrieveRules($field);
 
-        return $customRule;
+        return isset($allRules[$name]) ? $allRules[$name] : '';
     }
 
     /**
@@ -523,13 +512,13 @@ class SmsManager
      * @param $field
      * @param $ruleName
      *
-     * @return bool
+     * @return string
      */
-    protected static function hasStaticRule($field, $ruleName)
+    protected static function getStaticRule($field, $ruleName)
     {
         $data = self::getValidationConfigByField($field);
 
-        return isset($data['staticRules'][$ruleName]);
+        return isset($data['staticRules'][$ruleName]) ? $data['staticRules'][$ruleName] : '';
     }
 
     /**

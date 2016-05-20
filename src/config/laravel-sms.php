@@ -56,16 +56,16 @@ return [
         'request_invalid' => '请求无效，请在%s秒后重试',
 
         // 验证码短信发送失败的提示
-        'sms_send_failure' => '短信验证码发送失败，请稍后重试',
+        'sms_sent_failure' => '短信验证码发送失败，请稍后重试',
 
         // 语音验证码发送发送成功的提示
-        'voice_send_failure' => '语音验证码请求失败，请稍后重试',
+        'voice_sent_failure' => '语音验证码请求失败，请稍后重试',
 
         // 验证码短信发送成功的提示
-        'sms_send_success' => '短信验证码发送成功，请注意查收',
+        'sms_sent_success' => '短信验证码发送成功，请注意查收',
 
         // 语音验证码发送发送成功的提示
-        'voice_send_success' => '语音验证码发送成功，请注意接听',
+        'voice_sent_success' => '语音验证码发送成功，请注意接听',
     ],
 
     /*
@@ -73,9 +73,14 @@ return [
     | 验证码短信相关配置
     |--------------------------------------------------------------------------
     |
-    | verifySmsContent : 验证码短信通用内容
-    | codeLength       : 验证码长度
-    | codeValidMinutes : 验证码有效时间长度，单位为分钟(minutes)
+    | verifySmsContent:
+    | 验证码短信通用内容
+    |
+    | codeLength:
+    | 验证码长度
+    |
+    | codeValidMinutes:
+    | 验证码有效时间长度，单位为分钟(minutes)
     |
     */
     'verifySmsContent' => '【your app signature】亲爱的用户，您的验证码是%s。有效期为%s分钟，请尽快验证',
@@ -87,13 +92,19 @@ return [
     | 存储系统配置
     |--------------------------------------------------------------------------
     |
-    | prefix  : 存储key的prefix
-    | storage : 存储方式,是一个实现了'Toplan\Sms\Storage'接口的类的类名,
-    |           内置可选的值有'Toplan\Sms\SessionStorage'和'Toplan\Sms\CacheStorage',
-    |           如果不填写storage,那么系统会自动根据路由组中间件(middleware)的配置值选择存储器,
-    |           如果中间件含有'web',会选择使用'Toplan\Sms\SessionStorage',
-    |           如果中间件含有'api',会选择使用'Toplan\Sms\CacheStorage'。
+    | prefix:
+    | 存储key的prefix
     |
+    | storage:
+    | 存储方式,是一个实现了'Toplan\Sms\Storage'接口的类的类名,
+    | 内置可选的值有'Toplan\Sms\SessionStorage'和'Toplan\Sms\CacheStorage',
+    | 如果不填写storage,那么系统会自动根据'sms'路由组中间件(middleware)的配置值选择存储器,
+    | 如果中间件含有'web',会选择使用'Toplan\Sms\SessionStorage',
+    | 如果中间件含有'api',会选择使用'Toplan\Sms\CacheStorage'。
+    |
+    | 内置storage的个性化配置:
+    | 在'config/session.php'文件中可以对'Toplan\Sms\SessionStorage'进行更多个性化设置
+    | 在'config/cache.php'文件中可以对'Toplan\Sms\CacheStorage'进行更多个性化设置
     */
     'prefix'  => 'laravel_sms',
     'storage' => '',
