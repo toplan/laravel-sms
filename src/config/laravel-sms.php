@@ -35,8 +35,8 @@ return [
     */
     'validation' => [
         'mobile' => [
-            'enable' => true,
-            'default' => 'mobile_required',
+            'enable'      => true,
+            'default'     => 'mobile_required',
             'staticRules' => [
                 'mobile_required'     => 'required|zh_mobile',
                 'check_mobile_unique' => 'required|zh_mobile|unique:users,mobile',
