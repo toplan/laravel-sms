@@ -554,7 +554,6 @@ class SmsManager
         throw new LaravelSmsException("Don't find validation config for the field [$field] in config file, please define it.");
     }
 
-
     /**
      * 检查指定字段是否是可验证的
      *
