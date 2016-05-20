@@ -172,10 +172,12 @@ $('#sendVerifySmsButton').sms({
     //手机号的检测规则
     mobile_rule     : 'mobile_required',
     //请求间隔时间
-    interval        : 60,
+    interval        : 60
 });
 </script>
 ```
+
+> laravel-sms.js的更多用法请[见此](#laravel-sms.js)
 
 ###3.[服务器端]合法性验证
 
@@ -196,10 +198,11 @@ if ($validator->fails()) {
    return redirect()->back()->withErrors($validator);
 }
 ```
+> `confirm_mobile_not_change`, `verify_code`, `confirm_rule`的详解请参看[Validator扩展](#Validator扩展)
 
 #Api
 
-##发送状态
+##1. 发送状态
 
 ####retrieveStatus()
 获取发送状态。
@@ -207,7 +210,7 @@ if ($validator->fails()) {
 ####forgetStatus()
 删除发送状态。
 
-##动态验证规则
+##2. 动态验证规则
 
 ####storeRule($field[, $name], $rule)
 定义数据(field)的动态验证规则。
@@ -235,27 +238,18 @@ SmsManager::storeRule('mobile', [
 ####retrieveRules($field)
 获取某项数据的所有动态验证规则。
 ```php
-use SmsManager;
-...
-
 SmsManager::retrieveRules('mobile');
 ```
 
 ####retrieveRule($field, $name)
 获取某项数据的指定名称的动态验证规则。
 ```php
-use SmsManager;
-...
-
 SmsManager::retrieveRule('mobile', 'myRuleName');
 ```
 
 ####forgetRule($field, $name)
 删除某项数据的指定名称的动态验证规则。
 ```php
-use SmsManager;
-...
-
 SmsManager::forgetRule('mobile', 'myRuleName');
 ```
 
@@ -288,8 +282,8 @@ $validator = Validator::make($request->all(), [
 ###verify_code
 检测验证码是否合法。
 
-###confirm_rule:$field,$field_rule
-检测验证规则是否合法，第一个值为手机号检测规则，必须和你在参数中的`{$field}_rule`的值一致。
+###confirm_rule:$field,$ruleName
+检测验证规则是否合法，第一个值为字段名称，第二个值为使用的验证规则的名称。
 
 #无会话支持
 
