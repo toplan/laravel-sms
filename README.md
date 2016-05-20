@@ -15,7 +15,7 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
 
 - 集成[验证码发送与验证模块](#验证码模块),从此告别重复写验证码短信发送与校验的历史
 - 验证码发送与验证模块的[无session支持](#无会话支持)
-- 灵活的[动态(自定义)验证规则](#动态验证规则)
+- 灵活的[动态验证规则](#2-动态验证规则)
 - 可选的[数据库日志](#数据库日志)
 - 集成[短信队列](#短信队列)
 
@@ -44,7 +44,7 @@ composer require 'toplan/laravel-sms:dev-master'
 安装过旧版本(<2.4.0)的童鞋,在更新到2.4.0+版本时,务必先删除原有的`config/laravel-sms.php`文件和`laravel-sms.js`文件(如果有用到),
 然后再运行`php artisan vendor:publish`命令,而且在使用新版本前请再阅读下此文档,因为2.4.0版本有较大变化。
 
-#快速上手v2
+#准备工作
 
 ###1.注册服务提供器
 
@@ -97,9 +97,9 @@ php artisan vendor:publish
 > 如果使用其中一个代理器发送失败，那么会启用备用代理器，按照配置可知备用代理器有`YunPian`和`YunTongXun`，那么会依次调用直到发送成功或无备用代理器可用。
 > 值得注意的是，如果首次尝试的是`YunPian`，那么备用代理器将会只会使用`YunTongXun`，也就是会排除使用过的代理器。
 
-#数据验证配置
+#数据验证设置
 
-不管是使用静态验证规则和[动态验证规则](#动态验证规则),都需要提前到配置文件(`config/laravel-sms.php`)中定义字段,并做好配置。
+不管是使用静态验证规则和[动态验证规则](#2-动态验证规则),都需要提前到配置文件(`config/laravel-sms.php`)中定义字段,并做好设置。
 ```php
 'validation' => [
     // field => setting
@@ -177,7 +177,7 @@ $('#sendVerifySmsButton').sms({
 </script>
 ```
 
-> laravel-sms.js的更多用法请[见此](#laravel-sms.js)
+> laravel-sms.js的更多用法请[见此](#laravel-smsjs)
 
 ###3.[服务器端]合法性验证
 
@@ -198,7 +198,7 @@ if ($validator->fails()) {
    return redirect()->back()->withErrors($validator);
 }
 ```
-> `confirm_mobile_not_change`, `verify_code`, `confirm_rule`的详解请参看[Validator扩展](#Validator扩展)
+> `confirm_mobile_not_change`, `verify_code`, `confirm_rule`的详解请参看[Validator扩展](#validator扩展)
 
 #Api
 
