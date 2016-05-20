@@ -103,8 +103,9 @@ return [
     | 如果中间件含有'api',会选择使用'Toplan\Sms\CacheStorage'。
     |
     | 内置storage的个性化配置:
-    | 在'config/session.php'文件中可以对'Toplan\Sms\SessionStorage'进行更多个性化设置
-    | 在'config/cache.php'文件中可以对'Toplan\Sms\CacheStorage'进行更多个性化设置
+    | 1. 在laravel项目的'config/session.php'文件中可以对'Toplan\Sms\SessionStorage'进行更多个性化设置
+    | 2. 在laravel项目的'config/cache.php'文件中可以对'Toplan\Sms\CacheStorage'进行更多个性化设置
+    |
     */
     'prefix'  => 'laravel_sms',
     'storage' => '',

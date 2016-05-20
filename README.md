@@ -13,11 +13,11 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
 
 那么既然有了phpsms，为什么还需要laravel-sms呢？为了更进一步提高开发效率，laravel-sms利用phpsms提供的接口为laravel框架定制好了如下功能：
 
+- 集成[验证码发送与验证模块](#验证码模块),从此告别重复写验证码短信发送与校验的历史
+- 验证码发送与验证模块的[无session支持](#无会话支持)
 - 灵活的[动态(自定义)验证规则](#动态验证规则)
 - 可选的[数据库日志](#数据库日志)
 - 集成[短信队列](#短信队列)
-- 集成[验证码发送与验证模块](#验证码模块),从此告别重复写验证码短信发送与校验的历史
-- 验证码发送与验证模块的[无session支持](#无会话支持)
 
 ###3. 由PhpSms提供的特性
 
@@ -97,6 +97,106 @@ php artisan vendor:publish
 > 如果使用其中一个代理器发送失败，那么会启用备用代理器，按照配置可知备用代理器有`YunPian`和`YunTongXun`，那么会依次调用直到发送成功或无备用代理器可用。
 > 值得注意的是，如果首次尝试的是`YunPian`，那么备用代理器将会只会使用`YunTongXun`，也就是会排除使用过的代理器。
 
+#数据验证配置
+
+不管是使用静态验证规则和[动态验证规则](#动态验证规则),都需要提前到配置文件(`config/laravel-sms.php`)中定义字段,并做好配置。
+```php
+'validation' => [
+    // field => setting
+
+    // 内置的mobile字段的验证设置:
+    'mobile' => [
+        //是否开启该字段的检测:
+        'enable'      => true,
+
+        //默认的静态验证规则:
+        'default'     => 'default_static_rule',
+
+        //静态验证规则:
+        'staticRules' => [
+            // ruleName => rule
+            'default_static_rule' => 'required|zh_mobile'
+            ...
+        ]
+    ]
+
+    // 配置你可能需要验证的字段
+    'yourField' => [
+        'enable' => true,
+        ...
+    ]
+]
+```
+
+#验证码模块
+
+可以直接访问example.com/sms/info查看该模块是否可用，并可在该页面里观察验证码短信发送数据，方便你进行调试。
+
+###1.[服务器端]配置短信内容/模板
+
+如果你使用了内容短信(如云片网络,Luosimao)，则使用或修改'verifySmsContent'的值。
+
+> 配置文件为config/laravel-sms.php
+
+```php
+'verifySmsContent' => '【填写签名】亲爱的用户，您的验证码是%s。有效期为%s分钟，请尽快验证'
+```
+
+如果你使用了模板短信(如云通讯,SubMail)/模版语音(如阿里大鱼)，需要到相应代理器中填写模板标示符。
+
+> 配置文件为config/phpsms.php
+
+```php
+'YunTongXun' => [
+    //短信模板标示符
+    'verifySmsTemplateId' => 'your template id',
+]
+'Alidayu' => [
+    //语音模板标示符
+    'voiceVerifyTemplateId' => 'your tts code'
+]
+```
+
+###2.[浏览器端]请求发送验证码短信
+
+该包已经封装好浏览器端的插件(兼容jquery/zepto)，只需要为发送按钮添加扩展方法即可实现发送短信。
+```html
+//js文件在laravel-sms包的js文件夹中，请复制到项目资源目录
+<script src="/path/to/laravel-sms.js"></script>
+<script>
+$('#sendVerifySmsButton').sms({
+    //laravel csrf token
+    token           : "{{csrf_token()}}",
+    //定义如何获取mobile的值
+    mobile_selector : 'input[name=mobile]',
+    //手机号的检测规则
+    mobile_rule     : 'mobile_required',
+    //请求间隔时间
+    interval        : 60,
+});
+</script>
+```
+
+###3.[服务器端]合法性验证
+
+用户填写验证码并提交表单到服务器时，在你的控制器中需要验证手机号和验证码是否正确，你只需要加上如下代码即可：
+```php
+use SmsManager;
+...
+
+//验证数据
+$validator = Validator::make($request->all(), [
+    'mobile'     => 'required|confirm_mobile_not_change',
+    'verifyCode' => 'required|verify_code|confirm_rule:mobile,mobile_required',
+    //more...
+]);
+if ($validator->fails()) {
+   //验证失败后建议清空存储的发送状态，防止用户重复试错
+   SmsManager::forgetStatus();
+   return redirect()->back()->withErrors($validator);
+}
+```
+
 #Api
 
 ##发送状态
@@ -175,46 +275,51 @@ $validator = Validator::make($request->all(), [
     ...
 ]);
 ```
-
 > 如果`mobile_rule`为空,系统会先尝试设置其为前一个访问路径的uri。
 
-#PhpSms Api
+#Validator扩展
 
-在控制器中发送触发短信，如下所示：
+###zh_mobile
+检测标准的中国大陆手机号码。
+
+###confirm_mobile_not_change
+检测用户提交的手机号是否变更。
+
+###verify_code
+检测验证码是否合法。
+
+###confirm_rule:$field,$field_rule
+检测验证规则是否合法，第一个值为手机号检测规则，必须和你在参数中的`{$field}_rule`的值一致。
+
+#无会话支持
+
+###1. 服务端准备
+
+在`config/laravel-sms.php`中配置路由器组中间件`middleware`。
+
 ```php
-use PhpSms;
-
-// 接收人手机号
-$to = '1828****349';
-// 短信模版
-$templates = [
-    'YunTongXun' => 'your_temp_id',
-    'SubMail'    => 'your_temp_id'
-];
-// 模版数据
-$tempData = [
-    'code' => '87392',
-    'minutes' => '5'
-];
-// 短信内容
-$content = '【签名】这是短信内容...';
-
-// 只希望使用模板方式发送短信,可以不设置content(如:云通讯、Submail、Ucpaas)
-PhpSms::make()->to($to)->template($templates)->data($tempData)->send();
-
-// 只希望使用内容方式放送,可以不设置模板id和模板data(如:云片、luosimao)
-PhpSms::make()->to($to)->content($content)->send();
-
-// 同时确保能通过模板和内容方式发送,这样做的好处是,可以兼顾到各种类型服务商
-PhpSms::make()->to($to)
-     ->template($templates)
-     ->data($tempData)
-     ->content($content)
-     ->send();
-
-// 语言验证码
-PhpSms::voice('89093')->to($to)->send();
+'middleware' => 'api',
 ```
+
+###2. Access Token
+
+`Access Token`值建议设置在请求头中的`Access-Token`上,当然也可以带在请求参数`access_token`中。
+
+###3. 请求地址
+
+- 短信:
+scheme://your-domain/sms/verify-code
+
+- 语音:
+scheme://your-domain/sms/voice-verify
+
+###4. 基础参数
+
+| 参数名  | 必填     | 说明        | 默认值       |
+| ------ | :-----: | :---------: | :---------: |
+| mobile | 是      | 手机号码      |             |
+| mobile_rule | 否 | 手机号检测规则 | `''`        |
+| interval | 否    | 请求间隔时间(秒)  | `60`        |
 
 #数据库日志
 
@@ -278,61 +383,49 @@ PhpSms::queue(function($sms, $data){
 });
 ```
 
-#验证码模块
+#附录
 
-可以直接访问example.com/sms/info查看该模块是否可用，并可在该页面里观察验证码短信发送数据，方便你进行调试。
+###PhpSms Api
 
-###1.[服务器端]配置短信内容/模板
-
-- 填写你的验证码短信内容或模板标示符
-
-如果你使用了内容短信(如云片网络,Luosimao)，则使用或修改'verifySmsContent'的值。
-
-> 配置文件为config/laravel-sms.php
-
+在控制器中发送触发短信，如下所示：
 ```php
-    'verifySmsContent' => '【填写签名】亲爱的用户，您的验证码是%s。有效期为%s分钟，请尽快验证'
+use PhpSms;
+
+// 接收人手机号
+$to = '1828****349';
+// 短信模版
+$templates = [
+    'YunTongXun' => 'your_temp_id',
+    'SubMail'    => 'your_temp_id'
+];
+// 模版数据
+$tempData = [
+    'code' => '87392',
+    'minutes' => '5'
+];
+// 短信内容
+$content = '【签名】这是短信内容...';
+
+// 只希望使用模板方式发送短信,可以不设置content(如:云通讯、Submail、Ucpaas)
+PhpSms::make()->to($to)->template($templates)->data($tempData)->send();
+
+// 只希望使用内容方式放送,可以不设置模板id和模板data(如:云片、luosimao)
+PhpSms::make()->to($to)->content($content)->send();
+
+// 同时确保能通过模板和内容方式发送,这样做的好处是,可以兼顾到各种类型服务商
+PhpSms::make()->to($to)
+     ->template($templates)
+     ->data($tempData)
+     ->content($content)
+     ->send();
+
+// 语言验证码
+PhpSms::voice('89093')->to($to)->send();
 ```
 
-如果你使用了模板短信(如云通讯,SubMail)/模版语音(如阿里大鱼)，需要到相应代理器中填写模板标示符。
+###laravel-sms.js
 
-> 配置文件为config/phpsms.php
-
-```php
-'YunTongXun' => [
-    //短信模板标示符
-    'verifySmsTemplateId' => 'your template id',
-]
-'Alidayu' => [
-    //语音模板标示符
-    'voiceVerifyTemplateId' => 'your tts code'
-]
-```
-
-- 配置静态验证规则[可选]
-
-> 配置文件为config/laravel-sms.php，你还可以配置[动态验证规则](#动态验证规则)
-
-```php
-'validation' => [
-    'mobile' => [
-        'enable'  => true,
-        'default' => ...,
-        'staticRules' => [
-            ...
-        ]
-    ],
-    ...
-]
-```
-
-###2.[浏览器端]请求发送带验证码短信
-
-该包已经封装好浏览器端的插件(兼容jquery/zepto)，只需要为发送按钮添加扩展方法即可实现发送短信。
-```html
-//js文件在laravel-sms包的js文件夹中，请复制到项目资源目录
-<script src="/path/to/laravel-sms.js"></script>
-<script>
+```javascript
 $('#sendVerifySmsButton').sms({
     //laravel csrf token
     //该token仅为laravel框架的csrf验证,不是access_token!
@@ -358,63 +451,7 @@ $('#sendVerifySmsButton').sms({
         alert(msg);
     }
 });
-</script>
 ```
-
-###3.[服务器端]合法性验证
-
-用户填写验证码并提交表单到服务器时，在你的控制器中需要验证手机号和验证码是否正确，你只需要加上如下代码即可：
-```php
-use SmsManager;
-...
-//验证数据
-$validator = Validator::make($request->all(), [
-    'mobile'     => 'required|confirm_mobile_not_change',
-    'verifyCode' => 'required|verify_code|confirm_rule:mobile,mobile_required',
-    //more...
-]);
-if ($validator->fails()) {
-   //验证失败后建议清空存储的发送状态，防止用户重复试错
-   SmsManager::forgetStatus();
-   return redirect()->back()->withErrors($validator);
-}
-```
-
-Note:
-- `confirm_mobile_not_change` 验证用户手机号是否变更。
-- `verify_code` 验证验证码是否合法。
-- `confirm_rule:{field},{$field_rule}` 检测验证规则是否合法，第一个值为手机号检测规则，必须和你在参数中的`{$field}_rule`的值一致。
-- 请在语言包validation.php中做好翻译。
-
-#无会话支持
-
-###1. 服务端准备
-
-在`config/laravel-sms.php`中配置路由器组中间件`middleware`。
-
-```php
-'middleware' => 'api',
-```
-
-###2. Access Token
-
-`Access Token`值建议设置在请求头中的`Access-Token`上,当然也可以带在请求参数`access_token`中。
-
-###3. 请求地址
-
-- 短信:
-scheme://your-domain/sms/verify-code
-
-- 语音:
-scheme://your-domain/sms/voice-verify
-
-###4. 基础参数
-
-| 参数名  | 必填     | 说明        | 默认值       |
-| ------ | :-----: | :---------: | :---------: |
-| mobile | 是      | 手机号码      |             |
-| mobile_rule | 否 | 手机号检测规则 | `''`        |
-| interval | 否    | 请求间隔时间(秒)  | `60`        |
 
 #License
 
