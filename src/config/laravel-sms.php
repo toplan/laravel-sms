@@ -6,7 +6,7 @@ return [
     | 路由组中间件
     |--------------------------------------------------------------------------
     |
-    | 可在此配置内置路由组'sms'的中间件,
+    | 配置内置路由组'laravel-sms'的中间件,
     | 如果是web应用建议为'web',
     | 如果是api应用(无session),建议为'api'。
     |
@@ -31,6 +31,16 @@ return [
     |
     | 设置从客户端传来的需要验证的数据字段(本库将其称为field),
     | 并管理其启用状态(enable),默认静态验证规则(default)以及所有可用静态验证规则(staticRules)。
+    |
+    |--------------------------------------------------------------------------
+    |
+    | field => settings: [
+    |     'enable'      => (bool)
+    |     'default'     => (the name of a static rule)
+    |     'staticRules' => [
+    |         (name) => (rule)
+    |     ]
+    | ]
     |
     */
     'validation' => [
@@ -98,7 +108,7 @@ return [
     | storage:
     | 存储方式,是一个实现了'Toplan\Sms\Storage'接口的类的类名,
     | 内置可选的值有'Toplan\Sms\SessionStorage'和'Toplan\Sms\CacheStorage',
-    | 如果不填写storage,那么系统会自动根据'sms'路由组中间件(middleware)的配置值选择存储器,
+    | 如果不填写storage,那么系统会自动根据'laravel-sms'路由组中间件(middleware)的配置值选择存储器,
     | 如果中间件含有'web',会选择使用'Toplan\Sms\SessionStorage',
     | 如果中间件含有'api',会选择使用'Toplan\Sms\CacheStorage'。
     |

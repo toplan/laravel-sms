@@ -97,25 +97,42 @@ php artisan vendor:publish
 > 如果使用其中一个代理器发送失败，那么会启用备用代理器，按照配置可知备用代理器有`YunPian`和`YunTongXun`，那么会依次调用直到发送成功或无备用代理器可用。
 > 值得注意的是，如果首次尝试的是`YunPian`，那么备用代理器将会只会使用`YunTongXun`，也就是会排除使用过的代理器。
 
-#数据验证设置
+#发送前数据验证
 
-不管是使用静态验证规则和[动态验证规则](#2-动态验证规则),都需要提前到配置文件(`config/laravel-sms.php`)中定义字段,并做好设置。
+当客服端向服务器端请求发送验证码短信/语音时,服务器端需要对接收到的数据(本库将其称为`field`)进行验证,
+只有在所有需验证的数据都验证通过了本库才会向第三方服务提供商请求发送验证码短信/语音。
+对于每项数据(field),不管是使用静态验证规则还是[动态验证规则](#2-动态验证规则),都需要提前到配置文件(`config/laravel-sms.php`)中定义,并做好必要的设置。
+
+> 本文档中所说的`服务器端`是我们自己的应用系统,而非第三方短信服务提供商。
+
+###设置项
+对于每项数据,都可以有以下三项设置:
+
+- enable
+服务器端是否在向第三方服务提供商请求发送验证码短信/语音前对需要对该数据进行验证。(必要)
+
+- default
+该数据的默认静态验证规则名。(可选)
+
+- staticRules
+该数据的所有静态验证规则。(可选)
+
+###示例
+
 ```php
 'validation' => [
-    // field => setting
+    // field => settings
 
     // 内置的mobile字段的验证设置:
     'mobile' => [
         //是否开启该字段的检测:
         'enable'      => true,
-
         //默认的静态验证规则:
-        'default'     => 'default_static_rule',
-
+        'default'     => 'mobile_required',
         //静态验证规则:
         'staticRules' => [
-            // ruleName => rule
-            'default_static_rule' => 'required|zh_mobile'
+            // name => rule
+            'mobile_required'     => 'required|zh_mobile',
             ...
         ]
     ]
@@ -130,7 +147,9 @@ php artisan vendor:publish
 
 #验证码模块
 
-可以直接访问example.com/sms/info查看该模块是否可用，并可在该页面里观察验证码短信发送数据，方便你进行调试。
+可以直接访问`your-domain/laravel-sms/info`查看该模块是否可用，并可在该页面里观察验证码短信发送数据，方便你进行调试。
+
+> 如果是api应用(无session)需要带上access token: your-domain/laravel-sms/info?access_token=xxxx
 
 ###1.[服务器端]配置短信内容/模板
 
@@ -160,8 +179,10 @@ php artisan vendor:publish
 ###2.[浏览器端]请求发送验证码短信
 
 该包已经封装好浏览器端的插件(兼容jquery/zepto)，只需要为发送按钮添加扩展方法即可实现发送短信。
+
+> js文件在本库的js文件夹中，请复制到项目资源目录
+
 ```html
-//js文件在laravel-sms包的js文件夹中，请复制到项目资源目录
 <script src="/path/to/laravel-sms.js"></script>
 <script>
 $('#sendVerifySmsButton').sms({
@@ -194,7 +215,7 @@ $validator = Validator::make($request->all(), [
 ]);
 if ($validator->fails()) {
    //验证失败后建议清空存储的发送状态，防止用户重复试错
-   SmsManager::forgetStatus();
+   SmsManager::forgetState();
    return redirect()->back()->withErrors($validator);
 }
 ```
@@ -204,10 +225,10 @@ if ($validator->fails()) {
 
 ##1. 发送状态
 
-####retrieveStatus()
+####retrieveState()
 获取发送状态。
 
-####forgetStatus()
+####forgetState()
 删除发送状态。
 
 ##2. 动态验证规则
@@ -253,13 +274,13 @@ SmsManager::retrieveRule('mobile', 'myRuleName');
 SmsManager::forgetRule('mobile', 'myRuleName');
 ```
 
-####使用动态规则
+####使用
 
-客户端:
+- 客户端
 
 设置`mobile_rule`参数为要使用的动态验证规则的名称。
 
-服务器端:
+- 服务器端
 
 ```php
 $ruleName = $request->input('myRuleName', null);
@@ -269,7 +290,6 @@ $validator = Validator::make($request->all(), [
     ...
 ]);
 ```
-> 如果`mobile_rule`为空,系统会先尝试设置其为前一个访问路径的uri。
 
 #Validator扩展
 
@@ -284,6 +304,7 @@ $validator = Validator::make($request->all(), [
 
 ###confirm_rule:$field,$ruleName
 检测验证规则是否合法，第一个值为字段名称，第二个值为使用的验证规则的名称。
+如果第二项参数(`$ruleName`)不填写,系统会尝试设置其为前一个访问路径的uri。
 
 #无会话支持
 
@@ -292,20 +313,21 @@ $validator = Validator::make($request->all(), [
 在`config/laravel-sms.php`中配置路由器组中间件`middleware`。
 
 ```php
-'middleware' => 'api',
+//example:
+'middleware' => ['api'],
 ```
 
 ###2. Access Token
 
-`Access Token`值建议设置在请求头中的`Access-Token`上,当然也可以带在请求参数`access_token`中。
+Access Token值建议设置在请求头中的`Access-Token`上,当然也可以带在请求参数`access_token`中。
 
 ###3. 请求地址
 
 - 短信:
-scheme://your-domain/sms/verify-code
+scheme://your-domain/laravel-sms/verify-code
 
 - 语音:
-scheme://your-domain/sms/voice-verify
+scheme://your-domain/laravel-sms/voice-verify
 
 ###4. 基础参数
 

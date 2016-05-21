@@ -19,8 +19,10 @@ Validator::extend('verify_code', function ($attribute, $value) {
 Validator::extend('confirm_rule', function ($attribute, $value, $parameters) {
     $status = SmsManager::retrieveStatus();
     $field = isset($parameters[0]) ? $parameters[0] : null;
-    $name = isset($parameters[1]) ? $parameters[1] : null;
-    if (empty($name)) {
+    $name = null;
+    if (isset($parameters[1])) {
+        $name = $parameters[1];
+    } else {
         try {
             $parsed = parse_url(url()->previous());
             $name = $parsed['path'];

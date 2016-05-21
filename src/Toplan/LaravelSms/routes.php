@@ -1,7 +1,7 @@
 <?php
 
 Route::group([
-    'prefix'     => 'sms',
+    'prefix'     => 'laravel-sms',
     'middleware' => config('laravel-sms.middleware', 'web'),
 ], function () {
     Route::get('info', 'Toplan\Sms\SmsController@getInfo');

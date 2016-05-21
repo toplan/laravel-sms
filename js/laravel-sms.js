@@ -27,9 +27,9 @@
 
     function sendSms(opts, elem) {
         var mobile = $(opts.mobile_selector).val();
-        var url = opts.domain + '/sms/verify-code';
+        var url = opts.domain + '/laravel-sms/verify-code';
         if (opts.voice) {
-            url = opts.domain + '/sms/voice-verify';
+            url = opts.domain + '/laravel-sms/voice-verify';
         }
         $.ajax({
             url  : url,

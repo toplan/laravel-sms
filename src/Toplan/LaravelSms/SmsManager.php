@@ -9,9 +9,9 @@ class SmsManager
 {
     const VERSION = '2.4.0';
 
-    const STATUS_KEY = '_status';
+    const STATE_KEY = '_state';
 
-    const CUSTOM_RULE_KEY = '_dynamic_rules';
+    const DYNAMIC_RULE_KEY = '_dynamic_rule';
 
     const CAN_RESEND_UNTIL_KEY = '_can_resend_until';
 
@@ -24,7 +24,7 @@ class SmsManager
      *
      * @var Storage
      */
-    protected static $store;
+    protected static $storage;
 
     /**
      * Access Token
@@ -38,7 +38,7 @@ class SmsManager
      *
      * @var array
      */
-    protected $status = [];
+    protected $state = [];
 
     /**
      * Constructor
@@ -59,7 +59,7 @@ class SmsManager
     protected function reset()
     {
         $fields = self::getFields();
-        $this->status = [
+        $this->state = [
             'sent'     => false,
             'to'       => null,
             'code'     => null,
@@ -176,7 +176,7 @@ class SmsManager
      */
     protected function getNameOfUsedRule($field)
     {
-        return isset($this->status['usedRule'][$field]) ? $this->status['usedRule'][$field] : '';
+        return isset($this->state['usedRule'][$field]) ? $this->state['usedRule'][$field] : '';
     }
 
     /**
@@ -187,7 +187,7 @@ class SmsManager
      */
     protected function useRule($field, $name)
     {
-        $this->status['usedRule'][$field] = $name;
+        $this->state['usedRule'][$field] = $name;
     }
 
     /**
@@ -209,11 +209,11 @@ class SmsManager
             ->content($content)->send();
 
         if ($result === null || $result === true || (isset($result['success']) && $result['success'])) {
-            $this->status['sent'] = true;
-            $this->status['to'] = $for;
-            $this->status['code'] = $code;
-            $this->status['deadline'] = time() + ($minutes * 60);
-            $this->storeStatus($this->status);
+            $this->state['sent'] = true;
+            $this->state['to'] = $for;
+            $this->state['code'] = $code;
+            $this->state['deadline'] = time() + ($minutes * 60);
+            $this->storeState();
             $this->setCanResendAfter($interval);
 
             return self::generateResult(true, 'sms_sent_success');
@@ -239,11 +239,11 @@ class SmsManager
             ->data(['code' => $code])->to($for)->send();
 
         if ($result === null || $result === true || (isset($result['success']) && $result['success'])) {
-            $this->status['sent'] = true;
-            $this->status['to'] = $for;
-            $this->status['code'] = $code;
-            $this->status['deadline'] = time() + ($minutes * 60);
-            $this->storeStatus($this->status);
+            $this->state['sent'] = true;
+            $this->state['to'] = $for;
+            $this->state['code'] = $code;
+            $this->state['deadline'] = time() + ($minutes * 60);
+            $this->storeState();
             $this->setCanResendAfter($interval);
 
             return self::generateResult(true, 'voice_sent_success');
@@ -255,14 +255,13 @@ class SmsManager
     /**
      * 存储发送相关信息
      *
-     * @param array $data
-     *
      * @throws LaravelSmsException
      */
-    public function storeStatus(array $data = [])
+    public function storeState()
     {
-        $key = self::generateKey(self::STATUS_KEY);
-        self::store()->set($key, $data);
+        $key = self::generateKey(self::STATE_KEY);
+        self::storage()->set($key, $this->state);
+        $this->reset();
     }
 
     /**
@@ -270,21 +269,20 @@ class SmsManager
      *
      * @return array
      */
-    public function retrieveStatus()
+    public function retrieveState()
     {
-        $key = self::generateKey(self::STATUS_KEY);
+        $key = self::generateKey(self::STATE_KEY);
 
-        return self::store()->get($key, []);
+        return self::storage()->get($key, []);
     }
 
     /**
      * 从存储器中删除发送相关的信息
      */
-    public function forgetStatus()
+    public function forgetState()
     {
-        $key = self::generateKey(self::STATUS_KEY);
-        self::store()->forget($key);
-        $this->reset();
+        $key = self::generateKey(self::STATE_KEY);
+        self::storage()->forget($key);
     }
 
     /**
@@ -298,7 +296,7 @@ class SmsManager
     {
         $key = self::generateKey(self::CAN_RESEND_UNTIL_KEY);
         $time = time() + intval($interval);
-        self::store()->set($key, $time);
+        self::storage()->set($key, $time);
     }
 
     /**
@@ -310,7 +308,7 @@ class SmsManager
     {
         $key = $this->generateKey(self::CAN_RESEND_UNTIL_KEY);
 
-        return (int) self::store()->get($key, 0);
+        return (int) self::storage()->get($key, 0);
     }
 
     /**
@@ -346,8 +344,8 @@ class SmsManager
         }
         $allRules = $this->retrieveRules($field);
         $allRules[$name] = $rule;
-        $key = self::generateKey(self::CUSTOM_RULE_KEY, $field);
-        self::store()->set($key, $allRules);
+        $key = self::generateKey(self::DYNAMIC_RULE_KEY, $field);
+        self::storage()->set($key, $allRules);
     }
 
     /**
@@ -359,9 +357,9 @@ class SmsManager
      */
     public function retrieveRules($field)
     {
-        $key = self::generateKey(self::CUSTOM_RULE_KEY, $field);
+        $key = self::generateKey(self::DYNAMIC_RULE_KEY, $field);
 
-        return self::store()->get($key, []);
+        return self::storage()->get($key, []);
     }
 
     /**
@@ -394,8 +392,8 @@ class SmsManager
             return;
         }
         unset($allRules[$name]);
-        $key = self::generateKey(self::CUSTOM_RULE_KEY, $field);
-        self::store()->set($key, $allRules);
+        $key = self::generateKey(self::DYNAMIC_RULE_KEY, $field);
+        self::storage()->set($key, $allRules);
     }
 
     /**
@@ -406,12 +404,12 @@ class SmsManager
     public function retrieveAllData()
     {
         $data = [];
-        $data[self::STATUS_KEY] = $this->retrieveStatus();
+        $data[self::STATE_KEY] = $this->retrieveState();
         $data[self::CAN_RESEND_UNTIL_KEY] = $this->getCanResendTime();
-        $data[self::CUSTOM_RULE_KEY] = [];
+        $data[self::DYNAMIC_RULE_KEY] = [];
         $fields = self::getFields();
         foreach ($fields as $field) {
-            $data[self::CUSTOM_RULE_KEY][$field] = $this->retrieveRules($field);
+            $data[self::DYNAMIC_RULE_KEY][$field] = $this->retrieveRules($field);
         }
 
         return $data;
@@ -455,10 +453,10 @@ class SmsManager
      *
      * @return Storage
      */
-    protected static function store()
+    protected static function storage()
     {
-        if (self::$store) {
-            return self::$store;
+        if (self::$storage) {
+            return self::$storage;
         }
         $className = self::getStorageClassName();
         if (!class_exists($className)) {
@@ -469,7 +467,7 @@ class SmsManager
             throw new LaravelSmsException("Failed to generator store, the class [$className] does not implement the interface [Toplan\\Sms\\Storage].");
         }
 
-        return self::$store = $store;
+        return self::$storage = $store;
     }
 
     /**
