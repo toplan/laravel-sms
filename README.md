@@ -78,9 +78,9 @@ php artisan vendor:publish
 
 - 代理器均衡调度
 
-请在config/phpsms.php中设置代理器的均衡调度方案。
+在config/phpsms.php中设置代理器的均衡调度方案。
 ```php
-'enable' => [
+'scheme' => [
     //被使用概率为2/3
     'Luosimao' => '20',
 
@@ -99,25 +99,29 @@ php artisan vendor:publish
 
 #发送前数据验证
 
-当客服端向服务器端请求发送验证码短信/语音时,服务器端需要对接收到的数据(本库将其称为`field`)进行验证,
-只有在所有需验证的数据都验证通过了本库才会向第三方服务提供商请求发送验证码短信/语音。
-对于每项数据(field),不管是使用静态验证规则还是[动态验证规则](#2-动态验证规则),都需要提前到配置文件(`config/laravel-sms.php`)中定义,并做好必要的设置。
+##1. 声明
+
+当客服端向服务器端请求发送验证码短信/语音时,服务器端需要对接收到的数据(本库将其称为`field`)进行验证,只有在所有需验证的数据都验证通过了才会向第三方服务提供商请求发送验证码短信/语音。
+对于每项你想验证的数据(`field`),不管是使用静态验证规则还是[动态验证规则](#2-动态验证规则),都需要提前到配置文件(`config/laravel-sms.php`)中声明,并做好必要的设置。
 
 > 本文档中所说的`服务器端`是我们自己的应用系统,而非第三方短信服务提供商。
 
-###设置项
-对于每项数据,都可以有以下三项设置:
+####设置项
+对于每项数据,都有以下三项设置:
 
 - enable
+
 服务器端是否在向第三方服务提供商请求发送验证码短信/语音前对需要对该数据进行验证。(必要)
 
 - default
+
 该数据的默认静态验证规则名。(可选)
 
 - staticRules
+
 该数据的所有静态验证规则。(可选)
 
-###示例
+####示例
 
 ```php
 'validation' => [
@@ -144,6 +148,19 @@ php artisan vendor:publish
     ]
 ]
 ```
+
+##2. 使用
+
+> 静态验证规则和动态验证规则的使用方法一致。
+
+####客户端
+
+通过`{field}_rule`参数告知服务器`{field}`参数需要使用的验证规则的名称。
+如`mobile_rule`参数可以告知验证`mobile`参数使用什么验证规则。
+
+####服务器端
+
+[示例见此](#3服务器端合法性验证)
 
 #验证码模块
 
@@ -253,8 +270,10 @@ SmsManager::storeRule('mobile', [
     'myRuleName2' => ...,
 ]);
 ```
-> **小技巧:**存储的动态验证规则访问example.com/sms/info查看。
-> 值得注意的是,动态规则名称最好不要和静态规则同名,因为静态验证规则的优先级更高。
+> **小技巧:**
+> 1. 存储的动态验证规则可通过访问`your-domain/laravel-sms/info`查看。
+>
+> 2. 动态验证规则的名称最好不要和静态验证规则同名,因为静态验证规则的优先级更高。
 
 ####retrieveRules($field)
 获取某项数据的所有动态验证规则。
@@ -272,23 +291,6 @@ SmsManager::retrieveRule('mobile', 'myRuleName');
 删除某项数据的指定名称的动态验证规则。
 ```php
 SmsManager::forgetRule('mobile', 'myRuleName');
-```
-
-####使用
-
-- 客户端
-
-设置`mobile_rule`参数为要使用的动态验证规则的名称。
-
-- 服务器端
-
-```php
-$ruleName = $request->input('myRuleName', null);
-$validator = Validator::make($request->all(), [
-    ...
-    'verifyCode' => "required|verify_code|confirm_rule:mobile,$ruleName",
-    ...
-]);
 ```
 
 #Validator扩展
