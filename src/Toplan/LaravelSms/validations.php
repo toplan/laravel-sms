@@ -5,19 +5,19 @@ Validator::extend('zh_mobile', function ($attribute, $value) {
 });
 
 Validator::extend('confirm_mobile_not_change', function ($attribute, $value) {
-    $status = SmsManager::retrieveStatus();
+    $state = SmsManager::retrieveState();
 
-    return $status && $status['to'] === $value;
+    return $state && $state['to'] === $value;
 });
 
 Validator::extend('verify_code', function ($attribute, $value) {
-    $status = SmsManager::retrieveStatus();
+    $state = SmsManager::retrieveState();
 
-    return $status && $status['deadline'] >= time() && $status['code'] === $value;
+    return $state && $state['deadline'] >= time() && $state['code'] === $value;
 });
 
 Validator::extend('confirm_rule', function ($attribute, $value, $parameters) {
-    $status = SmsManager::retrieveStatus();
+    $state = SmsManager::retrieveState();
     $field = isset($parameters[0]) ? $parameters[0] : null;
     $name = null;
     if (isset($parameters[1])) {
@@ -31,5 +31,5 @@ Validator::extend('confirm_rule', function ($attribute, $value, $parameters) {
         }
     }
 
-    return $status && isset($status['usedRule'][$field]) && $status['usedRule'][$field] === $name;
+    return $state && isset($state['usedRule'][$field]) && $state['usedRule'][$field] === $name;
 });
