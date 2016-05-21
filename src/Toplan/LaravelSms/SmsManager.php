@@ -253,7 +253,7 @@ class SmsManager
     }
 
     /**
-     * 存储发送相关信息
+     * 存储发送状态
      *
      * @throws LaravelSmsException
      */
@@ -265,7 +265,7 @@ class SmsManager
     }
 
     /**
-     * 从存储器中获取发送相关信息
+     * 从存储器中获取发送状态
      *
      * @return array
      */
@@ -277,7 +277,7 @@ class SmsManager
     }
 
     /**
-     * 从存储器中删除发送相关的信息
+     * 从存储器中删除发送状态
      */
     public function forgetState()
     {
@@ -286,7 +286,7 @@ class SmsManager
     }
 
     /**
-     * 设置多少秒后才能再次请求发生
+     * 设置多少秒后才能再次请求
      *
      * @param int $interval
      *
@@ -505,7 +505,7 @@ class SmsManager
     }
 
     /**
-     * 是否含有指定字段的静态验证规则
+     * 获取指定字段的指定名称的静态验证规则
      *
      * @param $field
      * @param $ruleName
@@ -520,7 +520,7 @@ class SmsManager
     }
 
     /**
-     * 获取指定字段的默认静态规则的别名
+     * 获取指定字段的默认静态规则的名称
      *
      * @param string $field
      *
@@ -553,7 +553,7 @@ class SmsManager
     }
 
     /**
-     * 检查指定字段是否是可验证的
+     * 检查字段名称是否合法
      *
      * @param $name
      *
