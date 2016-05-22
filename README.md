@@ -1,5 +1,7 @@
 #Laravel Sms
 
+一个基于`Laravel`框架的验证码短信/语音发送，校验和发送结果管理的解决方案。
+
 ###1. 关于v2
 laravel-sms v2是基于[toplan/phpsms](https://github.com/toplan/phpsms)开发的适用于laravel框架的短信发送库。
 相较于v1版本，v2是使用新思路重构的版本，并且升级备用代理器机制为[代理器均衡调度机制](#24-代理器均衡调度机制)。
@@ -13,11 +15,12 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
 
 那么既然有了phpsms，为什么还需要laravel-sms呢？为了更进一步提高开发效率，laravel-sms利用phpsms提供的接口为laravel框架定制好了如下功能：
 
-- 集成[验证码发送与验证模块](#验证码模块),从此告别重复写验证码短信发送与校验的历史
-- 验证码发送与验证模块的[无session支持](#无会话支持)
+- 可扩展的[发送前数据验证](#发送前数据验证)
+- 集成[验证码发送与验证模块](#验证码模块)，从此告别重复写验证码短信发送与校验的历史
 - 灵活的[动态验证规则](#2-动态验证规则)
 - 可选的[数据库日志](#数据库日志)
 - 集成[短信队列](#短信队列)
+- 验证码发送与验证模块的[无session支持](#无会话支持)
 
 ###3. 由PhpSms提供的特性
 
@@ -27,6 +30,19 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
 - 代理器均衡调度机制
 - 集成[国内主流第三方短信服务商](https://github.com/toplan/phpsms#服务商)
 - [自定义代理器](https://github.com/toplan/phpsms#自定义代理器)和[寄生代理器](https://github.com/toplan/phpsms#寄生代理器)
+
+###4. 如何快速开始?
+
+讲了这么多特性，那么如何快速上手并立刻体验一下最让人心动的验证码发送与验证模块呢?只需要依次完成以下三个步骤即可。
+
+- step1: [安装](#安装)
+- step2: [准备工作](#准备工作)
+- step3: [验证码模块](#验证码模块)
+
+#公告!!!
+
+安装过旧版本(<2.4.0)的童鞋,在更新到2.4.0+版本时,务必先删除原有的`config/laravel-sms.php`文件和`laravel-sms.js`文件(如果有用到),
+然后再运行`php artisan vendor:publish`命令,而且在使用新版本前请再阅读下此文档,因为2.4.0版本有较大变化。
 
 #安装
 
@@ -38,11 +54,6 @@ composer require 'toplan/laravel-sms:2.4.*',
 //安装开发中版本
 composer require 'toplan/laravel-sms:dev-master'
 ```
-
-#公告!!!
-
-安装过旧版本(<2.4.0)的童鞋,在更新到2.4.0+版本时,务必先删除原有的`config/laravel-sms.php`文件和`laravel-sms.js`文件(如果有用到),
-然后再运行`php artisan vendor:publish`命令,而且在使用新版本前请再阅读下此文档,因为2.4.0版本有较大变化。
 
 #准备工作
 
@@ -69,8 +80,6 @@ php artisan vendor:publish
 ```
 
 > 这里会生成两个配置文件，分别为phpsms.php和laravel-sms.php。
-> 其中phpsms.php负责配置代理器参数以及规划如何调度代理器。
-> laravel-sms.php则全职负责验证码发送/验证模块的配置。
 
 - 配置代理器参数
 
@@ -99,19 +108,19 @@ php artisan vendor:publish
 
 #发送前数据验证
 
-##1. 声明
+###1. 声明
 
-当客服端向服务器端请求发送验证码短信/语音时,服务器端需要对接收到的数据(本库将其称为`field`)进行验证,只有在所有需验证的数据都验证通过了才会向第三方服务提供商请求发送验证码短信/语音。
-对于每项你想验证的数据(`field`),不管是使用静态验证规则还是[动态验证规则](#2-动态验证规则),都需要提前到配置文件(`config/laravel-sms.php`)中声明,并做好必要的设置。
+当客服端向服务器端请求发送验证码短信/语音时，服务器端需要对接收到的数据(本库将其称为`field`)进行验证，只有在所有需验证的数据都验证通过了才会向第三方服务提供商请求发送验证码短信/语音。
+对于每项你想验证的数据(`field`)，不管是使用静态验证规则还是[动态验证规则](#2-动态验证规则)，都需要提前到配置文件(`config/laravel-sms.php`)中声明，并做好必要的配置。
 
-> 本文档中所说的`服务器端`是我们自己的应用系统,而非第三方短信服务提供商。
+> 本文档中所说的`服务器端`是我们自己的应用系统，而非第三方短信服务提供商。
 
-####设置项
+#####配置项
 对于每项数据,都有以下三项设置:
 
 - enable
 
-服务器端是否在向第三方服务提供商请求发送验证码短信/语音前对需要对该数据进行验证。(必要)
+服务器端在向第三方服务提供商请求发送验证码短信/语音前是否需要对该数据进行验证。(必要)
 
 - default
 
@@ -121,12 +130,10 @@ php artisan vendor:publish
 
 该数据的所有静态验证规则。(可选)
 
-####示例
+#####示例
 
 ```php
 'validation' => [
-    // field => settings
-
     // 内置的mobile字段的验证设置:
     'mobile' => [
         //是否开启该字段的检测:
@@ -140,7 +147,6 @@ php artisan vendor:publish
             ...
         ]
     ]
-
     // 配置你可能需要验证的字段
     'yourField' => [
         'enable' => true,
@@ -149,16 +155,16 @@ php artisan vendor:publish
 ]
 ```
 
-##2. 使用
+###2. 使用
 
 > 静态验证规则和动态验证规则的使用方法一致。
 
-####客户端
+#####客户端
 
 通过`{field}_rule`参数告知服务器`{field}`参数需要使用的验证规则的名称。
-如`mobile_rule`参数可以告知验证`mobile`参数使用什么验证规则。
+如`mobile_rule`参数可以告知服务器在验证`mobile`参数使用什么验证规则。
 
-####服务器端
+#####服务器端
 
 [示例见此](#3服务器端合法性验证)
 
@@ -168,7 +174,7 @@ php artisan vendor:publish
 
 > 如果是api应用(无session)需要带上access token: your-domain/laravel-sms/info?access_token=xxxx
 
-###1.[服务器端]配置短信内容/模板
+###1. [服务器端]配置短信内容/模板
 
 如果你使用了内容短信(如云片网络,Luosimao)，则使用或修改'verifySmsContent'的值。
 
@@ -193,7 +199,7 @@ php artisan vendor:publish
 ]
 ```
 
-###2.[浏览器端]请求发送验证码短信
+###2. [浏览器端]请求发送验证码短信
 
 该包已经封装好浏览器端的插件(兼容jquery/zepto)，只需要为发送按钮添加扩展方法即可实现发送短信。
 
@@ -217,7 +223,7 @@ $('#sendVerifySmsButton').sms({
 
 > laravel-sms.js的更多用法请[见此](#laravel-smsjs)
 
-###3.[服务器端]合法性验证
+###3. [服务器端]合法性验证
 
 用户填写验证码并提交表单到服务器时，在你的控制器中需要验证手机号和验证码是否正确，你只需要加上如下代码即可：
 ```php
@@ -240,23 +246,35 @@ if ($validator->fails()) {
 
 #Api
 
-##1. 发送状态
-
-####retrieveState()
-获取发送状态。
-
-####forgetState()
-删除发送状态。
-
-##2. 动态验证规则
-
-####storeRule($field[, $name], $rule)
-定义数据(field)的动态验证规则。
-
 ```php
 use SmsManager;
-...
+```
 
+###1. 发送状态
+
+#####retrieveState()
+
+获取发送状态。
+
+```php
+SmsManager::retrieveState()
+```
+
+#####forgetState()
+
+删除发送状态。
+
+```php
+SmsManager::forgetState()
+```
+
+###2. 动态验证规则
+
+#####storeRule($field[, $name], $rule)
+
+定义数据的动态验证规则。
+
+```php
 //方式1:
 //如果不设置name,那么name默认为当前访问路径的uri
 SmsManager::storeRule('mobile', 'required|zh_mobile|unique:users,mobile,NULL,id,account_id,1');
@@ -275,19 +293,19 @@ SmsManager::storeRule('mobile', [
 >
 > 2. 动态验证规则的名称最好不要和静态验证规则同名,因为静态验证规则的优先级更高。
 
-####retrieveRules($field)
+#####retrieveRules($field)
 获取某项数据的所有动态验证规则。
 ```php
 SmsManager::retrieveRules('mobile');
 ```
 
-####retrieveRule($field, $name)
+#####retrieveRule($field, $name)
 获取某项数据的指定名称的动态验证规则。
 ```php
 SmsManager::retrieveRule('mobile', 'myRuleName');
 ```
 
-####forgetRule($field, $name)
+#####forgetRule($field, $name)
 删除某项数据的指定名称的动态验证规则。
 ```php
 SmsManager::forgetRule('mobile', 'myRuleName');
@@ -295,53 +313,22 @@ SmsManager::forgetRule('mobile', 'myRuleName');
 
 #Validator扩展
 
-###zh_mobile
+#####zh_mobile
 检测标准的中国大陆手机号码。
 
-###confirm_mobile_not_change
+#####confirm_mobile_not_change
 检测用户提交的手机号是否变更。
 
-###verify_code
+####verify_code
 检测验证码是否合法。
 
-###confirm_rule:$field,$ruleName
+#####confirm_rule:$field,$ruleName
 检测验证规则是否合法，第一个值为字段名称，第二个值为使用的验证规则的名称。
 如果第二项参数(`$ruleName`)不填写,系统会尝试设置其为前一个访问路径的uri。
 
-#无会话支持
-
-###1. 服务端准备
-
-在`config/laravel-sms.php`中配置路由器组中间件`middleware`。
-
-```php
-//example:
-'middleware' => ['api'],
-```
-
-###2. Access Token
-
-Access Token值建议设置在请求头中的`Access-Token`上,当然也可以带在请求参数`access_token`中。
-
-###3. 请求地址
-
-- 短信:
-scheme://your-domain/laravel-sms/verify-code
-
-- 语音:
-scheme://your-domain/laravel-sms/voice-verify
-
-###4. 基础参数
-
-| 参数名  | 必填     | 说明        | 默认值       |
-| ------ | :-----: | :---------: | :---------: |
-| mobile | 是      | 手机号码      |             |
-| mobile_rule | 否 | 手机号检测规则 | `''`        |
-| interval | 否    | 请求间隔时间(秒)  | `60`        |
-
 #数据库日志
 
-###1. 生成默认表
+###1. 生成数据表
 
 运行如下命令在数据库中生成`laravel_sms`表。
 
@@ -400,6 +387,45 @@ PhpSms::queue(function($sms, $data){
     $this->dispatch(new YourQueueJobClass($sms));
 });
 ```
+
+#无会话支持
+
+###1. 服务器端准备
+
+在`config/laravel-sms.php`中配置路由器组中间件`middleware`。
+
+```php
+//example:
+'middleware' => ['api'],
+```
+
+###2. Access Token
+
+Access Token值建议设置在请求头中的`Access-Token`上,当然也可以带在请求参数`access_token`中。
+
+###3. 请求地址
+
+- 短信:
+scheme://your-domain/laravel-sms/verify-code
+
+- 语音:
+scheme://your-domain/laravel-sms/voice-verify
+
+###4. 基础参数
+
+| 参数名  | 必填     | 说明        | 默认值       |
+| ------ | :-----: | :---------: | :---------: |
+| mobile | 是      | 手机号码      |             |
+| mobile_rule | 否 | 手机号检测规则 | `''`        |
+| interval | 否    | 请求间隔时间(秒)  | `60`        |
+
+###5. 响应数据
+
+| 参数名  | 说明              |
+| ------ | :--------------: |
+| success| 是否请求发送成功    |
+| type   | 类型              |
+| message| 详细信息           |
 
 #附录
 
