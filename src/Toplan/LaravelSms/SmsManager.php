@@ -75,8 +75,9 @@ class SmsManager
      *
      * @return bool
      */
-    public function validateSendable($interval = 60)
+    public function validateSendable($interval)
     {
+        $interval = intval($interval);
         $time = $this->getCanResendTime();
         if ($time <= time()) {
             return self::generateResult(true, 'can_send');
