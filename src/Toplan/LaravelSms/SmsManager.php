@@ -530,8 +530,7 @@ class SmsManager
     {
         $data = self::getValidationConfigByField($field);
 
-        return isset($data['default']) ? $data['default'] :
-            (isset($data['use']) ? $data['use'] : '');
+        return isset($data['default']) ? $data['default'] : '';
     }
 
     /**

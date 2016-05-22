@@ -31,5 +31,5 @@ Validator::extend('confirm_rule', function ($attribute, $value, $parameters) {
         }
     }
 
-    return $state && isset($state['usedRule'][$field]) && $state['usedRule'][$field] === $name;
+    return $state && array_key_exists($field, $state['usedRule']) && $state['usedRule'][$field] === $name;
 });
