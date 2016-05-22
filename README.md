@@ -244,7 +244,7 @@ if ($validator->fails()) {
 ```
 > `confirm_mobile_not_change`, `verify_code`, `confirm_rule`的详解请参看[Validator扩展](#validator扩展)
 
-#Api
+#API
 
 ```php
 use SmsManager;
@@ -288,10 +288,8 @@ SmsManager::storeRule('mobile', [
     'myRuleName2' => ...,
 ]);
 ```
-> **小技巧:**
-> 1. 存储的动态验证规则可通过访问`your-domain/laravel-sms/info`查看。
->
-> 2. 动态验证规则的名称最好不要和静态验证规则同名,因为静态验证规则的优先级更高。
+
+> 存储的动态验证规则可通过访问`your-domain/laravel-sms/info`查看。动态验证规则的名称最好不要和静态验证规则同名,因为静态验证规则的优先级更高。
 
 #####retrieveRules($field)
 获取某项数据的所有动态验证规则。
@@ -429,7 +427,7 @@ scheme://your-domain/laravel-sms/voice-verify
 
 #附录
 
-###PhpSms Api
+###PhpSms API
 
 在控制器中发送触发短信，如下所示：
 ```php
