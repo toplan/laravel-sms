@@ -20,7 +20,7 @@ Validator::extend('confirm_rule', function ($attribute, $value, $parameters) {
     $state = SmsManager::retrieveState();
     $field = isset($parameters[0]) ? $parameters[0] : null;
     $name = null;
-    if (isset($parameters[1])) {
+    if (array_key_exists(1, $parameters)) {
         $name = $parameters[1];
     } else {
         try {
