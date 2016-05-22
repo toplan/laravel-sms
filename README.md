@@ -33,7 +33,7 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
 
 ###4. 如何快速开始?
 
-讲了这么多特性，那么如何快速上手并立刻体验一下最让人心动的验证码发送与验证模块呢?只需要依次完成以下三个步骤即可。
+上面提了这么多特性，那么如何快速上手并体验一下验证码发送与验证呢?只需要依次完成以下三个步骤即可。
 
 - step1: [安装](#安装)
 - step2: [准备工作](#准备工作)
@@ -115,7 +115,7 @@ php artisan vendor:publish
 
 > 本文档中所说的`服务器端`是我们自己的应用系统，而非第三方短信服务提供商。
 
-#####配置项
+####配置项
 对于每项数据,都有以下三项设置:
 
 - enable
@@ -130,7 +130,7 @@ php artisan vendor:publish
 
 该数据的所有静态验证规则。(可选)
 
-#####示例
+####示例
 
 ```php
 'validation' => [
@@ -159,12 +159,12 @@ php artisan vendor:publish
 
 > 静态验证规则和动态验证规则的使用方法一致。
 
-#####客户端
+####客户端
 
 通过`{field}_rule`参数告知服务器`{field}`参数需要使用的验证规则的名称。
 如`mobile_rule`参数可以告知服务器在验证`mobile`参数使用什么验证规则。
 
-#####服务器端
+####服务器端
 
 [示例见此](#3服务器端合法性验证)
 
@@ -313,16 +313,16 @@ SmsManager::forgetRule('mobile', 'myRuleName');
 
 #Validator扩展
 
-#####zh_mobile
+####zh_mobile
 检测标准的中国大陆手机号码。
 
-#####confirm_mobile_not_change
+####confirm_mobile_not_change
 检测用户提交的手机号是否变更。
 
 ####verify_code
 检测验证码是否合法。
 
-#####confirm_rule:$field,$ruleName
+####confirm_rule:$field,$ruleName
 检测验证规则是否合法，第一个值为字段名称，第二个值为使用的验证规则的名称。
 如果第二项参数(`$ruleName`)不填写,系统会尝试设置其为前一个访问路径的uri。
 

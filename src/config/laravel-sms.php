@@ -36,7 +36,7 @@ return [
     |
     | field => settings: [
     |     'enable'      => (bool)
-    |     'default'     => (the name of a static rule)
+    |     'default'     => (name)
     |     'staticRules' => [
     |         (name) => (rule)
     |     ]
