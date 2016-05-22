@@ -43,28 +43,18 @@ class SmsManagerServiceProvider extends ServiceProvider
             __DIR__ . '/../../config/laravel-sms.php', 'laravel-sms'
         );
 
-        $this->exportFlagValue();
-
         // initialize the PhpSms
         $this->initPhpSms();
 
         // store to container
-        $this->app->singleton('SmsManager', function () {
-            return new SmsManager();
-        });
-    }
+        $this->app->singleton('SmsManager', function ($app) {
+            $token = $app->request->header('access-token', null);
+            if (empty($token)) {
+                $token = $app->request->input('access_token', null);
+            }
 
-    /**
-     * Export the flag values
-     */
-    protected function exportFlagValue()
-    {
-        if (!defined('CUSTOM_RULE')) {
-            define('CUSTOM_RULE', SmsManager::CUSTOM_RULE_KEY);
-        }
-        if (!defined('LARAVEL_SMS_CUSTOM_RULE')) {
-            define('LARAVEL_SMS_CUSTOM_RULE', SmsManager::CUSTOM_RULE_KEY);
-        }
+            return new SmsManager($token);
+        });
     }
 
     /**
