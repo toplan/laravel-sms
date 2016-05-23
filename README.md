@@ -1,19 +1,19 @@
 #Laravel Sms
 
-一个基于`Laravel`框架的手机号合法性验证解决方案。
+一个基于`Laravel`框架的功能强大的手机号合法性验证解决方案。
 
 ###1. 关于v2
-`laravel-sms` v2是基于[toplan/phpsms](https://github.com/toplan/phpsms)开发的适用于`Laravel`框架的短信发送库。
+`laravel-sms` v2是基于[toplan/phpsms](https://github.com/toplan/phpsms)开发的适用于`Laravel`框架的短信发送库(当然`laravel-sms`的功能还不仅于此)。
 相较于v1版本，v2是使用新思路重构的版本，并且升级备用代理器机制为代理器均衡调度机制。
 `phpsms`为`laravel-sms`提供了全套的短信发送机制，而且`phpsms`也有自己的 service provider ，也就是说你完全可以在`Laravel`框架下无障碍的独立使用`phpsms`。
-这也是为什么使用laravel-sms会在项目中生成两个配置文件(phpsms.php和laravel-sms.php)的原因。
+这也是为什么使用`laravel-sms`会在项目中生成两个配置文件(phpsms.php和laravel-sms.php)的原因。
 
 > config/phpsms.php负责配置代理器参数以及规划如何最优调度代理器(由phpsms提供)。
 > config/laravel-sms.php则全职负责验证码发送/验证模块的配置(由laravel-sms提供)。
 
 ###2. why me
 
-那么既然有了`phpsms`，为什么还需要`laravel-sms`呢？为了更进一步提高开发效率，`laravel-sms`为`Laravel`框架定制好了如下功能：
+为了更进一步提高开发效率，`laravel-sms`为`Laravel`框架定制好了如下功能：
 
 - 可扩展的[发送前数据验证](#发送前数据验证)
 - 集成[验证码发送与验证模块](#验证码模块)，从此告别重复写验证码短信发送与校验的历史
@@ -117,7 +117,7 @@ php artisan vendor:publish
 
 > 本文档中所说的`服务器端`是我们自己的应用系统，而非第三方短信服务提供商。
 
-####配置项
+####1.1 配置项
 对于每项数据,都有以下三项设置:
 
 - enable
@@ -132,7 +132,7 @@ php artisan vendor:publish
 
 该数据的所有静态验证规则。(可选)
 
-####示例
+####1.2 示例
 
 ```php
 'validation' => [
@@ -161,14 +161,14 @@ php artisan vendor:publish
 
 > 静态验证规则和动态验证规则的使用方法一致。
 
-####客户端
+####2.1 客户端
 
 通过`{field}_rule`参数告知服务器`{field}`参数需要使用的验证规则的名称。
 
 > 如:`mobile_rule`参数可以告知服务器在验证`mobile`参数时使用什么验证规则，
 > `image_captcha_rule`参数可以告知服务器在验证`image_captcha`参数时使用什么验证规则。
 
-####服务器端
+####2.2 服务器端
 
 [示例见此](#3-服务器端合法性验证)
 
