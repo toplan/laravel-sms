@@ -3,9 +3,9 @@
 一个基于`Laravel`框架的手机号合法性验证解决方案。
 
 ###1. 关于v2
-laravel-sms v2是基于[toplan/phpsms](https://github.com/toplan/phpsms)开发的适用于laravel框架的短信发送库。
-相较于v1版本，v2是使用新思路重构的版本，并且升级备用代理器机制为[代理器均衡调度机制](#24-代理器均衡调度机制)。
-phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自己的service provider，也就是说你完全可以在laravel框架下无障碍的独立使用phpsms。
+`laravel-sms` v2是基于[toplan/phpsms](https://github.com/toplan/phpsms)开发的适用于`Laravel`框架的短信发送库。
+相较于v1版本，v2是使用新思路重构的版本，并且升级备用代理器机制为代理器均衡调度机制。
+`phpsms`为`laravel-sms`提供了全套的短信发送机制，而且`phpsms`也有自己的 service provider ，也就是说你完全可以在`Laravel`框架下无障碍的独立使用`phpsms`。
 这也是为什么使用laravel-sms会在项目中生成两个配置文件(phpsms.php和laravel-sms.php)的原因。
 
 > config/phpsms.php负责配置代理器参数以及规划如何最优调度代理器(由phpsms提供)。
@@ -13,7 +13,7 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
 
 ###2. why me
 
-那么既然有了phpsms，为什么还需要laravel-sms呢？为了更进一步提高开发效率，laravel-sms为laravel框架定制好了如下功能：
+那么既然有了`phpsms`，为什么还需要`laravel-sms`呢？为了更进一步提高开发效率，`laravel-sms`为`Laravel`框架定制好了如下功能：
 
 - 可扩展的[发送前数据验证](#发送前数据验证)
 - 集成[验证码发送与验证模块](#验证码模块)，从此告别重复写验证码短信发送与校验的历史
@@ -136,7 +136,7 @@ php artisan vendor:publish
 
 ```php
 'validation' => [
-    // 内置的mobile参数的验证设置(请不要删除或改动名称)
+    // 内置的mobile参数的验证配置(请不要删除或改动该名称)
     'mobile' => [
         //是否开启该字段的检测:
         'enable'      => true,
