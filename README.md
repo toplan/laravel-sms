@@ -1,6 +1,6 @@
 #Laravel Sms
 
-一个基于`Laravel`框架的验证码短信/语音发送，校验和发送结果管理的解决方案。
+一个基于`Laravel`框架的手机号合法性验证解决方案。
 
 ###1. 关于v2
 laravel-sms v2是基于[toplan/phpsms](https://github.com/toplan/phpsms)开发的适用于laravel框架的短信发送库。
@@ -13,7 +13,7 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
 
 ###2. why me
 
-那么既然有了phpsms，为什么还需要laravel-sms呢？为了更进一步提高开发效率，laravel-sms利用phpsms提供的接口为laravel框架定制好了如下功能：
+那么既然有了phpsms，为什么还需要laravel-sms呢？为了更进一步提高开发效率，laravel-sms为laravel框架定制好了如下功能：
 
 - 可扩展的[发送前数据验证](#发送前数据验证)
 - 集成[验证码发送与验证模块](#验证码模块)，从此告别重复写验证码短信发送与校验的历史
@@ -41,8 +41,10 @@ phpsms为laravel-sms提供了全套的短信发送机制，而且phpsms也有自
 
 #公告!!!
 
-安装过旧版本(<2.4.0)的童鞋,在更新到2.4.0+版本时,务必先删除原有的`config/laravel-sms.php`文件和`laravel-sms.js`文件(如果有用到),
+- 安装过旧版本(<2.4.0)的童鞋,在更新到2.4.0+版本时,务必先删除原有的`config/laravel-sms.php`文件和`laravel-sms.js`文件(如果有用到),
 然后再运行`php artisan vendor:publish`命令,而且在使用新版本前请再阅读下此文档,因为2.4.0版本有较大变化。
+
+- qq群:159379848
 
 #安装
 
@@ -134,7 +136,7 @@ php artisan vendor:publish
 
 ```php
 'validation' => [
-    // 内置的mobile字段的验证设置:
+    // 内置的mobile参数的验证设置(请不要删除或改动名称)
     'mobile' => [
         //是否开启该字段的检测:
         'enable'      => true,
@@ -147,8 +149,8 @@ php artisan vendor:publish
             ...
         ]
     ]
-    // 配置你可能需要验证的字段
-    'yourField' => [
+    // 自定义你可能需要验证的字段
+    'image_captcha' => [
         'enable' => true,
         ...
     ]
@@ -162,11 +164,13 @@ php artisan vendor:publish
 ####客户端
 
 通过`{field}_rule`参数告知服务器`{field}`参数需要使用的验证规则的名称。
-如`mobile_rule`参数可以告知服务器在验证`mobile`参数使用什么验证规则。
+
+> 如:`mobile_rule`参数可以告知服务器在验证`mobile`参数时使用什么验证规则，
+> `image_captcha_rule`参数可以告知服务器在验证`image_captcha`参数时使用什么验证规则。
 
 ####服务器端
 
-[示例见此](#3服务器端合法性验证)
+[示例见此](#3-服务器端合法性验证)
 
 #验证码模块
 
