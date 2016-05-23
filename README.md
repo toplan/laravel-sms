@@ -1,6 +1,6 @@
 #Laravel Sms
 
-一个基于`Laravel`框架的集发送、校验和管理等功能于一体的验证码短信/语音一站式解决方案。
+一个基于`Laravel`框架的手机号合法性验证解决方案。
 
 ###1. 关于v2
 laravel-sms v2是基于[toplan/phpsms](https://github.com/toplan/phpsms)开发的适用于laravel框架的短信发送库。
