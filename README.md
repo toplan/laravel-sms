@@ -236,8 +236,8 @@ use SmsManager;
 
 //验证数据
 $validator = Validator::make($request->all(), [
-    'mobile'     => 'required|confirm_mobile_not_change',
-    'verifyCode' => 'required|verify_code|confirm_rule:mobile,mobile_required',
+    'mobile'     => 'required|confirm_mobile_not_change|confirm_rule:mobile,mobile_required',
+    'verifyCode' => 'required|verify_code',
     //more...
 ]);
 if ($validator->fails()) {
