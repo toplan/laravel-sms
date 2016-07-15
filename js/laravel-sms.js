@@ -10,7 +10,7 @@
 
     $.fn.sms = function(options){
         var opts = $.extend(
-            $.fn.sms.default,
+            $.fn.sms.defaults,
             options
         );
         $(document).on('click', this.selector, function(e){
@@ -71,7 +71,7 @@
         }
     }
 
-    $.fn.sms.default = {
+    $.fn.sms.defaults = {
         token           : '',
         access_token    : '',
         mobile_rule     : '',
