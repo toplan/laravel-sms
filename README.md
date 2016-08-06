@@ -472,7 +472,7 @@ $('#sendVerifySmsButton').sms({
     token           : "{{csrf_token()}}",
 
     //access token for api
-    access_token    : ...,
+    access_token    : "",
 
     //定义如何获取mobile的值
     mobile_selector : 'input[name=mobile]',
