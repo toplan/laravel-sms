@@ -118,19 +118,13 @@ php artisan vendor:publish
 > 本文档中所说的`服务器端`是我们自己的应用系统，而非第三方短信服务提供商。
 
 ####1.1 配置项
-对于每项数据,都有以下三项设置:
+对于每项数据,都有以下三项可设置:
 
-- enable
-
-服务器端在向第三方服务提供商请求发送验证码短信/语音前是否需要对该数据进行验证。(必要)
-
-- default
-
-该数据的默认静态验证规则名。(可选)
-
-- staticRules
-
-该数据的所有静态验证规则。(可选)
+| 配置项       | 必填  | 说明        |
+| ----------- | :---: | :---------: |
+| enable      | 是    | 服务器端在向第三方服务提供商请求发送验证码短信/语音前是否需要对该数据进行验证 |
+| default     | 否    | 该数据的默认静态验证规则名 |
+| staticRules | 否    | 该数据的所有静态验证规则  |
 
 ####1.2 示例
 
@@ -145,7 +139,7 @@ php artisan vendor:publish
         //静态验证规则:
         'staticRules' => [
             // name => rule
-            'mobile_required'     => 'required|zh_mobile',
+            'mobile_required' => 'required|zh_mobile',
             ...
         ]
     ]
@@ -419,7 +413,7 @@ scheme://your-domain/laravel-sms/voice-verify
 | ------ | :-----: | :---------: | :---------: |
 | mobile | 是      | 手机号码      |             |
 | mobile_rule | 否 | 手机号检测规则 | `''`        |
-| interval | 否    | 请求间隔时间(秒)  | `60`        |
+| interval | 否    | 请求间隔时间(秒)  | `60`     |
 
 ###5. 响应数据
 
@@ -478,7 +472,7 @@ $('#sendVerifySmsButton').sms({
     token           : "{{csrf_token()}}",
 
     //access token for api
-    access_token    : '...',
+    access_token    : ...,
 
     //定义如何获取mobile的值
     mobile_selector : 'input[name=mobile]',
