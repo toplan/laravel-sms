@@ -2,12 +2,13 @@
 
 namespace Toplan\Sms;
 
+use URL;
 use PhpSms;
 use Validator;
 
 class SmsManager
 {
-    const VERSION = '2.4.0';
+    const VERSION = '2.4.1';
 
     const STATE_KEY = '_state';
 
@@ -90,25 +91,30 @@ class SmsManager
      * 验证数据
      *
      * @param array $data
+     * @param \Closure|null $validation
      *
      * @return array
      */
-    public function validateFields(array $data)
+    public function validateFields(array $data, \Closure $validation = null)
     {
-        if (empty($data)) {
-            return self::generateResult(false, 'empty_data');
-        }
-
-        $dataForValidator = [];
+        $rules = [];
         $fields = self::getFields();
         foreach ($fields as $field) {
             if (self::whetherValidateFiled($field)) {
                 $ruleName = isset($data[$field . '_rule']) ? $data[$field . '_rule'] : '';
-                $dataForValidator[$field] = $this->getRealRuleByName($field, $ruleName);
+                $rules[$field] = $this->getRealRuleByName($field, $ruleName);
             }
         }
-        $validator = Validator::make($data, $dataForValidator);
 
+        if ($validation) {
+            return call_user_func_array($validation, [$data, $rules]);
+        }
+
+        if (empty($data)) {
+            return self::generateResult(false, 'empty_data');
+        }
+
+        $validator = Validator::make($data, $rules);
         if ($validator->fails()) {
             $messages = $validator->errors();
             foreach ($fields as $field) {
@@ -139,12 +145,7 @@ class SmsManager
     protected function getRealRuleByName($field, $ruleName)
     {
         if (empty($ruleName) || !is_string($ruleName)) {
-            try {
-                $parsed = parse_url(url()->previous());
-                $ruleName = $parsed['path'];
-            } catch (\Exception $e) {
-                $ruleName = '';
-            }
+            $ruleName = self::pathOfUrl(URL::previous());
         }
         if ($staticRule = $this->getStaticRule($field, $ruleName)) {
             $this->useRule($field, $ruleName);
@@ -336,17 +337,33 @@ class SmsManager
             $name = null;
         }
         if (empty($name) || !is_string($name)) {
-            try {
-                $parsed = parse_url(url()->current());
-                $name = $parsed['path'];
-            } catch (\Exception $e) {
+            $name = self::pathOfUrl(URL::current(), function ($e) use ($field) {
                 throw new LaravelSmsException("Failed to store the custom mobile for field [$field], please set a name for custom rule.");
-            }
+            });
         }
         $allRules = $this->retrieveRules($field);
         $allRules[$name] = $rule;
         $key = self::generateKey(self::DYNAMIC_RULE_KEY, $field);
         self::storage()->set($key, $allRules);
+    }
+
+    /**
+     * 从存储器中获取指定字段的指定名称的动态验证规则
+     *
+     * @param string $field
+     * @param string|null $name
+     *
+     * @return string
+     */
+    public function retrieveRule($field, $name = null)
+    {
+        $key = self::generateKey(self::DYNAMIC_RULE_KEY, $field);
+        $allRules = self::storage()->get($key, []);
+        if (empty($name)) {
+            return $allRules;
+        }
+
+        return isset($allRules[$name]) ? $allRules[$name] : '';
     }
 
     /**
@@ -358,24 +375,7 @@ class SmsManager
      */
     public function retrieveRules($field)
     {
-        $key = self::generateKey(self::DYNAMIC_RULE_KEY, $field);
-
-        return self::storage()->get($key, []);
-    }
-
-    /**
-     * 从存储器中获取指定字段的指定名称的动态验证规则
-     *
-     * @param string $field
-     * @param string $name
-     *
-     * @return string
-     */
-    public function retrieveRule($field, $name)
-    {
-        $allRules = $this->retrieveRules($field);
-
-        return isset($allRules[$name]) ? $allRules[$name] : '';
+        return $this->retrieveRule($field);
     }
 
     /**
@@ -454,18 +454,18 @@ class SmsManager
      *
      * @return Storage
      */
-    protected static function storage()
+    public static function storage()
     {
         if (self::$storage) {
             return self::$storage;
         }
         $className = self::getStorageClassName();
         if (!class_exists($className)) {
-            throw new LaravelSmsException("Failed to generator store, the class [$className] does not exists.");
+            throw new LaravelSmsException("Generate storage failed, the class [$className] does not exists.");
         }
         $store = new $className();
         if (!($store instanceof Storage)) {
-            throw new LaravelSmsException("Failed to generator store, the class [$className] does not implement the interface [Toplan\\Sms\\Storage].");
+            throw new LaravelSmsException("Generate storage failed, the class [$className] does not implement the interface [Toplan\\Sms\\Storage].");
         }
 
         return self::$storage = $store;
@@ -476,19 +476,21 @@ class SmsManager
      *
      * @return string
      */
-    protected static function getStorageClassName()
+    public static function getStorageClassName()
     {
         $className = config('laravel-sms.storage', null);
         if ($className && is_string($className)) {
             return $className;
         }
-        $middleware = config('laravel-sms.middleware', 'web');
+        $middleware = config('laravel-sms.routeAttributes.middleware', null);
         if ($middleware === 'web' || (is_array($middleware) && in_array('web', $middleware))) {
             return 'Toplan\Sms\SessionStorage';
         }
         if ($middleware === 'api' || (is_array($middleware) && in_array('api', $middleware))) {
             return 'Toplan\Sms\CacheStorage';
         }
+
+        return 'Toplan\Sms\SessionStorage';
     }
 
     /**
@@ -635,6 +637,23 @@ class SmsManager
     }
 
     /**
+     * 从配置文件获取提示信息
+     *
+     * @param string $name
+     *
+     * @return string
+     */
+    protected static function getNotifyMessage($name)
+    {
+        $messages = config('laravel-sms.notifies', []);
+        if (array_key_exists($name, $messages)) {
+            return $messages["$name"];
+        }
+
+        return $name;
+    }
+
+    /**
      * 合成结果数组
      *
      * @param bool   $pass
@@ -644,7 +663,7 @@ class SmsManager
      *
      * @return array
      */
-    protected static function generateResult($pass, $type, $message = '', $data = [])
+    public static function generateResult($pass, $type, $message = '', $data = [])
     {
         $result = [];
         $result['success'] = (bool) $pass;
@@ -664,10 +683,11 @@ class SmsManager
      *
      * @param string $template
      * @param array  $data
+     * @param \Closure|null $onError
      *
      * @return string
      */
-    protected static function vsprintf($template, array $data)
+    public static function vsprintf($template, array $data, \Closure $onError = null)
     {
         if (!is_string($template)) {
             return '';
@@ -676,7 +696,9 @@ class SmsManager
             try {
                 $template = vsprintf($template, $data);
             } catch (\Exception $e) {
-                // swallow exception
+                if ($onError) {
+                    call_user_func($onError, $e);
+                }
             }
         }
 
@@ -684,19 +706,28 @@ class SmsManager
     }
 
     /**
-     * 从配置文件获取提示信息
+     * 获取路径中的path部分
      *
-     * @param string $name
+     * @param string $url
+     * @param \Closure|null $onError
      *
      * @return string
      */
-    protected static function getNotifyMessage($name)
+    public static function pathOfUrl($url, \Closure $onError = null)
     {
-        $messages = config('laravel-sms.notifies', []);
-        if (array_key_exists($name, $messages)) {
-            return $messages["$name"];
+        $path = "";
+        if (!is_string($url)) {
+            return $path;
+        }
+        try {
+            $parsed = parse_url($url);
+            $path = $parsed['path'];
+        } catch (\Exception $e) {
+            if ($onError) {
+                call_user_func($onError, $e);
+            }
         }
 
-        return $name;
+        return $path;
     }
 }

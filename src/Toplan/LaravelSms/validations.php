@@ -23,12 +23,7 @@ Validator::extend('confirm_rule', function ($attribute, $value, $parameters) {
     if (array_key_exists(1, $parameters)) {
         $name = $parameters[1];
     } else {
-        try {
-            $parsed = parse_url(url()->previous());
-            $name = $parsed['path'];
-        } catch (\Exception $e) {
-            //swallow exception
-        }
+        $name = SmsManager::pathOfUrl(URL::previous());
     }
 
     return $state && array_key_exists($field, $state['usedRule']) && $state['usedRule'][$field] === $name;
