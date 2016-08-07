@@ -14,7 +14,7 @@ class CreateSmsTable extends Migration
     public function up()
     {
         Schema::create('laravel_sms', function (Blueprint $table) {
-                //auto increment id
+            //auto increment id
                 $table->increments('id');
                 //to:用于存储手机号
                 $table->string('to')->default('');
@@ -35,15 +35,15 @@ class CreateSmsTable extends Migration
                 //代理器使用日志，记录每个代理器的发送状态，可用于排错
                 $table->text('result_info');
 
-                $table->timestamps();
-                $table->softDeletes();
-                $table->engine = 'InnoDB';
+            $table->timestamps();
+            $table->softDeletes();
+            $table->engine = 'InnoDB';
 
                 //说明
                 //1：temp_id和data用于发送模板短信。
                 //2：content用于直接发送短信内容，不使用模板。
                 //3：voice_code用于存储语言验证码code。
-            });
+        });
     }
 
     /**
