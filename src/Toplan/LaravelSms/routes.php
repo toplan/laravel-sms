@@ -1,7 +1,7 @@
 <?php
 
 $attributes = array_merge([
-    'prefix' => 'laravel-sms'
+    'prefix' => 'laravel-sms',
 ], config('laravel-sms.routeAttributes', []));
 
 Route::group($attributes, function () {

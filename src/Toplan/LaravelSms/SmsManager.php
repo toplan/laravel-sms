@@ -2,8 +2,8 @@
 
 namespace Toplan\Sms;
 
-use URL;
 use PhpSms;
+use URL;
 use Validator;
 
 class SmsManager
@@ -106,7 +106,7 @@ class SmsManager
     /**
      * 验证数据
      *
-     * @param array $data
+     * @param array         $data
      * @param \Closure|null $validation
      *
      * @return array
@@ -368,7 +368,7 @@ class SmsManager
     /**
      * 从存储器中获取指定字段的指定名称的动态验证规则
      *
-     * @param string $field
+     * @param string      $field
      * @param string|null $name
      *
      * @return string
@@ -729,8 +729,8 @@ class SmsManager
     /**
      * 根据模版和数据合成字符串
      *
-     * @param string $template
-     * @param array  $data
+     * @param string        $template
+     * @param array         $data
      * @param \Closure|null $onError
      *
      * @return string
@@ -756,14 +756,14 @@ class SmsManager
     /**
      * 获取路径中的path部分
      *
-     * @param string $url
+     * @param string        $url
      * @param \Closure|null $onError
      *
      * @return string
      */
     public static function pathOfUrl($url, \Closure $onError = null)
     {
-        $path = "";
+        $path = '';
         if (!is_string($url)) {
             return $path;
         }
