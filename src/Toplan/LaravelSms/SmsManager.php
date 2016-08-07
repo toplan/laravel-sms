@@ -224,10 +224,10 @@ class SmsManager
         $templates = self::getTemplatesByKey(self::VERIFY_SMS_TEMPLATE_KEY);
 
         $content = $this->generateSmsContent($code, $minutes);
+        $tplData = $this->generateTemplateData($code, $minutes, 'verify_sms');
 
         $result = PhpSms::make($templates)->to($for)
-            ->data(['code' => $code, 'minutes' => $minutes])
-            ->content($content)->send();
+            ->data($tplData)->content($content)->send();
 
         if ($result === null || $result === true || (isset($result['success']) && $result['success'])) {
             $this->state['sent'] = true;
@@ -255,8 +255,10 @@ class SmsManager
         $code = self::generateCode();
         $minutes = self::getCodeValidMinutes();
         $templates = self::getTemplatesByKey(self::VOICE_VERIFY_TEMPLATE_KEY);
+
+        $tplData = $this->generateTemplateData($code, $minutes, 'voice_verify');
         $result = PhpSms::voice($code)->template($templates)
-            ->data(['code' => $code])->to($for)->send();
+            ->data($tplData)->to($for)->send();
 
         if ($result === null || $result === true || (isset($result['success']) && $result['success'])) {
             $this->state['sent'] = true;
