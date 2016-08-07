@@ -21,7 +21,7 @@ class SmsController extends Controller
         if (!$res['success']) {
             return response()->json($res);
         }
-        $res = Manager::requestVoiceVerify($mobile, $interval);
+        $res = Manager::requestVoiceVerify($mobile);
 
         return response()->json($res);
     }
@@ -39,7 +39,7 @@ class SmsController extends Controller
         if (!$res['success']) {
             return response()->json($res);
         }
-        $res = Manager::requestVerifySms($mobile, $interval);
+        $res = Manager::requestVerifySms($mobile);
 
         return response()->json($res);
     }

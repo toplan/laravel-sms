@@ -42,6 +42,20 @@ class SmsManager
     protected $state = [];
 
     /**
+     * 再次发送的时间间隔
+     *
+     * @var int
+     */
+    protected $interval = 60;
+
+    /**
+     * 客服端数据
+     *
+     * @var array
+     */
+    protected $input = [];
+
+    /**
      * Constructor
      *
      * @param string|null $token
@@ -78,13 +92,15 @@ class SmsManager
      */
     public function validateSendable($interval)
     {
-        $interval = intval($interval);
+        if (is_int($interval)) {
+            $this->interval = $interval;
+        }
         $time = $this->getCanResendTime();
         if ($time <= time()) {
             return self::generateResult(true, 'can_send');
         }
 
-        return self::generateResult(false, 'request_invalid', [$interval]);
+        return self::generateResult(false, 'request_invalid', [$this->interval]);
     }
 
     /**
@@ -98,23 +114,25 @@ class SmsManager
     public function validateFields(array $data, \Closure $validation = null)
     {
         $rules = [];
+        $this->input = $data;
+
         $fields = self::getFields();
         foreach ($fields as $field) {
             if (self::whetherValidateFiled($field)) {
-                $ruleName = isset($data[$field . '_rule']) ? $data[$field . '_rule'] : '';
+                $ruleName = isset($this->input[$field . '_rule']) ? $this->input[$field . '_rule'] : '';
                 $rules[$field] = $this->getRealRuleByName($field, $ruleName);
             }
         }
 
         if ($validation) {
-            return call_user_func_array($validation, [$data, $rules]);
+            return call_user_func_array($validation, [$this->input, $rules]);
         }
 
-        if (empty($data)) {
+        if (empty($this->input)) {
             return self::generateResult(false, 'empty_data');
         }
 
-        $validator = Validator::make($data, $rules);
+        $validator = Validator::make($this->input, $rules);
         if ($validator->fails()) {
             $messages = $validator->errors();
             foreach ($fields as $field) {
@@ -196,16 +214,17 @@ class SmsManager
      * 请求验证码短信
      *
      * @param string $for
-     * @param int    $interval
      *
      * @return array
      */
-    public function requestVerifySms($for, $interval)
+    public function requestVerifySms($for)
     {
         $code = self::generateCode();
         $minutes = self::getCodeValidMinutes();
         $templates = self::getTemplatesByKey(self::VERIFY_SMS_TEMPLATE_KEY);
-        $content = self::generateSmsContent([$code, $minutes]);
+
+        $content = $this->generateSmsContent($code, $minutes);
+
         $result = PhpSms::make($templates)->to($for)
             ->data(['code' => $code, 'minutes' => $minutes])
             ->content($content)->send();
@@ -216,7 +235,7 @@ class SmsManager
             $this->state['code'] = $code;
             $this->state['deadline'] = time() + ($minutes * 60);
             $this->storeState();
-            $this->setCanResendAfter($interval);
+            $this->setCanResendAfter($this->interval);
 
             return self::generateResult(true, 'sms_sent_success');
         }
@@ -228,11 +247,10 @@ class SmsManager
      * 请求语音验证码
      *
      * @param string $for
-     * @param int    $interval
      *
      * @return array
      */
-    public function requestVoiceVerify($for, $interval)
+    public function requestVoiceVerify($for)
     {
         $code = self::generateCode();
         $minutes = self::getCodeValidMinutes();
@@ -246,7 +264,7 @@ class SmsManager
             $this->state['code'] = $code;
             $this->state['deadline'] = time() + ($minutes * 60);
             $this->storeState();
-            $this->setCanResendAfter($interval);
+            $this->setCanResendAfter($this->interval);
 
             return self::generateResult(true, 'voice_sent_success');
         }
@@ -438,6 +456,48 @@ class SmsManager
     }
 
     /**
+     * 生成验证码短信通用内容
+     *
+     * @param string $code
+     * @param int    $minutes
+     *
+     * @return string
+     */
+    protected function generateSmsContent($code, $minutes)
+    {
+        $content = config('laravel-sms.verifySmsContent');
+        if (is_callable($content)) {
+            return call_user_func_array($content, [$code, $minutes, $this->input]);
+        }
+
+        return self::vsprintf($content, [$code, $minutes]);
+    }
+
+    /**
+     * 生成模版数据
+     *
+     * @param string $code
+     * @param int    $minutes
+     * @param string $type
+     *
+     * @return mixed
+     */
+    protected function generateTemplateData($code, $minutes, $type)
+    {
+        $data = config('laravel-sms.templateData', []);
+        foreach ($data as $key => $value) {
+            if (is_callable($value)) {
+                $v = call_user_func_array($value, [$code, $minutes, $this->input, $type]);
+                if ($v !== null) {
+                    $data[$key] = $v;
+                }
+            }
+        }
+
+        return $data;
+    }
+
+    /**
      * 获取可验证的字段
      *
      * @return array
@@ -594,18 +654,6 @@ class SmsManager
     }
 
     /**
-     * 生成验证码短信通用内容
-     *
-     * @param array $data
-     *
-     * @return string
-     */
-    protected static function generateSmsContent(array $data = [])
-    {
-        return self::vsprintf(config('laravel-sms.verifySmsContent'), $data);
-    }
-
-    /**
      * 根据配置文件中的长度生成验证码
      *
      * @param int|null    $length
@@ -615,7 +663,7 @@ class SmsManager
      */
     protected static function generateCode($length = null, $characters = null)
     {
-        $length = (int) ($length ?: config('laravel-sms.codeLength', 5));
+        $length = (int) ($length ?: config('laravel-sms.verifyCode.length', 5));
         $characters = (string) ($characters ?: '0123456789');
         $charLength = strlen($characters);
         $randomString = '';
@@ -633,7 +681,7 @@ class SmsManager
      */
     protected static function getCodeValidMinutes()
     {
-        return (int) config('laravel-sms.codeValidMinutes', 5);
+        return (int) config('laravel-sms.verifyCode.validMinutes', 5);
     }
 
     /**
