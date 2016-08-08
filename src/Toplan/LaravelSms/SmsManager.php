@@ -8,7 +8,7 @@ use Validator;
 
 class SmsManager
 {
-    const VERSION = '2.4.1';
+    const VERSION = '2.5.0';
 
     const STATE_KEY = '_state';
 
@@ -40,13 +40,6 @@ class SmsManager
      * @var array
      */
     protected $state = [];
-
-    /**
-     * 再次发送的时间间隔
-     *
-     * @var int
-     */
-    protected $interval = 60;
 
     /**
      * 客服端数据
@@ -86,35 +79,30 @@ class SmsManager
     /**
      * 是否可发送短信/语音
      *
-     * @param int $interval
-     *
      * @return bool
      */
-    public function validateSendable($interval)
+    public function validateSendable()
     {
-        if (is_int($interval)) {
-            $this->interval = $interval;
-        }
         $time = $this->getCanResendTime();
         if ($time <= time()) {
             return self::generateResult(true, 'can_send');
         }
 
-        return self::generateResult(false, 'request_invalid', [$this->interval]);
+        return self::generateResult(false, 'request_invalid', [self::getInterval()]);
     }
 
     /**
      * 验证数据
      *
-     * @param array         $data
+     * @param array         $input
      * @param \Closure|null $validation
      *
      * @return array
      */
-    public function validateFields(array $data, \Closure $validation = null)
+    public function validateFields(array $input, \Closure $validation = null)
     {
         $rules = [];
-        $this->input = $data;
+        $this->input = $input;
 
         $fields = self::getFields();
         foreach ($fields as $field) {
@@ -151,9 +139,9 @@ class SmsManager
     /**
      * 根据规则名获取真实的验证规则
      *
-     * 首先尝试使用用户从客户端传递过来的rule
-     * 其次尝试使用在服务器端存储过rule
-     * 最后尝试使用配置文件中默认rule
+     * - 首先尝试使用指定名称的静态验证规则
+     * - 其次尝试使用指定名称的动态验证规则
+     * - 最后尝试使用配置文件中的默认静态验证规则
      *
      * @param string $field
      * @param string $ruleName
@@ -211,17 +199,37 @@ class SmsManager
     }
 
     /**
+     * 生成待发生的验证码
+     * 
+     * @return string
+     */
+    protected function verifyCode() {
+        if (config('laravel-sms.verifyCode.repeatIfValid', false)) {
+            $state = $this->retrieveState()
+            //如果在未来60秒内都还有效，那么重复使用该验证码
+            if (!(empty($state)) && $state['deadline'] >= time() + 60) {
+                return $state['code'];
+            }
+        }
+
+        return self::generateCode();
+    }
+
+    /**
      * 请求验证码短信
      *
      * @param string $for
+     * @param array  $input
      *
      * @return array
      */
-    public function requestVerifySms($for)
+    public function requestVerifySms($for, array $input = [])
     {
-        $code = self::generateCode();
+        $this->input = array_merge($this->input, $input);
+
         $minutes = self::getCodeValidMinutes();
         $templates = self::getTemplatesByKey(self::VERIFY_SMS_TEMPLATE_KEY);
+        $code = $this->verifyCode();
 
         $content = $this->generateSmsContent($code, $minutes);
         $tplData = $this->generateTemplateData($code, $minutes, 'verify_sms');
@@ -235,7 +243,7 @@ class SmsManager
             $this->state['code'] = $code;
             $this->state['deadline'] = time() + ($minutes * 60);
             $this->storeState();
-            $this->setCanResendAfter($this->interval);
+            $this->setCanResendAfter(self::getInterval());
 
             return self::generateResult(true, 'sms_sent_success');
         }
@@ -247,14 +255,17 @@ class SmsManager
      * 请求语音验证码
      *
      * @param string $for
+     * @param array  $input
      *
      * @return array
      */
-    public function requestVoiceVerify($for)
+    public function requestVoiceVerify($for, array $input = [])
     {
-        $code = self::generateCode();
+        $this->input = array_merge($this->input, $input);
+
         $minutes = self::getCodeValidMinutes();
         $templates = self::getTemplatesByKey(self::VOICE_VERIFY_TEMPLATE_KEY);
+        $code = $this->verifyCode();
 
         $tplData = $this->generateTemplateData($code, $minutes, 'voice_verify');
         $result = PhpSms::voice($code)->template($templates)
@@ -266,7 +277,7 @@ class SmsManager
             $this->state['code'] = $code;
             $this->state['deadline'] = time() + ($minutes * 60);
             $this->storeState();
-            $this->setCanResendAfter($this->interval);
+            $this->setCanResendAfter(self::getInterval());
 
             return self::generateResult(true, 'voice_sent_success');
         }
@@ -444,7 +455,7 @@ class SmsManager
     protected function generateKey()
     {
         $split = '.';
-        $prefix = config('laravel-sms.prefix', 'laravel_sms');
+        $prefix = config('laravel-sms.storage.prefix', 'laravel_sms');
         $args = func_get_args();
         array_unshift($args, $this->token);
         $args = array_filter($args, function ($value) {
@@ -469,7 +480,9 @@ class SmsManager
     {
         $content = config('laravel-sms.verifySmsContent');
         if (is_callable($content)) {
-            return call_user_func_array($content, [$code, $minutes, $this->input]);
+            $result = call_user_func_array($content, [$code, $minutes, $this->input]);
+
+            return is_string($result) ? $result : '';
         }
 
         return self::vsprintf($content, [$code, $minutes]);
@@ -482,21 +495,23 @@ class SmsManager
      * @param int    $minutes
      * @param string $type
      *
-     * @return mixed
+     * @return array
      */
     protected function generateTemplateData($code, $minutes, $type)
     {
-        $data = config('laravel-sms.templateData', []);
+        $data = config('laravel-sms.templateData', [
+                'code'    => $code,
+                'minutes' => $minutes,
+            ]);
         foreach ($data as $key => $value) {
             if (is_callable($value)) {
-                $v = call_user_func_array($value, [$code, $minutes, $this->input, $type]);
-                if ($v !== null) {
-                    $data[$key] = $v;
-                }
+                $data[$key] = call_user_func_array($value, [$code, $minutes, $this->input, $type]);
             }
         }
 
-        return $data;
+        return array_filter($data, function ($value) {
+            return $value !== null
+        });
     }
 
     /**
@@ -540,7 +555,7 @@ class SmsManager
      */
     public static function getStorageClassName()
     {
-        $className = config('laravel-sms.storage', null);
+        $className = config('laravel-sms.storage.driver', null);
         if ($className && is_string($className)) {
             return $className;
         }
@@ -701,6 +716,16 @@ class SmsManager
         }
 
         return $name;
+    }
+
+    /**
+     * 从配置文件获取可再次请求的最小时间间隔(秒)
+     *
+     * @return int
+     */
+    protected static function getInterval()
+    {
+        return (int) config('laravel-sms.interval', 60);
     }
 
     /**

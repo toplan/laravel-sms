@@ -28,6 +28,16 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | 可再次请求的最小时间间隔
+    |--------------------------------------------------------------------------
+    |
+    | 单位：秒
+    |
+    */
+    'interval' => 60,
+
+    /*
+    |--------------------------------------------------------------------------
     | 数据验证管理
     |--------------------------------------------------------------------------
     |
@@ -68,10 +78,14 @@ return [
     | validMinutes: Int
     | 验证码有效时间长度，单位为分钟(minutes)
     |
+    | repeatIfValid: Boolean
+    | 如果原验证码还有效，是否重复使用原验证码
+    |
     */
     'verifyCode' => [
-        'length'       => 5,
-        'validMinutes' => 5,
+        'length'        => 5,
+        'validMinutes'  => 5,
+        'repeatIfValid' => false,
     ],
 
     /*
@@ -112,23 +126,25 @@ return [
     | 存储系统配置
     |--------------------------------------------------------------------------
     |
+    | driver:
+    | 存储方式,是一个实现了'Toplan\Sms\Storage'接口的类的类名,
+    | 内置可选的值有'Toplan\Sms\SessionStorage'和'Toplan\Sms\CacheStorage',
+    | 如果不填写driver,那么系统会自动根据内置路由的属性(routeAttributes)中middleware的配置值选择存储器driver:
+    | - 如果中间件含有'web',会选择使用'Toplan\Sms\SessionStorage'
+    | - 如果中间件含有'api',会选择使用'Toplan\Sms\CacheStorage'
+    |
     | prefix:
     | 存储key的prefix
     |
-    | storage:
-    | 存储方式,是一个实现了'Toplan\Sms\Storage'接口的类的类名,
-    | 内置可选的值有'Toplan\Sms\SessionStorage'和'Toplan\Sms\CacheStorage',
-    | 如果不填写storage,那么系统会自动根据内置路由的属性(routeAttributes)中middleware的配置值选择存储器:
-    | 如果中间件含有'web',会选择使用'Toplan\Sms\SessionStorage',
-    | 如果中间件含有'api',会选择使用'Toplan\Sms\CacheStorage'。
-    |
-    | 内置storage的个性化配置:
-    | 1. 在laravel项目的'config/session.php'文件中可以对'Toplan\Sms\SessionStorage'进行更多个性化设置
-    | 2. 在laravel项目的'config/cache.php'文件中可以对'Toplan\Sms\CacheStorage'进行更多个性化设置
+    | 内置driver的个性化配置:
+    | - 在laravel项目的'config/session.php'文件中可以对'Toplan\Sms\SessionStorage'进行更多个性化设置
+    | - 在laravel项目的'config/cache.php'文件中可以对'Toplan\Sms\CacheStorage'进行更多个性化设置
     |
     */
-    'prefix'  => 'laravel_sms',
-    'storage' => '',
+    'storage' => [
+        'driver' => '',
+        'prefix' => 'laravel_sms',
+    ],
 
     /*
     |--------------------------------------------------------------------------

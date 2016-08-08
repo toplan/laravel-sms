@@ -10,17 +10,17 @@ class SmsController extends Controller
 {
     public function postVoiceVerify(Request $request)
     {
-        $mobile = $request->input('mobile', null);
-        $interval = $request->input('interval', 60);
-
-        $res = Manager::validateSendable($interval);
+        $res = Manager::validateSendable();
         if (!$res['success']) {
             return response()->json($res);
         }
+
         $res = Manager::validateFields($request->all());
         if (!$res['success']) {
             return response()->json($res);
         }
+
+        $mobile = $request->input('mobile', null);
         $res = Manager::requestVoiceVerify($mobile);
 
         return response()->json($res);
@@ -28,17 +28,17 @@ class SmsController extends Controller
 
     public function postSendCode(Request $request)
     {
-        $mobile = $request->input('mobile', null);
-        $interval = $request->input('interval', 60);
-
-        $res = Manager::validateSendable($interval);
+        $res = Manager::validateSendable();
         if (!$res['success']) {
             return response()->json($res);
         }
+
         $res = Manager::validateFields($request->all());
         if (!$res['success']) {
             return response()->json($res);
         }
+
+        $mobile = $request->input('mobile', null);
         $res = Manager::requestVerifySms($mobile);
 
         return response()->json($res);
