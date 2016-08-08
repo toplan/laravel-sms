@@ -2,8 +2,8 @@
 
 namespace Toplan\Sms;
 
-use URL;
 use PhpSms;
+use URL;
 use Validator;
 
 class SmsManager
@@ -198,10 +198,11 @@ class SmsManager
 
     /**
      * 生成待发生的验证码
-     * 
+     *
      * @return string
      */
-    protected function verifyCode() {
+    protected function verifyCode()
+    {
         if (config('laravel-sms.verifyCode.repeatIfValid', false)) {
             $state = $this->retrieveState();
             //如果在未来60秒内都还有效，那么重复使用该验证码
