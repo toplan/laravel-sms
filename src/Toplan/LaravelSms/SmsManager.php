@@ -178,8 +178,6 @@ class SmsManager
      *
      * @param string $field
      *
-     * @throws LaravelSmsException
-     *
      * @return string
      */
     protected function getNameOfUsedRule($field)
@@ -287,8 +285,6 @@ class SmsManager
 
     /**
      * 存储发送状态
-     *
-     * @throws LaravelSmsException
      */
     protected function storeState()
     {
@@ -369,7 +365,7 @@ class SmsManager
         }
         if (empty($name) || !is_string($name)) {
             $name = self::pathOfUrl(URL::current(), function ($e) use ($field) {
-                throw new LaravelSmsException("Failed to store the custom mobile for field [$field], please set a name for custom rule.");
+                throw new LaravelSmsException("Failed to store the dynamic rule for [$field] field, please give a name for it.");
             });
         }
         $allRules = $this->retrieveRules($field);
@@ -414,8 +410,6 @@ class SmsManager
      *
      * @param string $field
      * @param string $name
-     *
-     * @throws LaravelSmsException
      */
     public function forgetRule($field, $name)
     {
@@ -628,7 +622,7 @@ class SmsManager
         if (isset($data[$field])) {
             return $data[$field];
         }
-        throw new LaravelSmsException("Don't find validation config for the field [$field] in config file, please define it.");
+        throw new LaravelSmsException("Don't find configuration information for [$field] field in config file, please define it.");
     }
 
     /**
@@ -643,7 +637,7 @@ class SmsManager
         $fields = self::getFields();
         if (!in_array($name, $fields)) {
             $names = implode(',', $fields);
-            throw new LaravelSmsException("The field name [$name] is illegal, must be one of [$names].");
+            throw new LaravelSmsException("The field name [$name] is illegal, beacase field name must be one of [$names].");
         }
     }
 
