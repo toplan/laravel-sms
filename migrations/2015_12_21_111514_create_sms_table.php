@@ -39,7 +39,7 @@ class CreateSmsTable extends Migration
 
             //发送成功时的时间
             $table->integer('sent_time')->unsigned()->default(0);
-            
+
             //代理器使用日志，记录每个代理器的发送状态，可用于排错
             $table->text('result_info');
 
