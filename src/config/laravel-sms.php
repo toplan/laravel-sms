@@ -93,23 +93,38 @@ return [
     | 验证码短信通用内容
     |--------------------------------------------------------------------------
     |
-    | 该值可以为字符串或者一个返回字符串的函数,如:
-    | function ($code, minutes, $input) {
-    |     return '...';//必须返回一个字符串
-    | }
+    | 该值可以为以下两种情况之一:
+    |
+    | - 字符串
+    |   如: '【your app signature】亲爱的用户，您的验证码是%s。有效期为%s分钟，请尽快验证。'
+    |
+    | - 返回字符串的函数
+    |   如: function ($code, minutes, $input) {
+    |           return '...';
+    |       }
     |
     */
-    'verifySmsContent' => '【your app signature】亲爱的用户，您的验证码是%s。有效期为%s分钟，请尽快验证',
+    'verifySmsContent' => function ($code, $minutes, $input) {
+        return "【your app signature】亲爱的用户，您的验证码是$code。有效期为$minutes分钟，请尽快验证。";
+    },
 
     /*
     |--------------------------------------------------------------------------
     | 模版数据管理
     |--------------------------------------------------------------------------
     |
-    | 示例:
-    | 'key' => function ($code, $minutes, $input, $type) {
-    |     return $input['smsKey'];
-    | }
+    | 每项数据的值可以为以下两种情况之一:
+    |
+    | - 基本数据类型
+    |   如: 'minutes' => 5
+    |
+    | - 返回值的函数（如果不返回任何值，即表示不使用该项数据）
+    |   如: 'smsDisplayId' => function ($code, $minutes, $input, $type) {
+    |           return $input['smsDisplayId'];
+    |       }
+    |   如: 'hello' => function ($code, $minutes, $input, $type) {
+    |           //不返回任何值，那么hello将会从模版数据中移除 :)
+    |       }
     |
     */
     'templateData' => [

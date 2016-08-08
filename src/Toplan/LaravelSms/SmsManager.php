@@ -2,8 +2,8 @@
 
 namespace Toplan\Sms;
 
-use PhpSms;
 use URL;
+use PhpSms;
 use Validator;
 
 class SmsManager

@@ -8,9 +8,9 @@
  */
 (function($){
 
-    $.fn.sms = function(options){
+    $.fn.sms = function(options) {
         var opts = $.extend(
-            $.fn.sms.default,
+            $.fn.sms.defaults,
             options
         );
         $(document).on('click', this.selector, function(e){
@@ -31,16 +31,19 @@
         if (opts.voice) {
             url = opts.domain + '/laravel-sms/voice-verify';
         }
+
+        var requestData = $.isPlainObject(opts.extData) ? opts.extData : {}
+        requestData = $.extend(requestData, {
+            _token: opts.token,
+            access_token: opts.access_token,
+            mobile: mobile,
+            mobile_rule: opts.mobile_rule
+        })
+
         $.ajax({
             url  : url,
             type : 'post',
-            data : {
-                _token: opts.token,
-                access_token: opts.access_token,
-                interval: opts.interval,
-                mobile: mobile,
-                mobile_rule: opts.mobile_rule
-            },
+            data : requestData,
             success : function (data) {
                if (data.success) {
                    timer(elem, opts.interval, opts.btnContent)
@@ -58,20 +61,20 @@
         });
     }
 
-    function timer(elem, seconds, btnContent){
-        if(seconds >= 0){
-            setTimeout(function(){
+    function timer(elem, seconds, btnContent) {
+        if (seconds >= 0) {
+            setTimeout(function() {
                 elem.html(seconds + ' 秒后再次发送');
                 seconds -= 1;
                 timer(elem, seconds, btnContent);
             }, 1000);
-        }else{
+        } else {
             elem.html(btnContent);
             elem.prop('disabled', false);
         }
     }
 
-    $.fn.sms.default = {
+    $.fn.sms.defaults = {
         token           : '',
         access_token    : '',
         mobile_rule     : '',
@@ -79,6 +82,7 @@
         interval        : 60,
         voice           : false,
         domain          : '',
+        extData         : {},
         alertMsg        : function (msg, type) {
             alert(msg);
         }
