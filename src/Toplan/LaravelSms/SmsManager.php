@@ -77,9 +77,9 @@ class SmsManager
     }
 
     /**
-     * 是否可发送短信/语音
+     * 验证是否可发送
      *
-     * @return bool
+     * @return array
      */
     public function validateSendable()
     {
@@ -461,7 +461,7 @@ class SmsManager
         $args = array_filter($args, function ($value) {
             return $value && is_string($value);
         });
-        if (count($args)) {
+        if (!(empty($args))) {
             $prefix .= $split . implode($split, $args);
         }
 
@@ -767,7 +767,7 @@ class SmsManager
         if (!is_string($template)) {
             return '';
         }
-        if ($template && count($data)) {
+        if ($template && !(empty($data))) {
             try {
                 $template = vsprintf($template, $data);
             } catch (\Exception $e) {
