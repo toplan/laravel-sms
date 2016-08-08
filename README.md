@@ -118,14 +118,14 @@ use SmsManager;
 
 ###1. 发送前校验
 
-#####validateSendable()
+####validateSendable()
 
 校验是否可进行发送，返回数据中会包含错误信息。
 ```php
 $result = SmsManager::validateSendable();
 ```
 
-#####validateFields($input[, $validation])
+####validateFields($input[, $validation])
 
 校验数据合法性，返回数据中会包含错误信息。
 ```php
@@ -138,33 +138,29 @@ $result = SmsManager::validateFields($input);
 $result = SmsManager::validateFields($input, function ($fields, $rules) {
     //在这里做你的验证处理，并返回结果...
     //如：
-    return Validator::make($data, $rules);
+    return Validator::make($fields, $rules);
 });
 ```
 
 ###2. 发送
 
-#####requestVerifySms($mobile[, $input])
+####requestVerifySms($mobile[, $input])
 
 请求发送验证码短信。
 ```php
-$mobile = $request->input('mobile');
-
-$result = Manager::requestVerifySms($mobile);
+$result = Manager::requestVerifySms('1828034****');
 ```
 
-#####requestVoiceVerify($mobile[, $input])
+####requestVoiceVerify($mobile[, $input])
 
 请求发送语音验证码。
 ```php
-$mobile = $request->input('mobile');
-
-$result = Manager::requestVoiceVerify($mobile);
+$result = Manager::requestVoiceVerify('1828034****');
 ```
 
 ###3. 发送状态
 
-#####retrieveState()
+####retrieveState()
 
 获取发送状态。
 
@@ -172,7 +168,7 @@ $result = Manager::requestVoiceVerify($mobile);
 $state = SmsManager::retrieveState();
 ```
 
-#####forgetState()
+####forgetState()
 
 删除发送状态。
 
@@ -182,7 +178,7 @@ SmsManager::forgetState();
 
 ###4. 动态验证规则
 
-#####storeRule($field[, $name], $rule);
+####storeRule($field[, $name], $rule);
 
 定义数据的动态验证规则。
 
@@ -203,19 +199,19 @@ SmsManager::storeRule('mobile', [
 
 > 存储的动态验证规则可通过访问`your-domain/laravel-sms/info`查看。动态验证规则的名称最好不要和静态验证规则同名,因为静态验证规则的优先级更高。
 
-#####retrieveRules($field)
+####retrieveRules($field)
 获取某项数据的所有动态验证规则。
 ```php
 $rules = SmsManager::retrieveRules('mobile');
 ```
 
-#####retrieveRule($field, $name)
+####retrieveRule($field, $name)
 获取某项数据的指定名称的动态验证规则。
 ```php
 $rule = SmsManager::retrieveRule('mobile', 'myRuleName');
 ```
 
-#####forgetRule($field, $name)
+####forgetRule($field, $name)
 删除某项数据的指定名称的动态验证规则。
 ```php
 SmsManager::forgetRule('mobile', 'myRuleName');
