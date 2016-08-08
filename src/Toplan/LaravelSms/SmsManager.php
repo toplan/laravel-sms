@@ -203,7 +203,7 @@ class SmsManager
      */
     protected function verifyCode() {
         if (config('laravel-sms.verifyCode.repeatIfValid', false)) {
-            $state = $this->retrieveState()
+            $state = $this->retrieveState();
             //如果在未来60秒内都还有效，那么重复使用该验证码
             if (!(empty($state)) && $state['deadline'] >= time() + 60) {
                 return $state['code'];
@@ -504,7 +504,7 @@ class SmsManager
         }
 
         return array_filter($data, function ($value) {
-            return $value !== null
+            return $value !== null;
         });
     }
 
