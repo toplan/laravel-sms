@@ -637,7 +637,7 @@ class SmsManager
         $fields = self::getFields();
         if (!in_array($name, $fields)) {
             $names = implode(',', $fields);
-            throw new LaravelSmsException("The field name [$name] is illegal, beacase field name must be one of [$names].");
+            throw new LaravelSmsException("The field name [$name] is illegal, because field name must be one of [$names].");
         }
     }
 
