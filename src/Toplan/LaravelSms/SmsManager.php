@@ -654,10 +654,8 @@ class SmsManager
         $scheme = PhpSms::scheme();
         $config = PhpSms::config();
         foreach (array_keys($scheme) as $name) {
-            if (isset($config[$name])) {
-                if (isset($config[$name][$key])) {
-                    $templates[$name] = $config[$name][$key];
-                }
+            if (isset($config[$name][$key])) {
+                $templates[$name] = $config[$name][$key];
             }
         }
 
