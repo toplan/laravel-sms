@@ -39,7 +39,7 @@
 - step2: [准备工作](#准备工作)
 - step3: [验证码模块](#验证码模块)
 
-#公告!!!
+#公告
 
 - 安装过旧版本(<2.5.0)的童鞋,在更新到2.5.0+版本时,务必先删除原有的`config/laravel-sms.php`文件和`laravel-sms.js`文件(如果有用到),
 然后再运行`php artisan vendor:publish`命令,而且在使用新版本前请再阅读下此文档,因为2.4.0+版本有较大变化。
@@ -51,10 +51,10 @@
 在项目根目录下运行如下composer命令:
 ```php
 //安装v2版本(推荐)
-composer require 'toplan/laravel-sms:2.5.*',
+composer require toplan/laravel-sms:2.5.*
 
 //安装开发中版本
-composer require 'toplan/laravel-sms:dev-master'
+composer require toplan/laravel-sms:dev-master
 ```
 
 #准备工作
@@ -122,7 +122,7 @@ use SmsManager;
 
 校验是否可进行发送，返回数据中会包含错误信息。
 ```php
-$result = SmsManager::validateSendable($input);
+$result = SmsManager::validateSendable();
 ```
 
 #####validateFields($input[, $validation])
@@ -225,7 +225,7 @@ SmsManager::forgetRule('mobile', 'myRuleName');
 
 ###1. 声明
 
-当客服端向服务器端请求发送验证码短信/语音时，服务器端需要对接收到的数据(本库将其称为`field`)进行验证，只有在所有需验证的数据都验证通过了才会向第三方服务提供商请求发送验证码短信/语音。
+当客户端向服务器端请求发送验证码短信/语音时，服务器端需要对接收到的数据(本库将其称为`field`)进行验证，只有在所有需验证的数据都验证通过了才会向第三方服务提供商请求发送验证码短信/语音。
 对于每项你想验证的数据(`field`)，不管是使用静态验证规则还是[动态验证规则](#4-动态验证规则)，都需要提前到配置文件(`config/laravel-sms.php`)中声明，并做好必要的配置。
 
 > 本文档中所说的`服务器端`是我们自己的应用系统，而非第三方短信服务提供商。

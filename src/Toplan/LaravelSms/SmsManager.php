@@ -42,7 +42,7 @@ class SmsManager
     protected $state = [];
 
     /**
-     * 客服端数据
+     * 客户端数据
      *
      * @var array
      */
