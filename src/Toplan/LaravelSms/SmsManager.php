@@ -290,7 +290,7 @@ class SmsManager
      *
      * @throws LaravelSmsException
      */
-    public function storeState()
+    protected function storeState()
     {
         $key = self::generateKey(self::STATE_KEY);
         self::storage()->set($key, $this->state);

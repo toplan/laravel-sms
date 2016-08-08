@@ -17,7 +17,7 @@
 
 - 可扩展的[发送前数据验证](#发送前数据验证)
 - 集成[验证码发送与验证模块](#验证码模块)，从此告别重复写验证码短信发送与校验的历史
-- 灵活的[动态验证规则](#2-动态验证规则)
+- 灵活的[动态验证规则](#4-动态验证规则)
 - 可选的[数据库日志](#数据库日志)
 - 集成[短信队列](#短信队列)
 - 验证码发送与验证模块的[无session支持](#无会话支持)
@@ -41,8 +41,8 @@
 
 #公告!!!
 
-- 安装过旧版本(<2.4.0)的童鞋,在更新到2.4.0+版本时,务必先删除原有的`config/laravel-sms.php`文件和`laravel-sms.js`文件(如果有用到),
-然后再运行`php artisan vendor:publish`命令,而且在使用新版本前请再阅读下此文档,因为2.4.0版本有较大变化。
+- 安装过旧版本(<2.5.0)的童鞋,在更新到2.5.0+版本时,务必先删除原有的`config/laravel-sms.php`文件和`laravel-sms.js`文件(如果有用到),
+然后再运行`php artisan vendor:publish`命令,而且在使用新版本前请再阅读下此文档,因为2.4.0+版本有较大变化。
 
 - qq群:159379848
 
@@ -108,12 +108,125 @@ php artisan vendor:publish
 > 如果使用其中一个代理器发送失败，那么会启用备用代理器，按照配置可知备用代理器有`YunPian`和`YunTongXun`，那么会依次调用直到发送成功或无备用代理器可用。
 > 值得注意的是，如果首次尝试的是`YunPian`，那么备用代理器将会只会使用`YunTongXun`，也就是会排除使用过的代理器。
 
+#API
+
+`laravel-sms`提供的所有功能都是由该章节的接口和`phpsms`的接口实现的。所以，如果你想在`laravel-sms`基础上做定制化的开发，你需要阅读该章节，否则你可以忽略该章节哦。
+
+```php
+use SmsManager;
+```
+
+###1. 发送前校验
+
+#####validateSendable()
+
+校验是否可进行发送，返回数据中会包含错误信息。
+```php
+$result = SmsManager::validateSendable($input);
+```
+
+#####validateFields($input[, $validation])
+
+校验数据合法性，返回数据中会包含错误信息。
+```php
+$input = $request->all();
+
+//使用内置的验证逻辑
+$result = SmsManager::validateFields($input);
+
+//自定义验证逻辑
+$result = SmsManager::validateFields($input, function ($fields, $rules) {
+    //在这里做你的验证处理，并返回结果...
+    //如：
+    return Validator::make($data, $rules);
+});
+```
+
+###2. 发送
+
+#####requestVerifySms($mobile[, $input])
+
+请求发送验证码短信。
+```php
+$mobile = $request->input('mobile');
+
+$result = Manager::requestVerifySms($mobile);
+```
+
+#####requestVoiceVerify($mobile[, $input])
+
+请求发送语音验证码。
+```php
+$mobile = $request->input('mobile');
+
+$result = Manager::requestVoiceVerify($mobile);
+```
+
+###3. 发送状态
+
+#####retrieveState()
+
+获取发送状态。
+
+```php
+$state = SmsManager::retrieveState();
+```
+
+#####forgetState()
+
+删除发送状态。
+
+```php
+SmsManager::forgetState();
+```
+
+###4. 动态验证规则
+
+#####storeRule($field[, $name], $rule);
+
+定义数据的动态验证规则。
+
+```php
+//方式1:
+//如果不设置name,那么name默认为当前访问路径的path部分
+SmsManager::storeRule('mobile', 'required|zh_mobile|unique:users,mobile,NULL,id,account_id,1');
+
+//方式2:
+SmsManager::storeRule('mobile', 'myRuleName', 'required|zh_mobile|unique:users,mobile,NULL,id,account_id,1');
+
+//方式3
+SmsManager::storeRule('mobile', [
+    'myRuleName' => 'required|zh_mobile|unique:users,mobile,NULL,id,account_id,1',
+    'myRuleName2' => ...,
+]);
+```
+
+> 存储的动态验证规则可通过访问`your-domain/laravel-sms/info`查看。动态验证规则的名称最好不要和静态验证规则同名,因为静态验证规则的优先级更高。
+
+#####retrieveRules($field)
+获取某项数据的所有动态验证规则。
+```php
+$rules = SmsManager::retrieveRules('mobile');
+```
+
+#####retrieveRule($field, $name)
+获取某项数据的指定名称的动态验证规则。
+```php
+$rule = SmsManager::retrieveRule('mobile', 'myRuleName');
+```
+
+#####forgetRule($field, $name)
+删除某项数据的指定名称的动态验证规则。
+```php
+SmsManager::forgetRule('mobile', 'myRuleName');
+```
+
 #发送前数据验证
 
 ###1. 声明
 
 当客服端向服务器端请求发送验证码短信/语音时，服务器端需要对接收到的数据(本库将其称为`field`)进行验证，只有在所有需验证的数据都验证通过了才会向第三方服务提供商请求发送验证码短信/语音。
-对于每项你想验证的数据(`field`)，不管是使用静态验证规则还是[动态验证规则](#2-动态验证规则)，都需要提前到配置文件(`config/laravel-sms.php`)中声明，并做好必要的配置。
+对于每项你想验证的数据(`field`)，不管是使用静态验证规则还是[动态验证规则](#4-动态验证规则)，都需要提前到配置文件(`config/laravel-sms.php`)中声明，并做好必要的配置。
 
 > 本文档中所说的`服务器端`是我们自己的应用系统，而非第三方短信服务提供商。
 
@@ -142,13 +255,13 @@ php artisan vendor:publish
             'mobile_required' => 'required|zh_mobile',
             ...
         ]
-    ]
+    ],
+
     // 自定义你可能需要验证的字段
     'image_captcha' => [
         'enable' => true,
-        ...
-    ]
-]
+    ],
+],
 ```
 
 ###2. 使用
@@ -242,71 +355,6 @@ if ($validator->fails()) {
 ```
 > `confirm_mobile_not_change`, `verify_code`, `confirm_rule`的详解请参看[Validator扩展](#validator扩展)
 
-#API
-
-```php
-use SmsManager;
-```
-
-###1. 发送状态
-
-#####retrieveState()
-
-获取发送状态。
-
-```php
-SmsManager::retrieveState()
-```
-
-#####forgetState()
-
-删除发送状态。
-
-```php
-SmsManager::forgetState()
-```
-
-###2. 动态验证规则
-
-#####storeRule($field[, $name], $rule)
-
-定义数据的动态验证规则。
-
-```php
-//方式1:
-//如果不设置name,那么name默认为当前访问路径的uri
-SmsManager::storeRule('mobile', 'required|zh_mobile|unique:users,mobile,NULL,id,account_id,1');
-
-//方式2:
-SmsManager::storeRule('mobile', 'myRuleName', 'required|zh_mobile|unique:users,mobile,NULL,id,account_id,1');
-
-//方式3
-SmsManager::storeRule('mobile', [
-    'myRuleName' => 'required|zh_mobile|unique:users,mobile,NULL,id,account_id,1',
-    'myRuleName2' => ...,
-]);
-```
-
-> 存储的动态验证规则可通过访问`your-domain/laravel-sms/info`查看。动态验证规则的名称最好不要和静态验证规则同名,因为静态验证规则的优先级更高。
-
-#####retrieveRules($field)
-获取某项数据的所有动态验证规则。
-```php
-SmsManager::retrieveRules('mobile');
-```
-
-#####retrieveRule($field, $name)
-获取某项数据的指定名称的动态验证规则。
-```php
-SmsManager::retrieveRule('mobile', 'myRuleName');
-```
-
-#####forgetRule($field, $name)
-删除某项数据的指定名称的动态验证规则。
-```php
-SmsManager::forgetRule('mobile', 'myRuleName');
-```
-
 #Validator扩展
 
 ####zh_mobile
@@ -320,7 +368,7 @@ SmsManager::forgetRule('mobile', 'myRuleName');
 
 ####confirm_rule:$field,$ruleName
 检测验证规则是否合法，第一个值为字段名称，第二个值为使用的验证规则的名称。
-如果第二项参数(`$ruleName`)不填写,系统会尝试设置其为前一个访问路径的uri。
+如果第二项参数(`$ruleName`)不填写,系统会尝试设置其为前一个访问路径的path。
 
 #数据库日志
 
@@ -486,8 +534,13 @@ $('#sendVerifySmsButton').sms({
     //是否请求语音验证码
     voice           : false,
 
+    //扩展数据，这些数据会提交到服务器
+    extData:        : {
+        //name: value
+    }
+
     //定义服务器有消息返回时如何展示，默认为alert
-    alertMsg       :  function (msg, type) {
+    alertMsg        : function (msg, type) {
         alert(msg);
     }
 });

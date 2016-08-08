@@ -20,7 +20,7 @@ class SmsController extends Controller
             return response()->json($res);
         }
 
-        $mobile = $request->input('mobile', null);
+        $mobile = $request->input('mobile');
         $res = Manager::requestVoiceVerify($mobile);
 
         return response()->json($res);
@@ -38,7 +38,7 @@ class SmsController extends Controller
             return response()->json($res);
         }
 
-        $mobile = $request->input('mobile', null);
+        $mobile = $request->input('mobile');
         $res = Manager::requestVerifySms($mobile);
 
         return response()->json($res);
