@@ -158,18 +158,24 @@ $result = Manager::requestVoiceVerify();
 
 ###3. 发送状态
 
+####state([$key][, $default])
+
+获取当前的发送状态（非持久化的）。
+```php
+//example:
+$state = SmsManager::state();
+```
+
 ####retrieveState()
 
-获取发送状态。
-
+获取持久化存储的发送状态，即存储到`session`或缓存中的状态数据。
 ```php
 $state = SmsManager::retrieveState();
 ```
 
 ####forgetState()
 
-删除发送状态。
-
+删除持久化存储的发送状态。
 ```php
 SmsManager::forgetState();
 ```
@@ -179,7 +185,6 @@ SmsManager::forgetState();
 ####storeRule($field[, $name], $rule);
 
 定义数据的动态验证规则。
-
 ```php
 //方式1:
 //如果不设置name,那么name默认为当前访问路径的path部分
@@ -198,26 +203,29 @@ SmsManager::storeRule('mobile', [
 > 存储的动态验证规则可通过访问`your-domain/laravel-sms/info`查看。动态验证规则的名称最好不要和静态验证规则同名,因为静态验证规则的优先级更高。
 
 ####retrieveRules($field)
+
 获取某项数据的所有动态验证规则。
 ```php
 $rules = SmsManager::retrieveRules('mobile');
 ```
 
 ####retrieveRule($field, $name)
+
 获取某项数据的指定名称的动态验证规则。
 ```php
 $rule = SmsManager::retrieveRule('mobile', 'myRuleName');
 ```
 
 ####forgetRule($field, $name)
+
 删除某项数据的指定名称的动态验证规则。
 ```php
 SmsManager::forgetRule('mobile', 'myRuleName');
 ```
 
-###5. 数据管理
+###5. 客户端数据
 
-####input([$key])
+####input([$key][, $default])
 
 获取客户端传递来的数据。客户端数据会自动注入到配置文件(`laravel-sms.php`)中闭包函数的第三个参数中。
 ```php
@@ -226,7 +234,7 @@ $mobileRuleName = SmsManager::input('mobile_rule');
 $all = SmsManager::input();
 ```
 
-#发送前数据验证
+#发送前数据校验
 
 ###1. 声明
 

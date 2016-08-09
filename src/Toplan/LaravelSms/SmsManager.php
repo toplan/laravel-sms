@@ -133,7 +133,7 @@ class SmsManager
             $messages = $validator->errors();
             foreach ($fields as $field) {
                 if ($messages->has($field)) {
-                    $rule = $this->getNameOfUsedRule($field);
+                    $rule = $this->usedRule($field);
                     $msg = $messages->first($field);
 
                     return self::generateResult(false, $rule, $msg);
@@ -182,19 +182,7 @@ class SmsManager
     }
 
     /**
-     * 获取使用的规则的别名
-     *
-     * @param string $field
-     *
-     * @return string
-     */
-    protected function getNameOfUsedRule($field)
-    {
-        return isset($this->state['usedRule'][$field]) ? $this->state['usedRule'][$field] : '';
-    }
-
-    /**
-     * 通过规则名称设置指定数据使用的验证规则
+     * 设置指定字段使用的验证规则名称
      *
      * @param string $field
      * @param string $name
@@ -202,6 +190,18 @@ class SmsManager
     protected function useRule($field, $name)
     {
         $this->state['usedRule'][$field] = $name;
+    }
+
+    /**
+     * 获取设置指定字段使用的验证规则名称
+     *
+     * @param string $field
+     *
+     * @return string
+     */
+    protected function usedRule($field)
+    {
+        return isset($this->state['usedRule'][$field]) ? $this->state['usedRule'][$field] : '';
     }
 
     /**
@@ -287,16 +287,33 @@ class SmsManager
     }
 
     /**
-     * 获取客户端数据
+     * 获取当前的发送状态(非持久化的)
      *
      * @param string|int|null $key
+     * @param mixed           $default
      *
      * @return mixed
      */
-    public function input($key = null)
+    public function state($key = null, $default = null)
     {
         if ($key !== null) {
-            return isset($this->input[$key]) ? $this->input[$key] : null;
+            return isset($this->state[$key]) ? $this->state[$key] : $default;
+        }
+
+        return $this->state;
+    }
+    /**
+     * 获取客户端数据
+     *
+     * @param string|int|null $key
+     * @param mixed           $default
+     *
+     * @return mixed
+     */
+    public function input($key = null, $default = null)
+    {
+        if ($key !== null) {
+            return isset($this->input[$key]) ? $this->input[$key] : $default;
         }
 
         return $this->input;
