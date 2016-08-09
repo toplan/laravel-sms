@@ -52,8 +52,9 @@ class SmsManagerServiceProvider extends ServiceProvider
             if (empty($token)) {
                 $token = $app->request->input('access_token', null);
             }
+            $input = $app->request->all();
 
-            return new SmsManager($token);
+            return new SmsManager($token, $input);
         });
     }
 

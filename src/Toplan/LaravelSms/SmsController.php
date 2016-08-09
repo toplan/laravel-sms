@@ -8,38 +8,36 @@ use SmsManager as Manager;
 
 class SmsController extends Controller
 {
-    public function postVoiceVerify(Request $request)
+    public function postVoiceVerify()
     {
         $res = Manager::validateSendable();
         if (!$res['success']) {
             return response()->json($res);
         }
 
-        $res = Manager::validateFields($request->all());
+        $res = Manager::validateFields();
         if (!$res['success']) {
             return response()->json($res);
         }
 
-        $mobile = $request->input('mobile');
-        $res = Manager::requestVoiceVerify($mobile);
+        $res = Manager::requestVoiceVerify();
 
         return response()->json($res);
     }
 
-    public function postSendCode(Request $request)
+    public function postSendCode()
     {
         $res = Manager::validateSendable();
         if (!$res['success']) {
             return response()->json($res);
         }
 
-        $res = Manager::validateFields($request->all());
+        $res = Manager::validateFields();
         if (!$res['success']) {
             return response()->json($res);
         }
 
-        $mobile = $request->input('mobile');
-        $res = Manager::requestVerifySms($mobile);
+        $res = Manager::requestVerifySms();
 
         return response()->json($res);
     }

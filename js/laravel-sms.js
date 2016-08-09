@@ -13,7 +13,8 @@
             $.fn.sms.defaults,
             options
         );
-        $(document).on('click', this.selector, function(e){
+
+        $(document).on('click', this.selector, function(e) {
             var _this = $(this);
             opts = $.extend(
                 opts,
@@ -26,19 +27,11 @@
     };
 
     function sendSms(opts, elem) {
-        var mobile = $(opts.mobile_selector).val();
         var url = opts.domain + '/laravel-sms/verify-code';
         if (opts.voice) {
             url = opts.domain + '/laravel-sms/voice-verify';
         }
-
-        var requestData = $.isPlainObject(opts.extData) ? opts.extData : {}
-        requestData = $.extend(requestData, {
-            _token: opts.token,
-            access_token: opts.access_token,
-            mobile: mobile,
-            mobile_rule: opts.mobile_rule
-        })
+        var requestData = getRequestData(opts);
 
         $.ajax({
             url  : url,
@@ -46,7 +39,7 @@
             data : requestData,
             success : function (data) {
                if (data.success) {
-                   timer(elem, opts.interval, opts.btnContent)
+                   timer(elem, opts.interval, opts.btnContent);
                } else {
                    elem.html(opts.btnContent);
                    elem.prop('disabled', false);
@@ -59,6 +52,23 @@
                 opts.alertMsg('请求失败，请重试', 'request_failure');
             }
         });
+    }
+
+    function getRequestData(opts) {
+        var requestData = {
+            _token: opts.token || ''
+        };
+
+        var data = $.isPlainObject(opts.requestData) ? opts.requestData : {};
+        for (var key in data) {
+            if (typeof data[key] === 'function') {
+                requestData[key] = data[key].call(requestData);
+            } else {
+                requestData[key] = data[key];
+            }
+        }
+
+        return requestData;
     }
 
     function timer(elem, seconds, btnContent) {
@@ -75,15 +85,15 @@
     }
 
     $.fn.sms.defaults = {
-        token           : '',
-        access_token    : '',
-        mobile_rule     : '',
-        mobile_selector : '',
-        interval        : 60,
-        voice           : false,
-        domain          : '',
-        extData         : {},
-        alertMsg        : function (msg, type) {
+        token       : '',
+        interval    : 60,
+        voice       : false,
+        domain      : '',
+        requestData : {
+            mobile      : '',
+            mobile_rule : ''
+        },
+        alertMsg    : function (msg, type) {
             alert(msg);
         }
     };

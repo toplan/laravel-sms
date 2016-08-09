@@ -52,13 +52,15 @@ class SmsManager
      * Constructor
      *
      * @param string|null $token
+     * @param array       $input
      */
-    public function __construct($token = null)
+    public function __construct($token = null, array $input = [])
     {
-        $this->reset();
         if ($token && is_string($token)) {
             $this->token = $token;
         }
+        $this->input = array_merge($this->input, $input);
+        $this->reset();
     }
 
     /**
@@ -94,33 +96,39 @@ class SmsManager
     /**
      * 验证数据
      *
-     * @param array         $input
+     * @param mixed         $input
      * @param \Closure|null $validation
      *
      * @return array
      */
-    public function validateFields(array $input, \Closure $validation = null)
+    public function validateFields($input = null, \Closure $validation = null)
     {
-        $rules = [];
-        $this->input = $input;
+        if (is_callable($input)) {
+            $validation = $input;
+            $input = null;
+        }
+        if (is_array($input)) {
+            $this->input = array_merge($this->input, $input);
+        }
 
+        $rules = [];
         $fields = self::getFields();
         foreach ($fields as $field) {
             if (self::whetherValidateFiled($field)) {
-                $ruleName = isset($this->input[$field . '_rule']) ? $this->input[$field . '_rule'] : '';
+                $ruleName = $this->input($field . '_rule');
                 $rules[$field] = $this->getRealRuleByName($field, $ruleName);
             }
         }
 
         if ($validation) {
-            return call_user_func_array($validation, [$this->input, $rules]);
+            return call_user_func_array($validation, [$this->input(), $rules]);
         }
 
-        if (empty($this->input)) {
+        if (empty($this->input())) {
             return self::generateResult(false, 'empty_data');
         }
 
-        $validator = Validator::make($this->input, $rules);
+        $validator = Validator::make($this->input(), $rules);
         if ($validator->fails()) {
             $messages = $validator->errors();
             foreach ($fields as $field) {
@@ -217,18 +225,15 @@ class SmsManager
     /**
      * 请求验证码短信
      *
-     * @param string $for
-     * @param array  $input
-     *
      * @return array
      */
-    public function requestVerifySms($for, array $input = [])
+    public function requestVerifySms()
     {
-        $this->input = array_merge($this->input, $input);
-
         $minutes = self::getCodeValidMinutes();
         $templates = self::getTemplatesByKey(self::VERIFY_SMS_TEMPLATE_KEY);
+
         $code = $this->verifyCode();
+        $for = $this->input(self::getMobileField());
 
         $content = $this->generateSmsContent($code, $minutes);
         $tplData = $this->generateTemplateData($code, $minutes, 'verify_sms');
@@ -253,18 +258,15 @@ class SmsManager
     /**
      * 请求语音验证码
      *
-     * @param string $for
-     * @param array  $input
-     *
      * @return array
      */
-    public function requestVoiceVerify($for, array $input = [])
+    public function requestVoiceVerify()
     {
-        $this->input = array_merge($this->input, $input);
-
         $minutes = self::getCodeValidMinutes();
         $templates = self::getTemplatesByKey(self::VOICE_VERIFY_TEMPLATE_KEY);
+
         $code = $this->verifyCode();
+        $for = $this->input(self::getMobileField());
 
         $tplData = $this->generateTemplateData($code, $minutes, 'voice_verify');
         $result = PhpSms::voice($code)->template($templates)
@@ -282,6 +284,22 @@ class SmsManager
         }
 
         return self::generateResult(false, 'voice_sent_failure');
+    }
+
+    /**
+     * 获取客户端数据
+     *
+     * @param string|integer|null $key
+     *
+     * @return mixed
+     */
+    public function input($key = null)
+    {
+        if ($key !== null) {
+            return isset($this->input[$key]) ? $this->input[$key] : null;
+        }
+
+        return $this->input;
     }
 
     /**
@@ -475,7 +493,7 @@ class SmsManager
     {
         $content = config('laravel-sms.verifySmsContent');
         if (is_callable($content)) {
-            $result = call_user_func_array($content, [$code, $minutes, $this->input]);
+            $result = call_user_func_array($content, [$code, $minutes, $this->input()]);
 
             return is_string($result) ? $result : '';
         }
@@ -494,17 +512,20 @@ class SmsManager
      */
     protected function generateTemplateData($code, $minutes, $type)
     {
-        $data = config('laravel-sms.templateData', [
+        $tplData = config('laravel-sms.templateData');
+        if (empty($tplData)) {
+            $tplData = [
                 'code'    => $code,
                 'minutes' => $minutes,
-            ]);
-        foreach ($data as $key => $value) {
+            ];
+        }
+        foreach ($tplData as $key => $value) {
             if (is_callable($value)) {
-                $data[$key] = call_user_func_array($value, [$code, $minutes, $this->input, $type]);
+                $tplData[$key] = call_user_func_array($value, [$code, $minutes, $this->input(), $type]);
             }
         }
 
-        return array_filter($data, function ($value) {
+        return array_filter($tplData, function ($value) {
             return $value !== null;
         });
     }
@@ -520,13 +541,34 @@ class SmsManager
     }
 
     /**
+     * 获取手机号的字段名
+     *
+     * @throws LaravelSmsException
+     *
+     * @return string
+     */
+    protected static function getMobileField()
+    {
+        $config = config('laravel-sms.validation', []);
+        foreach ($config as $key => $value) {
+            if (!is_array($value)) {
+                continue;
+            }
+            if (isset($value['isMobile']) && $value['isMobile']) {
+                return $key;
+            }
+        }
+        throw new LaravelSmsException("Don't find the name of mobile field, please define it in config file.");
+    }
+
+    /**
      * 获取存储器
      *
      * @throws LaravelSmsException
      *
      * @return Storage
      */
-    public static function storage()
+    protected static function storage()
     {
         if (self::$storage) {
             return self::$storage;
@@ -548,7 +590,7 @@ class SmsManager
      *
      * @return string
      */
-    public static function getStorageClassName()
+    protected static function getStorageClassName()
     {
         $className = config('laravel-sms.storage.driver', null);
         if ($className && is_string($className)) {

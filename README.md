@@ -125,17 +125,15 @@ use SmsManager;
 $result = SmsManager::validateSendable();
 ```
 
-####validateFields($input[, $validation])
+####validateFields([$input][, $validation])
 
 校验数据合法性，返回数据中会包含错误信息。
 ```php
-$input = $request->all();
-
 //使用内置的验证逻辑
-$result = SmsManager::validateFields($input);
+$result = SmsManager::validateFields();
 
 //自定义验证逻辑
-$result = SmsManager::validateFields($input, function ($fields, $rules) {
+$result = SmsManager::validateFields(function ($fields, $rules) {
     //在这里做你的验证处理，并返回结果...
     //如：
     return Validator::make($fields, $rules);
@@ -144,18 +142,18 @@ $result = SmsManager::validateFields($input, function ($fields, $rules) {
 
 ###2. 发送
 
-####requestVerifySms($mobile[, $input])
+####requestVerifySms()
 
 请求发送验证码短信。
 ```php
-$result = Manager::requestVerifySms('1828034****');
+$result = Manager::requestVerifySms();
 ```
 
-####requestVoiceVerify($mobile[, $input])
+####requestVoiceVerify()
 
 请求发送语音验证码。
 ```php
-$result = Manager::requestVoiceVerify('1828034****');
+$result = Manager::requestVoiceVerify();
 ```
 
 ###3. 发送状态
@@ -217,6 +215,17 @@ $rule = SmsManager::retrieveRule('mobile', 'myRuleName');
 SmsManager::forgetRule('mobile', 'myRuleName');
 ```
 
+###5. 数据管理
+
+####input([$key])
+
+获取客户端传递来的数据。客户端数据会自动注入到配置文件(`laravel-sms.php`)中闭包函数的第三个参数中。
+```php
+//example:
+$mobileRuleName = SmsManager::input('mobile_rule');
+$all = SmsManager::input();
+```
+
 #发送前数据验证
 
 ###1. 声明
@@ -231,29 +240,31 @@ SmsManager::forgetRule('mobile', 'myRuleName');
 
 | 配置项       | 必填  | 说明        |
 | ----------- | :---: | :---------: |
+| isMobile    | 否    | 该数据的是否为手机号码    |
 | enable      | 是    | 服务器端在向第三方服务提供商请求发送验证码短信/语音前是否需要对该数据进行验证 |
 | default     | 否    | 该数据的默认静态验证规则名 |
-| staticRules | 否    | 该数据的所有静态验证规则  |
+| staticRules | 否    | 该数据的所有静态验证规则   |
 
 ####1.2 示例
 
 ```php
 'validation' => [
-    // 内置的mobile参数的验证配置(请不要删除或改动该名称)
+    //内置的mobile参数的验证配置
     'mobile' => [
+        'isMobile'    => true,
         //是否开启该字段的检测:
         'enable'      => true,
         //默认的静态验证规则:
         'default'     => 'mobile_required',
         //静态验证规则:
         'staticRules' => [
-            // name => rule
+            //name => rule
             'mobile_required' => 'required|zh_mobile',
             ...
-        ]
+        ],
     ],
 
-    // 自定义你可能需要验证的字段
+    //自定义你可能需要验证的字段
     'image_captcha' => [
         'enable' => true,
     ],
@@ -317,13 +328,20 @@ SmsManager::forgetRule('mobile', 'myRuleName');
 <script>
 $('#sendVerifySmsButton').sms({
     //laravel csrf token
-    token           : "{{csrf_token()}}",
-    //定义如何获取mobile的值
-    mobile_selector : 'input[name=mobile]',
-    //手机号的检测规则
-    mobile_rule     : 'mobile_required',
+    token       : "{{csrf_token()}}",
+
     //请求间隔时间
-    interval        : 60
+    interval    : 60,
+
+    //请求参数
+    requestData : {
+        //手机号
+        mobile : function () {
+            return $('input[name=mobile]').val();
+        },
+        //手机号的检测规则
+        mobile_rule : 'mobile_required'
+    }
 });
 </script>
 ```
@@ -515,24 +533,20 @@ $('#sendVerifySmsButton').sms({
     //该token仅为laravel框架的csrf验证,不是access_token!
     token           : "{{csrf_token()}}",
 
-    //access token for api
-    access_token    : "",
-
-    //定义如何获取mobile的值
-    mobile_selector : 'input[name=mobile]',
-
-    //手机号的检测规则
-    mobile_rule     : 'mobile_required',
-
     //请求间隔时间
     interval        : 60,
 
     //是否请求语音验证码
     voice           : false,
 
-    //扩展数据，这些数据会提交到服务器
-    extData:        : {
-        //name: value
+    //请求参数
+    requestData : {
+        //手机号
+        mobile : function () {
+            return $('input[name=mobile]').val();
+        },
+        //手机号的检测规则
+        mobile_rule : 'mobile_required'
     }
 
     //定义服务器有消息返回时如何展示，默认为alert
