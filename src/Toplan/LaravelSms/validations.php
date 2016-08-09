@@ -18,13 +18,12 @@ Validator::extend('verify_code', function ($attribute, $value) {
 
 Validator::extend('confirm_rule', function ($attribute, $value, $parameters) {
     $state = SmsManager::retrieveState();
-    $field = isset($parameters[0]) ? $parameters[0] : null;
     $name = null;
-    if (array_key_exists(1, $parameters)) {
-        $name = $parameters[1];
+    if (array_key_exists(0, $parameters)) {
+        $name = $parameters[0];
     } else {
         $name = SmsManager::pathOfUrl(URL::previous());
     }
 
-    return $state && array_key_exists($field, $state['usedRule']) && $state['usedRule'][$field] === $name;
+    return $state && array_key_exists($attribute, $state['usedRule']) && $state['usedRule'][$attribute] == $name;
 });
