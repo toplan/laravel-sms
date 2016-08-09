@@ -302,6 +302,7 @@ class SmsManager
 
         return $this->state;
     }
+
     /**
      * 获取客户端数据
      *
