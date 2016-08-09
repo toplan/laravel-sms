@@ -365,8 +365,8 @@ use SmsManager;
 
 //验证数据
 $validator = Validator::make($request->all(), [
-    'mobile'     => 'required|confirm_mobile_not_change',
-    'verifyCode' => 'required|verify_code|confirm_rule:mobile,mobile_required',
+    'mobile'     => 'required|confirm_mobile_not_change|confirm_rule:mobile_required',
+    'verifyCode' => 'required|verify_code',
     //more...
 ]);
 if ($validator->fails()) {
@@ -386,11 +386,11 @@ if ($validator->fails()) {
 检测用户提交的手机号是否变更。
 
 ####verify_code
-检测验证码是否合法。
+检测验证码是否合法且有效。
 
-####confirm_rule:$field,$ruleName
-检测验证规则是否合法，第一个值为字段名称，第二个值为使用的验证规则的名称。
-如果第二项参数(`$ruleName`)不填写,系统会尝试设置其为前一个访问路径的path。
+####confirm_rule:$ruleName
+检测验证规则是否合法，后面跟的第一个参数为待检测的验证规则的名称。
+如果不填写参数`$ruleName`，系统会尝试设置其为前一个访问路径的path部分。
 
 #数据库日志
 
