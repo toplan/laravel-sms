@@ -289,7 +289,7 @@ class SmsManager
     /**
      * 获取客户端数据
      *
-     * @param string|integer|null $key
+     * @param string|int|null $key
      *
      * @return mixed
      */

@@ -2,7 +2,6 @@
 
 namespace Toplan\Sms;
 
-use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use SmsManager as Manager;
 
