@@ -25,5 +25,5 @@ Validator::extend('confirm_rule', function ($attribute, $value, $parameters) {
         $name = SmsManager::pathOfUrl(URL::previous());
     }
 
-    return $state && array_key_exists($attribute, $state['usedRule']) && $state['usedRule'][$attribute] == $name;
+    return $state && array_key_exists($attribute, $state['usedRule']) && $state['usedRule'][$attribute] === $name;
 });
