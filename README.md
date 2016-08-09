@@ -120,14 +120,14 @@ use SmsManager;
 
 ####validateSendable()
 
-校验是否可进行发送，返回数据中会包含错误信息。
+校验是否可进行发送。如果校验失败，返回数据中会包含错误信息。
 ```php
 $result = SmsManager::validateSendable();
 ```
 
 ####validateFields([$input][, $validation])
 
-校验数据合法性，返回数据中会包含错误信息。
+校验数据合法性。如果校验失败，返回数据中会包含错误信息。
 ```php
 //使用内置的验证逻辑
 $result = SmsManager::validateFields();
@@ -234,7 +234,7 @@ $mobileRuleName = SmsManager::input('mobile_rule');
 $all = SmsManager::input();
 ```
 
-#发送前数据校验
+#发送前数据验证
 
 ###1. 声明
 
