@@ -531,13 +531,13 @@ PhpSms::voice('89093')->to($to)->send();
 $('#sendVerifySmsButton').sms({
     //laravel csrf token
     //该token仅为laravel框架的csrf验证,不是access_token!
-    token           : "{{csrf_token()}}",
+    token       : "{{csrf_token()}}",
 
     //请求间隔时间
-    interval        : 60,
+    interval    : 60,
 
     //是否请求语音验证码
-    voice           : false,
+    voice       : false,
 
     //请求参数
     requestData : {
@@ -550,7 +550,7 @@ $('#sendVerifySmsButton').sms({
     }
 
     //定义服务器有消息返回时如何展示，默认为alert
-    alertMsg        : function (msg, type) {
+    alertMsg    : function (msg, type) {
         alert(msg);
     }
 });
