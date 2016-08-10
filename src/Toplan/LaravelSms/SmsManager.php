@@ -417,7 +417,7 @@ class SmsManager
      * @param string      $field
      * @param string|null $name
      *
-     * @return string
+     * @return string|null
      */
     public function retrieveRule($field, $name = null)
     {
@@ -427,7 +427,7 @@ class SmsManager
             return $allRules;
         }
 
-        return isset($allRules[$name]) ? $allRules[$name] : '';
+        return isset($allRules[$name]) ? $allRules[$name] : null;
     }
 
     /**
@@ -445,18 +445,33 @@ class SmsManager
     /**
      * 从存储器中删除指定字段的指定名称的动态验证规则
      *
-     * @param string $field
-     * @param string $name
+     * @param string      $field
+     * @param string|null $name
      */
-    public function forgetRule($field, $name)
+    public function forgetRule($field, $name = null)
     {
-        $allRules = $this->retrieveRules($field);
-        if (!isset($allRules[$name])) {
-            return;
+        $allRules = [];
+        if (!(empty($name))) {
+            $allRules = $this->retrieveRules($field);
+            if (!isset($allRules[$name])) {
+                return;
+            }
+            unset($allRules[$name]);
         }
-        unset($allRules[$name]);
         $key = self::generateKey(self::DYNAMIC_RULE_KEY, $field);
         self::storage()->set($key, $allRules);
+    }
+
+    /**
+     * 从存储中获取指定字段的所有验证规则
+     *
+     * @param string $field
+     *
+     * @return array
+     */
+    public function forgetRules($field)
+    {
+        $this->forgetRule($field);
     }
 
     /**
@@ -645,13 +660,13 @@ class SmsManager
      * @param $field
      * @param $ruleName
      *
-     * @return string
+     * @return string|null
      */
     protected static function getStaticRule($field, $ruleName)
     {
         $data = self::getValidationConfigByField($field);
 
-        return isset($data['staticRules'][$ruleName]) ? $data['staticRules'][$ruleName] : '';
+        return isset($data['staticRules'][$ruleName]) ? $data['staticRules'][$ruleName] : null;
     }
 
     /**

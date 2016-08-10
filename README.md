@@ -120,14 +120,14 @@ use SmsManager;
 
 ####validateSendable()
 
-校验是否可进行发送。如果校验失败，返回数据中会包含错误信息。
+校验是否可进行发送。如果校验未通过，返回数据中会包含错误信息。
 ```php
 $result = SmsManager::validateSendable();
 ```
 
 ####validateFields([$input][, $validation])
 
-校验数据合法性。如果校验失败，返回数据中会包含错误信息。
+校验数据合法性。如果校验未通过，返回数据中会包含错误信息。
 ```php
 //使用内置的验证逻辑
 $result = SmsManager::validateFields();
@@ -184,7 +184,7 @@ SmsManager::forgetState();
 
 ####storeRule($field[, $name], $rule);
 
-定义数据的动态验证规则。
+定义客户端数据（字段）的动态验证规则。
 ```php
 //方式1:
 //如果不设置name,那么name默认为当前访问路径的path部分
@@ -202,25 +202,32 @@ SmsManager::storeRule('mobile', [
 
 > 存储的动态验证规则可通过访问`your-domain/laravel-sms/info`查看。动态验证规则的名称最好不要和静态验证规则同名,因为静态验证规则的优先级更高。
 
-####retrieveRules($field)
+####retrieveRule($field[, $name])
 
-获取某项数据的所有动态验证规则。
-```php
-$rules = SmsManager::retrieveRules('mobile');
-```
-
-####retrieveRule($field, $name)
-
-获取某项数据的指定名称的动态验证规则。
+获取字段的指定名称的动态验证规则。
 ```php
 $rule = SmsManager::retrieveRule('mobile', 'myRuleName');
 ```
 
-####forgetRule($field, $name)
+####retrieveRules($field)
 
-删除某项数据的指定名称的动态验证规则。
+获取字段的所有动态验证规则。
+```php
+$rules = SmsManager::retrieveRules('mobile');
+```
+
+####forgetRule($field[, $name])
+
+删除字段的指定名称的动态验证规则。
 ```php
 SmsManager::forgetRule('mobile', 'myRuleName');
+```
+
+###forgetRules($field)
+
+删除字段的所有动态验证规则。
+```php
+SmsManager::forgetRules('mobile');
 ```
 
 ###5. 客户端数据

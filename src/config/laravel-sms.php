@@ -89,7 +89,7 @@ return [
     | - 字符串
     |   如: '【your app signature】亲爱的用户，您的验证码是%s。有效期为%s分钟，请尽快验证。'
     |
-    | - 返回字符串的函数
+    | - 返回字符串的匿名函数
     |   如: function ($code, $minutes, $input) {
     |           return '...';
     |       }
@@ -109,7 +109,7 @@ return [
     | - 基本数据类型
     |   如: 'minutes' => 5
     |
-    | - 返回值的函数（如果不返回任何值，即表示不使用该项数据）
+    | - 匿名函数（如果该函数不返回任何值，即表示不使用该项数据）
     |   如: 'serialNumber' => function ($code, $minutes, $input, $type) {
     |           return $input['serialNumber'];
     |       }
