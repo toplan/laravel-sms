@@ -147,7 +147,7 @@ php artisan vendor:publish
 
 ###2. 使用
 
-> 静态验证规则和动态验证规则的使用方法一致。
+静态验证规则和动态验证规则的使用方法一致。
 
 ####2.1 客户端
 
@@ -487,7 +487,7 @@ $rules = SmsManager::retrieveRules('mobile');
 SmsManager::forgetRule('mobile', 'myRuleName');
 ```
 
-###forgetRules($field)
+####forgetRules($field)
 
 删除字段的所有动态验证规则。
 ```php
