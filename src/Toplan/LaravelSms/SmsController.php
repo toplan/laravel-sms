@@ -2,44 +2,41 @@
 
 namespace Toplan\Sms;
 
-use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use SmsManager as Manager;
 
 class SmsController extends Controller
 {
-    public function postVoiceVerify(Request $request)
+    public function postVoiceVerify()
     {
-        $mobile = $request->input('mobile', null);
-        $interval = $request->input('interval', 60);
+        $res = Manager::validateSendable();
+        if (!$res['success']) {
+            return response()->json($res);
+        }
 
-        $res = Manager::validateSendable($interval);
+        $res = Manager::validateFields();
         if (!$res['success']) {
             return response()->json($res);
         }
-        $res = Manager::validateFields($request->all());
-        if (!$res['success']) {
-            return response()->json($res);
-        }
-        $res = Manager::requestVoiceVerify($mobile, $interval);
+
+        $res = Manager::requestVoiceVerify();
 
         return response()->json($res);
     }
 
-    public function postSendCode(Request $request)
+    public function postSendCode()
     {
-        $mobile = $request->input('mobile', null);
-        $interval = $request->input('interval', 60);
+        $res = Manager::validateSendable();
+        if (!$res['success']) {
+            return response()->json($res);
+        }
 
-        $res = Manager::validateSendable($interval);
+        $res = Manager::validateFields();
         if (!$res['success']) {
             return response()->json($res);
         }
-        $res = Manager::validateFields($request->all());
-        if (!$res['success']) {
-            return response()->json($res);
-        }
-        $res = Manager::requestVerifySms($mobile, $interval);
+
+        $res = Manager::requestVerifySms();
 
         return response()->json($res);
     }

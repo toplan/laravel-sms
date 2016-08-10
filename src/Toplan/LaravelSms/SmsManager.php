@@ -3,11 +3,12 @@
 namespace Toplan\Sms;
 
 use PhpSms;
+use URL;
 use Validator;
 
 class SmsManager
 {
-    const VERSION = '2.4.0';
+    const VERSION = '2.5.0';
 
     const STATE_KEY = '_state';
 
@@ -41,16 +42,25 @@ class SmsManager
     protected $state = [];
 
     /**
+     * 客户端数据
+     *
+     * @var array
+     */
+    protected $input = [];
+
+    /**
      * Constructor
      *
      * @param string|null $token
+     * @param array       $input
      */
-    public function __construct($token = null)
+    public function __construct($token = null, array $input = [])
     {
-        $this->reset();
         if ($token && is_string($token)) {
             $this->token = $token;
         }
+        $this->input = array_merge($this->input, $input);
+        $this->reset();
     }
 
     /**
@@ -69,51 +79,61 @@ class SmsManager
     }
 
     /**
-     * 是否可发送短信/语音
+     * 验证是否可发送
      *
-     * @param int $interval
-     *
-     * @return bool
+     * @return array
      */
-    public function validateSendable($interval)
+    public function validateSendable()
     {
-        $interval = intval($interval);
         $time = $this->getCanResendTime();
         if ($time <= time()) {
             return self::generateResult(true, 'can_send');
         }
 
-        return self::generateResult(false, 'request_invalid', [$interval]);
+        return self::generateResult(false, 'request_invalid', [self::getInterval()]);
     }
 
     /**
      * 验证数据
      *
-     * @param array $data
+     * @param mixed         $input
+     * @param \Closure|null $validation
      *
      * @return array
      */
-    public function validateFields(array $data)
+    public function validateFields($input = null, \Closure $validation = null)
     {
-        if (empty($data)) {
-            return self::generateResult(false, 'empty_data');
+        if (is_callable($input)) {
+            $validation = $input;
+            $input = null;
+        }
+        if (is_array($input)) {
+            $this->input = array_merge($this->input, $input);
         }
 
-        $dataForValidator = [];
+        $rules = [];
         $fields = self::getFields();
         foreach ($fields as $field) {
             if (self::whetherValidateFiled($field)) {
-                $ruleName = isset($data[$field . '_rule']) ? $data[$field . '_rule'] : '';
-                $dataForValidator[$field] = $this->getRealRuleByName($field, $ruleName);
+                $ruleName = $this->input($field . '_rule');
+                $rules[$field] = $this->getRealRuleByName($field, $ruleName);
             }
         }
-        $validator = Validator::make($data, $dataForValidator);
 
+        if ($validation) {
+            return call_user_func_array($validation, [$this->input(), $rules]);
+        }
+
+        if (empty($this->input())) {
+            return self::generateResult(false, 'empty_data');
+        }
+
+        $validator = Validator::make($this->input(), $rules);
         if ($validator->fails()) {
             $messages = $validator->errors();
             foreach ($fields as $field) {
                 if ($messages->has($field)) {
-                    $rule = $this->getNameOfUsedRule($field);
+                    $rule = $this->usedRule($field);
                     $msg = $messages->first($field);
 
                     return self::generateResult(false, $rule, $msg);
@@ -127,9 +147,9 @@ class SmsManager
     /**
      * 根据规则名获取真实的验证规则
      *
-     * 首先尝试使用用户从客户端传递过来的rule
-     * 其次尝试使用在服务器端存储过rule
-     * 最后尝试使用配置文件中默认rule
+     * - 首先尝试使用指定名称的静态验证规则
+     * - 其次尝试使用指定名称的动态验证规则
+     * - 最后尝试使用配置文件中的默认静态验证规则
      *
      * @param string $field
      * @param string $ruleName
@@ -139,12 +159,7 @@ class SmsManager
     protected function getRealRuleByName($field, $ruleName)
     {
         if (empty($ruleName) || !is_string($ruleName)) {
-            try {
-                $parsed = parse_url(url()->previous());
-                $ruleName = $parsed['path'];
-            } catch (\Exception $e) {
-                $ruleName = '';
-            }
+            $ruleName = self::pathOfUrl(URL::previous());
         }
         if ($staticRule = $this->getStaticRule($field, $ruleName)) {
             $this->useRule($field, $ruleName);
@@ -167,21 +182,7 @@ class SmsManager
     }
 
     /**
-     * 获取使用的规则的别名
-     *
-     * @param string $field
-     *
-     * @throws LaravelSmsException
-     *
-     * @return string
-     */
-    protected function getNameOfUsedRule($field)
-    {
-        return isset($this->state['usedRule'][$field]) ? $this->state['usedRule'][$field] : '';
-    }
-
-    /**
-     * 通过规则名称设置指定数据使用的验证规则
+     * 设置指定字段使用的验证规则名称
      *
      * @param string $field
      * @param string $name
@@ -192,22 +193,53 @@ class SmsManager
     }
 
     /**
-     * 请求验证码短信
+     * 获取设置指定字段使用的验证规则名称
      *
-     * @param string $for
-     * @param int    $interval
+     * @param string $field
+     *
+     * @return string
+     */
+    protected function usedRule($field)
+    {
+        return isset($this->state['usedRule'][$field]) ? $this->state['usedRule'][$field] : '';
+    }
+
+    /**
+     * 生成待发生的验证码
+     *
+     * @return string
+     */
+    protected function verifyCode()
+    {
+        if (config('laravel-sms.verifyCode.repeatIfValid', false)) {
+            $state = $this->retrieveState();
+            //如果在未来60秒内都还有效，那么重复使用该验证码
+            if (!(empty($state)) && $state['deadline'] >= time() + 60) {
+                return $state['code'];
+            }
+        }
+
+        return self::generateCode();
+    }
+
+    /**
+     * 请求验证码短信
      *
      * @return array
      */
-    public function requestVerifySms($for, $interval)
+    public function requestVerifySms()
     {
-        $code = self::generateCode();
         $minutes = self::getCodeValidMinutes();
         $templates = self::getTemplatesByKey(self::VERIFY_SMS_TEMPLATE_KEY);
-        $content = self::generateSmsContent([$code, $minutes]);
+
+        $code = $this->verifyCode();
+        $for = $this->input(self::getMobileField());
+
+        $content = $this->generateSmsContent($code, $minutes);
+        $tplData = $this->generateTemplateData($code, $minutes, 'verify_sms');
+
         $result = PhpSms::make($templates)->to($for)
-            ->data(['code' => $code, 'minutes' => $minutes])
-            ->content($content)->send();
+            ->data($tplData)->content($content)->send();
 
         if ($result === null || $result === true || (isset($result['success']) && $result['success'])) {
             $this->state['sent'] = true;
@@ -215,7 +247,7 @@ class SmsManager
             $this->state['code'] = $code;
             $this->state['deadline'] = time() + ($minutes * 60);
             $this->storeState();
-            $this->setCanResendAfter($interval);
+            $this->setCanResendAfter(self::getInterval());
 
             return self::generateResult(true, 'sms_sent_success');
         }
@@ -226,18 +258,19 @@ class SmsManager
     /**
      * 请求语音验证码
      *
-     * @param string $for
-     * @param int    $interval
-     *
      * @return array
      */
-    public function requestVoiceVerify($for, $interval)
+    public function requestVoiceVerify()
     {
-        $code = self::generateCode();
         $minutes = self::getCodeValidMinutes();
         $templates = self::getTemplatesByKey(self::VOICE_VERIFY_TEMPLATE_KEY);
+
+        $code = $this->verifyCode();
+        $for = $this->input(self::getMobileField());
+
+        $tplData = $this->generateTemplateData($code, $minutes, 'voice_verify');
         $result = PhpSms::voice($code)->template($templates)
-            ->data(['code' => $code])->to($for)->send();
+            ->data($tplData)->to($for)->send();
 
         if ($result === null || $result === true || (isset($result['success']) && $result['success'])) {
             $this->state['sent'] = true;
@@ -245,7 +278,7 @@ class SmsManager
             $this->state['code'] = $code;
             $this->state['deadline'] = time() + ($minutes * 60);
             $this->storeState();
-            $this->setCanResendAfter($interval);
+            $this->setCanResendAfter(self::getInterval());
 
             return self::generateResult(true, 'voice_sent_success');
         }
@@ -254,11 +287,43 @@ class SmsManager
     }
 
     /**
-     * 存储发送状态
+     * 获取当前的发送状态(非持久化的)
      *
-     * @throws LaravelSmsException
+     * @param string|int|null $key
+     * @param mixed           $default
+     *
+     * @return mixed
      */
-    public function storeState()
+    public function state($key = null, $default = null)
+    {
+        if ($key !== null) {
+            return isset($this->state[$key]) ? $this->state[$key] : $default;
+        }
+
+        return $this->state;
+    }
+
+    /**
+     * 获取客户端数据
+     *
+     * @param string|int|null $key
+     * @param mixed           $default
+     *
+     * @return mixed
+     */
+    public function input($key = null, $default = null)
+    {
+        if ($key !== null) {
+            return isset($this->input[$key]) ? $this->input[$key] : $default;
+        }
+
+        return $this->input;
+    }
+
+    /**
+     * 存储发送状态
+     */
+    protected function storeState()
     {
         $key = self::generateKey(self::STATE_KEY);
         self::storage()->set($key, $this->state);
@@ -336,17 +401,33 @@ class SmsManager
             $name = null;
         }
         if (empty($name) || !is_string($name)) {
-            try {
-                $parsed = parse_url(url()->current());
-                $name = $parsed['path'];
-            } catch (\Exception $e) {
-                throw new LaravelSmsException("Failed to store the custom mobile for field [$field], please set a name for custom rule.");
-            }
+            $name = self::pathOfUrl(URL::current(), function ($e) use ($field) {
+                throw new LaravelSmsException("Failed to store the dynamic rule for [$field] field, please give a name for it.");
+            });
         }
         $allRules = $this->retrieveRules($field);
         $allRules[$name] = $rule;
         $key = self::generateKey(self::DYNAMIC_RULE_KEY, $field);
         self::storage()->set($key, $allRules);
+    }
+
+    /**
+     * 从存储器中获取指定字段的指定名称的动态验证规则
+     *
+     * @param string      $field
+     * @param string|null $name
+     *
+     * @return string|null
+     */
+    public function retrieveRule($field, $name = null)
+    {
+        $key = self::generateKey(self::DYNAMIC_RULE_KEY, $field);
+        $allRules = self::storage()->get($key, []);
+        if (empty($name)) {
+            return $allRules;
+        }
+
+        return isset($allRules[$name]) ? $allRules[$name] : null;
     }
 
     /**
@@ -358,43 +439,39 @@ class SmsManager
      */
     public function retrieveRules($field)
     {
-        $key = self::generateKey(self::DYNAMIC_RULE_KEY, $field);
-
-        return self::storage()->get($key, []);
-    }
-
-    /**
-     * 从存储器中获取指定字段的指定名称的动态验证规则
-     *
-     * @param string $field
-     * @param string $name
-     *
-     * @return string
-     */
-    public function retrieveRule($field, $name)
-    {
-        $allRules = $this->retrieveRules($field);
-
-        return isset($allRules[$name]) ? $allRules[$name] : '';
+        return $this->retrieveRule($field);
     }
 
     /**
      * 从存储器中删除指定字段的指定名称的动态验证规则
      *
-     * @param string $field
-     * @param string $name
-     *
-     * @throws LaravelSmsException
+     * @param string      $field
+     * @param string|null $name
      */
-    public function forgetRule($field, $name)
+    public function forgetRule($field, $name = null)
     {
-        $allRules = $this->retrieveRules($field);
-        if (!isset($allRules[$name])) {
-            return;
+        $allRules = [];
+        if (!(empty($name))) {
+            $allRules = $this->retrieveRules($field);
+            if (!isset($allRules[$name])) {
+                return;
+            }
+            unset($allRules[$name]);
         }
-        unset($allRules[$name]);
         $key = self::generateKey(self::DYNAMIC_RULE_KEY, $field);
         self::storage()->set($key, $allRules);
+    }
+
+    /**
+     * 从存储中获取指定字段的所有验证规则
+     *
+     * @param string $field
+     *
+     * @return array
+     */
+    public function forgetRules($field)
+    {
+        $this->forgetRule($field);
     }
 
     /**
@@ -424,17 +501,66 @@ class SmsManager
     protected function generateKey()
     {
         $split = '.';
-        $prefix = config('laravel-sms.prefix', 'laravel_sms');
+        $prefix = config('laravel-sms.storage.prefix', 'laravel_sms');
         $args = func_get_args();
         array_unshift($args, $this->token);
         $args = array_filter($args, function ($value) {
             return $value && is_string($value);
         });
-        if (count($args)) {
+        if (!(empty($args))) {
             $prefix .= $split . implode($split, $args);
         }
 
         return $prefix;
+    }
+
+    /**
+     * 生成验证码短信通用内容
+     *
+     * @param string $code
+     * @param int    $minutes
+     *
+     * @return string
+     */
+    protected function generateSmsContent($code, $minutes)
+    {
+        $content = config('laravel-sms.verifySmsContent');
+        if (is_callable($content)) {
+            $result = call_user_func_array($content, [$code, $minutes, $this->input()]);
+
+            return is_string($result) ? $result : '';
+        }
+
+        return self::vsprintf($content, [$code, $minutes]);
+    }
+
+    /**
+     * 生成模版数据
+     *
+     * @param string $code
+     * @param int    $minutes
+     * @param string $type
+     *
+     * @return array
+     */
+    protected function generateTemplateData($code, $minutes, $type)
+    {
+        $tplData = config('laravel-sms.templateData');
+        if (empty($tplData)) {
+            $tplData = [
+                'code'    => $code,
+                'minutes' => $minutes,
+            ];
+        }
+        foreach ($tplData as $key => $value) {
+            if (is_callable($value)) {
+                $tplData[$key] = call_user_func_array($value, [$code, $minutes, $this->input(), $type]);
+            }
+        }
+
+        return array_filter($tplData, function ($value) {
+            return $value !== null;
+        });
     }
 
     /**
@@ -445,6 +571,27 @@ class SmsManager
     protected static function getFields()
     {
         return array_keys(config('laravel-sms.validation', []));
+    }
+
+    /**
+     * 获取手机号的字段名
+     *
+     * @throws LaravelSmsException
+     *
+     * @return string
+     */
+    protected static function getMobileField()
+    {
+        $config = config('laravel-sms.validation', []);
+        foreach ($config as $key => $value) {
+            if (!is_array($value)) {
+                continue;
+            }
+            if (isset($value['isMobile']) && $value['isMobile']) {
+                return $key;
+            }
+        }
+        throw new LaravelSmsException("Don't find the name of mobile field, please define it in config file.");
     }
 
     /**
@@ -461,11 +608,11 @@ class SmsManager
         }
         $className = self::getStorageClassName();
         if (!class_exists($className)) {
-            throw new LaravelSmsException("Failed to generator store, the class [$className] does not exists.");
+            throw new LaravelSmsException("Generate storage failed, the class [$className] does not exists.");
         }
         $store = new $className();
         if (!($store instanceof Storage)) {
-            throw new LaravelSmsException("Failed to generator store, the class [$className] does not implement the interface [Toplan\\Sms\\Storage].");
+            throw new LaravelSmsException("Generate storage failed, the class [$className] does not implement the interface [Toplan\\Sms\\Storage].");
         }
 
         return self::$storage = $store;
@@ -478,17 +625,19 @@ class SmsManager
      */
     protected static function getStorageClassName()
     {
-        $className = config('laravel-sms.storage', null);
+        $className = config('laravel-sms.storage.driver', null);
         if ($className && is_string($className)) {
             return $className;
         }
-        $middleware = config('laravel-sms.middleware', 'web');
+        $middleware = config('laravel-sms.routeAttributes.middleware', null);
         if ($middleware === 'web' || (is_array($middleware) && in_array('web', $middleware))) {
             return 'Toplan\Sms\SessionStorage';
         }
         if ($middleware === 'api' || (is_array($middleware) && in_array('api', $middleware))) {
             return 'Toplan\Sms\CacheStorage';
         }
+
+        return 'Toplan\Sms\SessionStorage';
     }
 
     /**
@@ -511,13 +660,13 @@ class SmsManager
      * @param $field
      * @param $ruleName
      *
-     * @return string
+     * @return string|null
      */
     protected static function getStaticRule($field, $ruleName)
     {
         $data = self::getValidationConfigByField($field);
 
-        return isset($data['staticRules'][$ruleName]) ? $data['staticRules'][$ruleName] : '';
+        return isset($data['staticRules'][$ruleName]) ? $data['staticRules'][$ruleName] : null;
     }
 
     /**
@@ -549,7 +698,7 @@ class SmsManager
         if (isset($data[$field])) {
             return $data[$field];
         }
-        throw new LaravelSmsException("Don't find validation config for the field [$field] in config file, please define it.");
+        throw new LaravelSmsException("Don't find configuration information for [$field] field in config file, please define it.");
     }
 
     /**
@@ -564,7 +713,7 @@ class SmsManager
         $fields = self::getFields();
         if (!in_array($name, $fields)) {
             $names = implode(',', $fields);
-            throw new LaravelSmsException("The field name [$name] is illegal, must be one of [$names].");
+            throw new LaravelSmsException("The field name [$name] is illegal, because field name must be one of [$names].");
         }
     }
 
@@ -581,26 +730,12 @@ class SmsManager
         $scheme = PhpSms::scheme();
         $config = PhpSms::config();
         foreach (array_keys($scheme) as $name) {
-            if (isset($config[$name])) {
-                if (isset($config[$name][$key])) {
-                    $templates[$name] = $config[$name][$key];
-                }
+            if (isset($config[$name][$key])) {
+                $templates[$name] = $config[$name][$key];
             }
         }
 
         return $templates;
-    }
-
-    /**
-     * 生成验证码短信通用内容
-     *
-     * @param array $data
-     *
-     * @return string
-     */
-    protected static function generateSmsContent(array $data = [])
-    {
-        return self::vsprintf(config('laravel-sms.verifySmsContent'), $data);
     }
 
     /**
@@ -613,7 +748,7 @@ class SmsManager
      */
     protected static function generateCode($length = null, $characters = null)
     {
-        $length = (int) ($length ?: config('laravel-sms.codeLength', 5));
+        $length = (int) ($length ?: config('laravel-sms.verifyCode.length', 5));
         $characters = (string) ($characters ?: '0123456789');
         $charLength = strlen($characters);
         $randomString = '';
@@ -631,56 +766,7 @@ class SmsManager
      */
     protected static function getCodeValidMinutes()
     {
-        return (int) config('laravel-sms.codeValidMinutes', 5);
-    }
-
-    /**
-     * 合成结果数组
-     *
-     * @param bool   $pass
-     * @param string $type
-     * @param string $message
-     * @param array  $data
-     *
-     * @return array
-     */
-    protected static function generateResult($pass, $type, $message = '', $data = [])
-    {
-        $result = [];
-        $result['success'] = (bool) $pass;
-        $result['type'] = $type;
-        if (is_array($message)) {
-            $data = $message;
-            $message = '';
-        }
-        $message = $message ?: self::getNotifyMessage($type);
-        $result['message'] = self::vsprintf($message, $data);
-
-        return $result;
-    }
-
-    /**
-     * 根据模版和数据合成字符串
-     *
-     * @param string $template
-     * @param array  $data
-     *
-     * @return string
-     */
-    protected static function vsprintf($template, array $data)
-    {
-        if (!is_string($template)) {
-            return '';
-        }
-        if ($template && count($data)) {
-            try {
-                $template = vsprintf($template, $data);
-            } catch (\Exception $e) {
-                // swallow exception
-            }
-        }
-
-        return $template;
+        return (int) config('laravel-sms.verifyCode.validMinutes', 5);
     }
 
     /**
@@ -698,5 +784,93 @@ class SmsManager
         }
 
         return $name;
+    }
+
+    /**
+     * 从配置文件获取可再次请求的最小时间间隔(秒)
+     *
+     * @return int
+     */
+    protected static function getInterval()
+    {
+        return (int) config('laravel-sms.interval', 60);
+    }
+
+    /**
+     * 合成结果数组
+     *
+     * @param bool   $pass
+     * @param string $type
+     * @param string $message
+     * @param array  $data
+     *
+     * @return array
+     */
+    public static function generateResult($pass, $type, $message = '', $data = [])
+    {
+        $result = [];
+        $result['success'] = (bool) $pass;
+        $result['type'] = $type;
+        if (is_array($message)) {
+            $data = $message;
+            $message = '';
+        }
+        $message = $message ?: self::getNotifyMessage($type);
+        $result['message'] = self::vsprintf($message, $data);
+
+        return $result;
+    }
+
+    /**
+     * 根据模版和数据合成字符串
+     *
+     * @param string        $template
+     * @param array         $data
+     * @param \Closure|null $onError
+     *
+     * @return string
+     */
+    public static function vsprintf($template, array $data, \Closure $onError = null)
+    {
+        if (!is_string($template)) {
+            return '';
+        }
+        if ($template && !(empty($data))) {
+            try {
+                $template = vsprintf($template, $data);
+            } catch (\Exception $e) {
+                if ($onError) {
+                    call_user_func($onError, $e);
+                }
+            }
+        }
+
+        return $template;
+    }
+
+    /**
+     * 获取路径中的path部分
+     *
+     * @param string        $url
+     * @param \Closure|null $onError
+     *
+     * @return string
+     */
+    public static function pathOfUrl($url, \Closure $onError = null)
+    {
+        $path = '';
+        if (!is_string($url)) {
+            return $path;
+        }
+        try {
+            $parsed = parse_url($url);
+            $path = $parsed['path'];
+        } catch (\Exception $e) {
+            if ($onError) {
+                call_user_func($onError, $e);
+            }
+        }
+
+        return $path;
     }
 }
