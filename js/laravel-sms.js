@@ -16,18 +16,15 @@
         );
         _this = this;
 
-        _this.on('click', function(e) {
-            btnOriginContent = _this.html() || _this.val() || ''
+        _this.on('click', function (e) {
+            btnOriginContent = _this.html() || _this.val() || '';
             changeBtn('短信发送中...', true);
             sendSms(opts);
         });
     };
 
     function sendSms(opts) {
-        var url = opts.domain + '/laravel-sms/verify-code';
-        if (opts.voice) {
-            url = opts.domain + '/laravel-sms/voice-verify';
-        }
+        var url = getUrl(opts);
         var requestData = getRequestData(opts);
 
         $.ajax({
@@ -47,6 +44,15 @@
                 opts.alertMsg.call(null, '请求失败，请重试', 'request_failure');
             }
         });
+    }
+
+    function getUrl(opts) {
+        var domain = opts.domain || '';
+        var prefix = opts.prefix || 'laravel-sms';
+        if (opts.voice) {
+            return domain + '/' + prefix + '/voice-verify';
+        }
+        return domain + '/' + prefix + '/verify-code';
     }
 
     function getRequestData(opts) {
@@ -85,14 +91,12 @@
     }
 
     $.fn.sms.defaults = {
-        token       : '',
+        token       : null,
         interval    : 60,
         voice       : false,
-        domain      : '',
-        requestData : {
-            mobile      : '',
-            mobile_rule : ''
-        },
+        domain      : null,
+        prefix      : 'laravel-sms',
+        requestData : null,
         alertMsg    : function (msg, type) {
             alert(msg);
         }
