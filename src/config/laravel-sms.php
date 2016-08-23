@@ -77,6 +77,7 @@ return [
         'length'        => 5,
         'validMinutes'  => 5,
         'repeatIfValid' => false,
+        'attemptLimit'  => true,
         'maxAttempt'    => 3,
     ],
 
