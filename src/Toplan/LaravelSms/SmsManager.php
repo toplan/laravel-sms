@@ -331,6 +331,16 @@ class SmsManager
     }
 
     /**
+     * 更新发送状态
+     */
+    public function updateState($state)
+    {
+        $key = self::generateKey(self::STATE_KEY);
+        self::storage()->set($key, $state);
+        $this->reset();
+    }
+
+    /**
      * 从存储器中获取发送状态
      *
      * @return array
