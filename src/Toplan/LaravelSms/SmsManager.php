@@ -246,7 +246,7 @@ class SmsManager
             $this->state['to'] = $for;
             $this->state['code'] = $code;
             $this->state['deadline'] = time() + ($minutes * 60);
-            $this->state['attempt'] = 0;
+            $this->state['attempts'] = 0;
             $this->storeState();
             $this->setCanResendAfter(self::getInterval());
 
