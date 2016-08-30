@@ -8,7 +8,7 @@ use Validator;
 
 class SmsManager
 {
-    const VERSION = '2.5.0';
+    const VERSION = '2.5.1';
 
     const STATE_KEY = '_state';
 
@@ -335,11 +335,11 @@ class SmsManager
      */
     public function updateState($name, $value)
     {
-        $state = $this->retrieveState()
+        $state = $this->retrieveState();
         if (is_array($name)) {
-            $state = array_merge($state, $name)
+            $state = array_merge($state, $name);
         } elseif (is_string($name)) {
-            $state[$name] = $value
+            $state[$name] = $value;
         }
         $key = self::generateKey(self::STATE_KEY);
         self::storage()->set($key, $state);
@@ -355,7 +355,7 @@ class SmsManager
         $key = self::generateKey(self::STATE_KEY);
         $state = self::storage()->get($key, []);
         if ($name !== null) {
-            return isset($state[$name]) ? $state[$name] : null
+            return isset($state[$name]) ? $state[$name] : null;
         }
 
         return $state;
