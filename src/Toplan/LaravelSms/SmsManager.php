@@ -75,6 +75,7 @@ class SmsManager
             'code'     => null,
             'deadline' => 0,
             'usedRule' => array_fill_keys($fields, null),
+            'attempts' => 0,
         ];
     }
 
@@ -331,15 +332,34 @@ class SmsManager
     }
 
     /**
+     * 更新发送状态
+     */
+    public function updateState($name, $value)
+    {
+        $state = $this->retrieveState()
+        if (is_array($name)) {
+            $state = array_merge($state, $name)
+        } elseif (is_string($name)) {
+            $state[$name] = $value
+        }
+        $key = self::generateKey(self::STATE_KEY);
+        self::storage()->set($key, $state);
+    }
+
+    /**
      * 从存储器中获取发送状态
      *
      * @return array
      */
-    public function retrieveState()
+    public function retrieveState($name)
     {
         $key = self::generateKey(self::STATE_KEY);
+        $state = self::storage()->get($key, []);
+        if ($name !== null) {
+            return isset($state[$name]) ? $state[$name] : null
+        }
 
-        return self::storage()->get($key, []);
+        return $state;
     }
 
     /**
