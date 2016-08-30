@@ -326,8 +326,7 @@ class SmsManager
      */
     protected function storeState()
     {
-        $key = self::generateKey(self::STATE_KEY);
-        self::storage()->set($key, $this->state);
+        $this->updateState($this->state);
         $this->reset();
     }
 
