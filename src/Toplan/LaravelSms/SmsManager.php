@@ -75,6 +75,7 @@ class SmsManager
             'code'     => null,
             'deadline' => 0,
             'usedRule' => array_fill_keys($fields, null),
+            'attempts' => 0,
         ];
     }
 
@@ -246,7 +247,6 @@ class SmsManager
             $this->state['to'] = $for;
             $this->state['code'] = $code;
             $this->state['deadline'] = time() + ($minutes * 60);
-            $this->state['attempts'] = 0;
             $this->storeState();
             $this->setCanResendAfter(self::getInterval());
 
@@ -334,11 +334,16 @@ class SmsManager
     /**
      * 更新发送状态
      */
-    public function updateState($state)
+    public function updateState($name, $value)
     {
+        $state = $this->retrieveState()
+        if (is_array($name)) {
+            $state = array_merge($state, $name)
+        } elseif (is_string($name)) {
+            $state[$name] = $value
+        }
         $key = self::generateKey(self::STATE_KEY);
         self::storage()->set($key, $state);
-        $this->reset();
     }
 
     /**
@@ -346,11 +351,15 @@ class SmsManager
      *
      * @return array
      */
-    public function retrieveState()
+    public function retrieveState($name)
     {
         $key = self::generateKey(self::STATE_KEY);
+        $state = self::storage()->get($key, []);
+        if ($name !== null) {
+            return isset($state[$name]) ? $state[$name] : null
+        }
 
-        return self::storage()->get($key, []);
+        return $state;
     }
 
     /**

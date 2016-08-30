@@ -72,7 +72,7 @@ return [
     | repeatIfValid: Boolean
     | 如果原验证码还有效，是否重复使用原验证码
     |
-    | attemptLimit: Int
+    | maxAttempts: Int
     | 验证码最大尝试验证次数，超过该数值验证码自动失效，0或负数表示不启用本选项
     |
     */
@@ -80,7 +80,7 @@ return [
         'length'        => 5,
         'validMinutes'  => 5,
         'repeatIfValid' => false,
-        'attemptLimit'  => 0,
+        'maxAttempts'   => 0,
     ],
 
     /*
