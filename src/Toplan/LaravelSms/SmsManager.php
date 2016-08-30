@@ -332,8 +332,11 @@ class SmsManager
 
     /**
      * 更新发送状态
+     *
+     * @param string|array $name
+     * @param mixed        $value
      */
-    public function updateState($name, $value)
+    public function updateState($name, $value = null)
     {
         $state = $this->retrieveState();
         if (is_array($name)) {
@@ -348,9 +351,11 @@ class SmsManager
     /**
      * 从存储器中获取发送状态
      *
+     * @param string|null $name
+     *
      * @return array
      */
-    public function retrieveState($name)
+    public function retrieveState($name = null)
     {
         $key = self::generateKey(self::STATE_KEY);
         $state = self::storage()->get($key, []);
