@@ -32,10 +32,11 @@
 
 #公告
 
+- QQ群:159379848
+- [捐赠](#捐赠)
 - 安装过旧版本(<2.5.0)的童鞋，在更新到2.5.0+版本时，务必先删除原有的`config/laravel-sms.php`文件和`laravel-sms.js`文件(如果有用到)，
 然后再运行`php artisan vendor:publish`命令，而且在使用新版本前请再阅读下此文档，因为2.5.0+版本有较大变化。
 
-- qq群:159379848
 
 #安装
 
@@ -514,6 +515,12 @@ SmsManager::forgetRules('mobile');
 $mobileRuleName = SmsManager::input('mobile_rule');
 $all = SmsManager::input();
 ```
+
+#捐赠
+
+码路漫漫，赠一本咖啡给作者？
+
+![支付宝](donate-alipay.jpg)
 
 #附录
 
