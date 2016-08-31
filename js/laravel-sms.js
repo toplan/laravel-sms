@@ -7,16 +7,20 @@
  * Date 2015/06/08
  */
 (function($){
-    var _this, btnOriginContent;
+    var _this, btnOriginContent, timeId;
 
     $.fn.sms = function(options) {
         var opts = $.extend(
             $.fn.sms.defaults,
             options
         );
-        _this = this;
-
-        _this.on('click', function (e) {
+        var self = this;
+        self.on('click', function (e) {
+            if (typeof _this !== 'undefined') {
+                clearTimeout(timeId);
+                changeBtn(btnOriginContent, false);
+            }
+            _this = self;
             btnOriginContent = _this.html() || _this.val() || '';
             changeBtn('短信发送中...', true);
             sendSms(opts);
@@ -26,7 +30,6 @@
     function sendSms(opts) {
         var url = getUrl(opts);
         var requestData = getRequestData(opts);
-
         $.ajax({
             url  : url,
             type : 'post',
@@ -59,7 +62,6 @@
         var requestData = {
             _token: opts.token || ''
         };
-
         var data = $.isPlainObject(opts.requestData) ? opts.requestData : {};
         for (var key in data) {
             if (typeof data[key] === 'function') {
@@ -68,18 +70,18 @@
                 requestData[key] = data[key];
             }
         }
-
         return requestData;
     }
 
     function timer(seconds) {
         if (seconds >= 0) {
-            setTimeout(function() {
+            timeId = setTimeout(function() {
                 changeBtn(seconds + ' 秒后再次发送', true);
                 seconds -= 1;
                 timer(seconds);
             }, 1000);
         } else {
+            clearTimeout(timeId);
             changeBtn(btnOriginContent, false);
         }
     }
