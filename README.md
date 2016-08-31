@@ -32,10 +32,10 @@
 
 #公告
 
-- 安装过旧版本(<2.5.0)的童鞋，在更新到2.5.0+版本时，务必先删除原有的`config/laravel-sms.php`文件和`laravel-sms.js`文件(如果有用到)，
-然后再运行`php artisan vendor:publish`命令，而且在使用新版本前请再阅读下此文档，因为2.5.0+版本有较大变化。
+- QQ群:159379848
+- [捐赠](#donate)
+- 旧版本更新到2.5.0+版本时，请先删除原有的`config/laravel-sms.php`文件和`laravel-sms.js`文件(如果有用到)
 
-- qq群:159379848
 
 #安装
 
@@ -114,7 +114,7 @@ php artisan vendor:publish
 | 配置项       | 必填  | 说明        |
 | ----------- | :---: | :---------: |
 | isMobile    | 否    | 该字段是否为手机号码    |
-| enable      | 是    | 服务器端在向第三方服务提供商请求发送验证码短信/语音前是否需要对该数据进行验证 |
+| enable      | 是    | 发送前是否需要对该字段进行验证 |
 | default     | 否    | 该字段的默认静态验证规则 |
 | staticRules | 否    | 该字段的所有静态验证规则 |
 
@@ -178,7 +178,7 @@ php artisan vendor:publish
 
 - 配置模版数据
 
-如果你使用了模板短信，你可以配置你准备使用哪些模版数据哦。
+如果你使用了模板短信，你可以配置你准备使用哪些模版数据。
 > 配置文件为config/laravel-sms.php
 ```php
 'templateData' => [
@@ -191,7 +191,7 @@ php artisan vendor:publish
 
 - 配置模版id
 
-如果你使用了模板短信(如云通讯,SubMail)或模版语音(如阿里大鱼)，需要到相应代理器中填写模板标示符。
+如果你使用了模板短信，需要到相应代理器中填写模板标示符。
 > 配置文件为config/phpsms.php
 ```php
 'YunTongXun' => [
@@ -265,7 +265,7 @@ if ($validator->fails()) {
 检测用户提交的手机号是否变更。
 
 ####verify_code
-检测验证码是否合法且有效。
+检测验证码是否合法且有效，如果验证码错误，过期或超出尝试次数都无法验证通过。
 
 ####confirm_rule:$ruleName
 检测验证规则是否合法，后面跟的第一个参数为待检测的验证规则的名称。
@@ -430,11 +430,21 @@ $result = Manager::requestVoiceVerify();
 $state = SmsManager::state();
 ```
 
-####retrieveState()
+####retrieveState([$key])
 
 获取持久化存储的发送状态，即存储到`session`或缓存中的状态数据。
 ```php
 $state = SmsManager::retrieveState();
+```
+
+###updateState($name, $value)
+
+更新持久化存储的发送状态。
+```php
+SmsManager::updateState('key', 'value');
+SmsManager::updateState([
+    'key' => 'value'
+]);
 ```
 
 ####forgetState()
@@ -579,3 +589,9 @@ $('#sendVerifySmsButton').sms({
 #License
 
 MIT
+
+#Donate
+
+码路漫漫，赠一杯咖啡给作者？
+
+![支付宝](donate-alipay.jpg)

@@ -8,7 +8,7 @@ use Validator;
 
 class SmsManager
 {
-    const VERSION = '2.5.0';
+    const VERSION = '2.5.1';
 
     const STATE_KEY = '_state';
 
@@ -75,6 +75,7 @@ class SmsManager
             'code'     => null,
             'deadline' => 0,
             'usedRule' => array_fill_keys($fields, null),
+            'attempts' => 0,
         ];
     }
 
@@ -325,21 +326,44 @@ class SmsManager
      */
     protected function storeState()
     {
-        $key = self::generateKey(self::STATE_KEY);
-        self::storage()->set($key, $this->state);
+        $this->updateState($this->state);
         $this->reset();
+    }
+
+    /**
+     * 更新发送状态
+     *
+     * @param string|array $name
+     * @param mixed        $value
+     */
+    public function updateState($name, $value = null)
+    {
+        $state = $this->retrieveState();
+        if (is_array($name)) {
+            $state = array_merge($state, $name);
+        } elseif (is_string($name)) {
+            $state[$name] = $value;
+        }
+        $key = self::generateKey(self::STATE_KEY);
+        self::storage()->set($key, $state);
     }
 
     /**
      * 从存储器中获取发送状态
      *
+     * @param string|null $name
+     *
      * @return array
      */
-    public function retrieveState()
+    public function retrieveState($name = null)
     {
         $key = self::generateKey(self::STATE_KEY);
+        $state = self::storage()->get($key, []);
+        if ($name !== null) {
+            return isset($state[$name]) ? $state[$name] : null;
+        }
 
-        return self::storage()->get($key, []);
+        return $state;
     }
 
     /**
