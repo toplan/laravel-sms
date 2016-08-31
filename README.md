@@ -103,8 +103,7 @@ php artisan vendor:publish
 
 ###1. 声明
 
-当客户端向服务器端请求发送验证码短信/语音时，服务器端需要对接收到的数据(本库将其称为`field`)进行验证，只有在所有需验证的数据都验证通过了才会向第三方服务提供商请求发送验证码短信/语音。
-对于每项你想验证的数据(`field`)，不管是使用静态验证规则还是[动态验证规则](#4-动态验证规则)，都需要提前到配置文件(`config/laravel-sms.php`)中声明，并做好必要的配置。
+当客户端向服务器端请求发送验证码短信/语音时，服务器端需要对接收到的数据(本库将其称为`field`)进行验证，只有在所有需验证的数据都通过了验证才会向第三方服务提供商发起请求。对于每项你想验证的`field`，不管是使用静态验证规则还是[动态验证规则](#4-动态验证规则)，都需要提前到配置文件(`config/laravel-sms.php`)中声明，并做好必要的配置。
 
 > 本文档中所说的`服务器端`是我们自己的应用系统，而非第三方短信服务提供商。
 
@@ -162,7 +161,7 @@ php artisan vendor:publish
 
 #验证码模块
 
-可以直接访问`your-domain/laravel-sms/info`查看该模块是否可用，并可在该页面里观察验证码短信发送数据，方便你进行调试。
+可以直接访问`your-domain/laravel-sms/info`查看该模块是否可用，并可在该页面里观察验证码短信发送状态，方便你进行调试。
 
 > 如果是api应用(无session)需要带上access token: your-domain/laravel-sms/info?access_token=xxxx
 
@@ -216,10 +215,8 @@ php artisan vendor:publish
 $('#sendVerifySmsButton').sms({
     //laravel csrf token
     token       : "{{csrf_token()}}",
-
     //请求间隔时间
     interval    : 60,
-
     //请求参数
     requestData : {
         //手机号
@@ -356,13 +353,12 @@ scheme://your-domain/laravel-sms/verify-code
 - 语音:
 scheme://your-domain/laravel-sms/voice-verify
 
-###4. 基础参数
+###4. 默认参数
 
-| 参数名  | 必填     | 说明        | 默认值   |
-| ------ | :-----: | :---------: | :-----: |
-| mobile | 是      | 手机号码      |        |
-| mobile_rule | 否 | 手机号检测规则 |        |
-| interval | 否    | 请求间隔时间(秒) | `60` |
+| 参数名  | 必填     | 说明         |
+| ------ | :-----: | :----------: |
+| mobile | 是      | 手机号码      |
+| mobile_rule | 否 | 手机号检测规则 |
 
 ###5. 响应数据
 
@@ -437,7 +433,7 @@ $state = SmsManager::state();
 $state = SmsManager::retrieveState();
 ```
 
-###updateState($name, $value)
+####updateState($name, $value)
 
 更新持久化存储的发送状态。
 ```php
