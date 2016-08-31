@@ -437,7 +437,7 @@ $state = SmsManager::state();
 $state = SmsManager::retrieveState();
 ```
 
-###updateState($name, $value)
+####updateState($name, $value)
 
 更新持久化存储的发送状态。
 ```php
