@@ -2,7 +2,7 @@
     "name": "toplan/laravel-sms",
     "description": "sms send package for laravel",
     "license": "MIT",
-    "version": "2.5.1",
+    "version": "2.5.2",
     "keywords": ["sms", "laravel sms", "laravel-sms"],
     "authors": [
         {
