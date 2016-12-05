@@ -12,11 +12,13 @@ Validator::extend('confirm_mobile_not_change', function ($attribute, $value) {
 
 Validator::extend('verify_code', function ($attribute, $value) {
     $state = SmsManager::retrieveState();
-    $maxAttempts = config('laravel-sms.verifyCode.maxAttempts', 0);
-    $attempts = $state['attempts'] + 1;
-    SmsManager::updateState('attempts', $attempts);
-    if ($maxAttempts > 0 && $attempts > $maxAttempts) {
-        return false;
+    if (isset($state['attempts'])) {
+        $maxAttempts = config('laravel-sms.verifyCode.maxAttempts', 0);
+        $attempts = $state['attempts'] + 1;
+        SmsManager::updateState('attempts', $attempts);
+        if ($maxAttempts > 0 && $attempts > $maxAttempts) {
+            return false;
+        }
     }
 
     return $state && $state['deadline'] >= time() && $state['code'] === $value;
