@@ -1,5 +1,5 @@
 {
-    "name": "toplan/laravel-sms",
+    "name": "medz/laravel-sms",
     "description": "sms send package for laravel",
     "license": "MIT",
     "version": "2.5.2",
