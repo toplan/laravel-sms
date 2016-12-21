@@ -11,7 +11,7 @@
     ],
     "require": {
         "php": ">=5.4.0",
-        "toplan/phpsms": ">=1.6.0"
+        "medz/phpsms": "^1.6"
     },
     "autoload": {
         "classmap": [
@@ -20,6 +20,5 @@
         "psr-0": {
             "Toplan\\Sms": "src/"
         }
-    },
-    "minimum-stability": "stable"
+    }
 }
