@@ -69,7 +69,8 @@ Toplan\Sms\SmsManagerServiceProvider::class,
 - 生成配置文件和migration文件
 
 ```php
-php artisan vendor:publish
+php artisan vendor:publish --provider="Toplan\PhpSms\PhpSmsServiceProvider"
+php artisan vendor:publish --provider="Toplan\Sms\SmsManagerServiceProvider"
 ```
 
 > 这里会生成两个配置文件，分别为phpsms.php和laravel-sms.php。
