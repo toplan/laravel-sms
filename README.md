@@ -2,14 +2,14 @@
 
 一个基于`Laravel`框架的功能强大的手机号合法性验证解决方案。
 
-### 1. 关于v2
-`laravel-sms` v2是基于[toplan/phpsms](https://github.com/toplan/phpsms)开发的适用于`Laravel`框架的短信发送库(当然`laravel-sms`的功能还不仅于此)。
-相较于v1版本，v2是使用新思路重构的版本，并且升级备用代理器机制为代理器均衡调度机制。
+### 1. 关于2.0
+`laravel-sms` 2.0是基于[toplan/phpsms](https://github.com/toplan/phpsms)开发的适用于`Laravel`框架的手机号验证解决方案。
+相较于1.0版本，2.0是使用新思路重构的版本，并且升级备用代理器机制为代理器均衡调度机制。
 `phpsms`为`laravel-sms`提供了全套的短信发送机制，而且`phpsms`也有自己的 service provider ，也就是说你完全可以在`Laravel`框架下无障碍的独立使用`phpsms`。
-这也是为什么使用`laravel-sms`会在项目中生成两个配置文件(phpsms.php和laravel-sms.php)的原因。
+这也是为什么使用`laravel-sms`会在项目中生成两个配置文件(`phpsms.php`和`laravel-sms.php`)的原因。
 
-> config/phpsms.php负责配置代理器参数以及规划如何最优调度代理器(由phpsms提供)。
-> config/laravel-sms.php则全职负责验证码发送/验证模块的配置(由laravel-sms提供)。
+> `config/phpsms.php`负责配置代理器参数以及规划如何最优调度代理器(由phpsms提供)，
+> `config/laravel-sms.php`负责验证码发送/验证模块的配置(由laravel-sms提供)。
 
 ### 2. why me
 
@@ -19,7 +19,7 @@
 - 集成[验证码发送与验证模块](#验证码模块)，从此告别重复写验证码短信发送与校验的历史
 - 灵活的[动态验证规则](#4-动态验证规则)
 - 可选的[数据库日志](#数据库日志)
-- 集成[短信队列](#短信队列)
+- 可选的[短信队列](#短信队列)
 - 验证码发送与验证模块的[无session支持](#无会话支持)
 
 ### 3. 如何快速开始?
@@ -33,15 +33,15 @@
 # 公告
 
 - QQ群:159379848
-- [捐赠](#donate)
+- 有赞助意向的朋友可以去[捐赠](#donate)
 - 旧版本更新到2.5.0+版本时，请先删除原有的`config/laravel-sms.php`文件和`laravel-sms.js`文件(如果有用到)
-
+- 开发调试过程中，如果需要查看短信发送结果的详细信息，建议打开[短信队列](#短信队列)
 
 # 安装
 
 在项目根目录下运行如下composer命令:
 ```php
-//安装v2版本(推荐)
+//安装2.0版本(推荐)
 composer require toplan/laravel-sms:2.5.*
 
 //安装开发中版本
@@ -108,7 +108,7 @@ php artisan vendor:publish
 > 本文档中所说的`服务器端`是我们自己的应用系统，而非第三方短信服务提供商。
 
 #### 1.1 配置项
-对于每项数据,都有以下三项可设置:
+对于每项数据,都有以下几项可设置:
 
 | 配置项       | 必填  | 说明        |
 | ----------- | :---: | :---------: |
@@ -131,12 +131,10 @@ php artisan vendor:publish
         'default'     => 'mobile_required',
         //静态验证规则:
         'staticRules' => [
-            //name => rule
             'mobile_required' => 'required|zh_mobile',
             ...
         ],
     ],
-
     //自定义你可能需要验证的字段
     'image_captcha' => [
         'enable' => true,
@@ -161,9 +159,9 @@ php artisan vendor:publish
 
 # 验证码模块
 
-可以直接访问`your-domain/laravel-sms/info`查看该模块是否可用，并可在该页面里观察验证码短信发送状态，方便你进行调试。
+可以直接访问`host/laravel-sms/info`查看该模块是否可用，并可在该页面里观察验证码短信发送状态，方便你进行调试。
 
-> 如果是api应用(无session)需要带上access token: your-domain/laravel-sms/info?access_token=xxxx
+> 如果是api应用(无session)需要带上access token: host/laravel-sms/info?access_token=xxxx
 
 ### 1. [服务器端]配置短信内容/模板
 
@@ -348,10 +346,10 @@ Access Token值建议设置在请求头中的`Access-Token`上,当然也可以�
 ### 3. 请求地址
 
 - 短信:
-scheme://your-domain/laravel-sms/verify-code
+scheme://host/laravel-sms/verify-code
 
 - 语音:
-scheme://your-domain/laravel-sms/voice-verify
+scheme://host/laravel-sms/voice-verify
 
 ### 4. 默认参数
 
@@ -406,14 +404,14 @@ $result = SmsManager::validateFields(function ($fields, $rules) {
 
 请求发送验证码短信。
 ```php
-$result = Manager::requestVerifySms();
+$result = SmsManager::requestVerifySms();
 ```
 
 #### requestVoiceVerify()
 
 请求发送语音验证码。
 ```php
-$result = Manager::requestVoiceVerify();
+$result = SmsManager::requestVoiceVerify();
 ```
 
 ### 3. 发送状态
@@ -470,7 +468,7 @@ SmsManager::storeRule('mobile', [
 ]);
 ```
 
-> 存储的动态验证规则可通过访问`your-domain/laravel-sms/info`查看。动态验证规则的名称最好不要和静态验证规则同名,因为静态验证规则的优先级更高。
+> 存储的动态验证规则可通过访问`host/laravel-sms/info`查看。动态验证规则的名称最好不要和静态验证规则同名,因为静态验证规则的优先级更高。
 
 #### retrieveRule($field[, $name])
 
@@ -513,44 +511,6 @@ $all = SmsManager::input();
 
 # 附录
 
-### PhpSms API
-
-在控制器中发送触发短信，如下所示：
-```php
-use PhpSms;
-
-// 接收人手机号
-$to = '1828****349';
-// 短信模版
-$templates = [
-    'YunTongXun' => 'your_temp_id',
-    'SubMail'    => 'your_temp_id'
-];
-// 模版数据
-$tempData = [
-    'code' => '87392',
-    'minutes' => '5'
-];
-// 短信内容
-$content = '【签名】这是短信内容...';
-
-// 只希望使用模板方式发送短信,可以不设置content(如:云通讯、Submail、Ucpaas)
-PhpSms::make()->to($to)->template($templates)->data($tempData)->send();
-
-// 只希望使用内容方式放送,可以不设置模板id和模板data(如:云片、luosimao)
-PhpSms::make()->to($to)->content($content)->send();
-
-// 同时确保能通过模板和内容方式发送,这样做的好处是,可以兼顾到各种类型服务商
-PhpSms::make()->to($to)
-     ->template($templates)
-     ->data($tempData)
-     ->content($content)
-     ->send();
-
-// 语言验证码
-PhpSms::voice('89093')->to($to)->send();
-```
-
 ### laravel-sms.js
 
 ```javascript
@@ -588,6 +548,7 @@ MIT
 
 # Donate
 
-码路漫漫，赠一杯咖啡给作者？
+`laravel-sms`和`phpsms`都是MIT协议的开源项目，它们的发展离不开大家的支持和鼓励。
+如果你觉得它们给你带来了帮助，简化了你的开发工作，不妨多多少少打赏一点，给作者更大的动力。
 
 ![支付宝](donate-alipay.jpg)
