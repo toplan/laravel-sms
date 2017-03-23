@@ -533,7 +533,7 @@ $('#sendVerifySmsButton').sms({
         },
         //手机号的检测规则
         mobile_rule : 'mobile_required'
-    }
+    },
 
     //定义服务器有消息返回时如何展示，默认为alert
     alertMsg    : function (msg, type) {
