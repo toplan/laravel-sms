@@ -8,6 +8,6 @@ class SmsManager extends Facade
 {
     protected static function getFacadeAccessor()
     {
-        return 'SmsManager';
+        return 'Toplan\\Sms\\SmsManager';
     }
 }

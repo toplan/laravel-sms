@@ -33,16 +33,17 @@
 # 公告
 
 - QQ群:159379848
-- 有赞助意向的朋友可以去[捐赠](#donate)
-- 旧版本更新到2.5.0+版本时，请先删除原有的`config/laravel-sms.php`文件和`laravel-sms.js`文件(如果有用到)
+- 了解[捐赠](#donate)
+- 旧版本更新到2.6.0+版本时，请先删除原有的`config/laravel-sms.php`文件和`laravel-sms.js`文件(如果有用到)
+- 如果是Laravel 5.1版本，则需要在`config/laravel-sms.php`文件中注释掉`middleware`
 - 开发调试过程中，如果需要查看短信发送结果的详细信息，建议打开[短信队列](#短信队列)
 
 # 安装
 
 在项目根目录下运行如下composer命令:
 ```php
-//安装2.0版本(推荐)
-composer require toplan/laravel-sms:2.5.*
+//安装2.6版本(推荐)
+composer require toplan/laravel-sms:^2.6
 
 //安装开发中版本
 composer require toplan/laravel-sms:dev-master
@@ -107,8 +108,8 @@ php artisan vendor:publish
 
 > 本文档中所说的`服务器端`是我们自己的应用系统，而非第三方短信服务提供商。
 
-#### 1.1 配置项
-对于每项数据,都有以下几项可设置:
+#### 配置项
+对于每项数据，都有以下几项可设置:
 
 | 配置项       | 必填  | 说明        |
 | ----------- | :---: | :---------: |
@@ -117,7 +118,7 @@ php artisan vendor:publish
 | default     | 否    | 该字段的默认静态验证规则 |
 | staticRules | 否    | 该字段的所有静态验证规则 |
 
-#### 1.2 示例
+#### 示例
 
 ```php
 'validation' => [
@@ -146,14 +147,13 @@ php artisan vendor:publish
 
 静态验证规则和动态验证规则的使用方法一致。
 
-#### 2.1 客户端
+#### 客户端
 
 通过`{field}_rule`参数告知服务器`{field}`参数需要使用的验证规则的名称。
+比如`mobile_rule`参数可以告知服务器在验证`mobile`参数时使用什么验证规则，
+`image_captcha_rule`参数可以告知服务器在验证`image_captcha`参数时使用什么验证规则。
 
-> 如:`mobile_rule`参数可以告知服务器在验证`mobile`参数时使用什么验证规则，
-> `image_captcha_rule`参数可以告知服务器在验证`image_captcha`参数时使用什么验证规则。
-
-#### 2.2 服务器端
+#### 服务器端
 
 [示例见此](# 3-服务器端合法性验证)
 
@@ -165,15 +165,28 @@ php artisan vendor:publish
 
 ### 1. [服务器端]配置短信内容/模板
 
-- 配置通用内容
+#### 短信内容
 
 如果你使用了内容短信(如云片网络,Luosimao)，则使用或修改'verifySmsContent'的值。
 > 配置文件为config/laravel-sms.php
 ```php
-'verifySmsContent' => '【填写签名】亲爱的用户，您的验证码是%s。有效期为%s分钟，请尽快验证',
+'content' => function ($code, $minutes, $input) {
+    return '【signature】您的验证码是' . $code . '，有效期为' . $minutes . '分钟，请尽快验证。';
+}
 ```
 
-- 配置模版数据
+#### 模版id
+
+如果你使用了模板短信，需要到相应代理器中填写模板标示符。
+> 配置文件为config/laravel-sms.php
+```php
+'template' => [
+    'YunTongXun' => '短信模版id',
+    'Alidayu'    => ['短信模版id', '语音模版id'],
+]
+```
+
+#### 模版数据
 
 如果你使用了模板短信，你可以配置你准备使用哪些模版数据。
 > 配置文件为config/laravel-sms.php
@@ -184,21 +197,6 @@ php artisan vendor:publish
     },
     ...
 ],
-```
-
-- 配置模版id
-
-如果你使用了模板短信，需要到相应代理器中填写模板标示符。
-> 配置文件为config/phpsms.php
-```php
-'YunTongXun' => [
-    //短信模板标示符
-    'verifySmsTemplateId' => 'your template id',
-]
-'Alidayu' => [
-    //语音模板标示符
-    'voiceVerifyTemplateId' => 'your tts code'
-]
 ```
 
 ### 2. [浏览器端]请求发送验证码短信
@@ -288,7 +286,7 @@ php artisan migrate
 
 ### 1. 启用/关闭队列
 
-Laravel Sms已实现的短信队列默认是关闭的,判断当前队列状态：
+`laravel-sms`已实现的短信队列默认是关闭的，判断当前队列状态：
 ```php
 $enable = PhpSms::queue(); //true of false
 ```
@@ -341,15 +339,15 @@ PhpSms::queue(function($sms, $data){
 
 ### 2. Access Token
 
-Access Token值建议设置在请求头中的`Access-Token`上,当然也可以带在请求参数`access_token`中。
+Access Token值建议设置在请求头中的`Access-Token`上，当然也可以带在请求参数`access_token`中。
+
+> 根据你的实际应用场景，也可考虑将手机号作为`access_token`。
 
 ### 3. 请求地址
 
-- 短信:
-scheme://host/laravel-sms/verify-code
+- 短信: `scheme://host/laravel-sms/verify-code`
 
-- 语音:
-scheme://host/laravel-sms/voice-verify
+- 语音: `scheme://host/laravel-sms/voice-verify`
 
 ### 4. 默认参数
 
@@ -368,7 +366,9 @@ scheme://host/laravel-sms/voice-verify
 
 # API
 
-`laravel-sms`提供的所有功能都是由该章节的接口和`phpsms`的接口实现的。虽然通过配置文件你可以完成基本所有的常规需求，但是对于更加变态（个性化）的需求，你就可能需要在`laravel-sms`的基础上做定制化的开发，在这种情况下，阅读该章节或许能给你提供必要的帮助，否则你可以忽略该章节哦。
+`laravel-sms`提供的所有功能都是由该章节的接口和`phpsms`的接口实现的。
+虽然通过配置文件可以完成基本所有的常规需求，但是对于更加变态（个性化）的需求，
+可能需要在`laravel-sms`的基础上做定制化的开发，在这种情况下阅读该章节或许能给你提供帮助，否则可以忽略该章节。
 
 ```php
 use SmsManager;
@@ -504,12 +504,15 @@ SmsManager::forgetRules('mobile');
 
 获取客户端传递来的数据。客户端数据会自动注入到配置文件(`laravel-sms.php`)中闭包函数的第三个参数中。
 ```php
-//example:
 $mobileRuleName = SmsManager::input('mobile_rule');
 $all = SmsManager::input();
 ```
 
-# 附录
+### 6. 其它
+
+### closure($closure)
+
+序列化闭包。
 
 ### laravel-sms.js
 
@@ -519,25 +522,32 @@ $('#sendVerifySmsButton').sms({
     //该token仅为laravel框架的csrf验证,不是access_token!
     token       : "{{csrf_token()}}",
 
-    //请求间隔时间
+    //请求时间间隔
     interval    : 60,
 
-    //是否请求语音验证码
+    //语音验证码
     voice       : false,
 
     //请求参数
     requestData : {
         //手机号
-        mobile : function () {
+        mobile: function () {
             return $('input[name=mobile]').val();
         },
         //手机号的检测规则
-        mobile_rule : 'mobile_required'
+        mobile_rule: 'mobile_required'
     },
 
-    //定义服务器有消息返回时如何展示，默认为alert
-    alertMsg    : function (msg, type) {
+    //消息展示方式(默认为alert)
+    notify      : function (msg, type) {
         alert(msg);
+    },
+
+    //多语言
+    language    : {
+        sending    : '短信发送中...',
+        failed     : '请求失败，请重试',
+        resendable : '{{seconds}} 秒后再次发送'
     }
 });
 ```
@@ -549,6 +559,6 @@ MIT
 # Donate
 
 `laravel-sms`和`phpsms`都是MIT协议的开源项目，它们的发展离不开大家的支持和鼓励。
-如果你觉得它们给你带来了帮助，简化了你的开发工作，不妨多多少少打赏一点，给作者更大的动力。
+如果你觉得它们给你带来了帮助，提高了你的开发效率，不妨打赏一点，给作者更大的动力。
 
 ![支付宝](donate-alipay.jpg)
