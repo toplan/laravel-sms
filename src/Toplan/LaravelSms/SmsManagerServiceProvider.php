@@ -3,9 +3,9 @@
 namespace Toplan\Sms;
 
 use DB;
-use PhpSms;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Support\ServiceProvider;
+use PhpSms;
 
 class SmsManagerServiceProvider extends ServiceProvider
 {
@@ -48,7 +48,7 @@ class SmsManagerServiceProvider extends ServiceProvider
         );
 
         $this->app->singleton([
-            'Toplan\\Sms\\SmsManager' => 'laravel-sms'
+            'Toplan\\Sms\\SmsManager' => 'laravel-sms',
         ], function ($app) {
             $token = $app->request->header('access-token', null);
             if (empty($token)) {

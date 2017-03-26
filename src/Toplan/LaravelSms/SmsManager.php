@@ -2,8 +2,8 @@
 
 namespace Toplan\Sms;
 
-use URL;
 use PhpSms;
+use URL;
 use Validator;
 
 class SmsManager
@@ -560,7 +560,7 @@ class SmsManager
             $content = call_user_func_array($content, [$code, $minutes, $this->input()]);
         }
 
-        return is_string($content) ? $content: '';
+        return is_string($content) ? $content : '';
     }
 
     /**
@@ -666,7 +666,7 @@ class SmsManager
                 return $key;
             }
         }
-        throw new LaravelSmsException("Not find the mobile field, please define it.");
+        throw new LaravelSmsException('Not find the mobile field, please define it.');
     }
 
     /**
