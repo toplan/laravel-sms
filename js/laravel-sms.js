@@ -7,90 +7,83 @@
  * Date 2015/06/08
  */
 (function($){
-    var _this, btnOriginContent, timeId;
-
     $.fn.sms = function(options) {
-        var opts = $.extend(
-            $.fn.sms.defaults,
-            options
-        );
         var self = this;
+        var btnOriginContent, timeId;
+        var opts = $.extend(true, {}, $.fn.sms.defaults, options);
         self.on('click', function (e) {
-            if (typeof _this !== 'undefined') {
+            btnOriginContent = self.html() || self.val() || '';
+            changeBtn(opts.language.sending, true);
+            send();
+        });
+
+        function send() {
+            var url = getUrl();
+            var requestData = getRequestData();
+            $.ajax({
+                url     : url,
+                type    : 'post',
+                data    : requestData,
+                success : function (data) {
+                   if (data.success) {
+                       timer(opts.interval);
+                   } else {
+                       changeBtn(btnOriginContent, false);
+                       opts.notify.call(null, data.message, data.type);
+                   }
+                },
+                error   : function(xhr, type){
+                    changeBtn(btnOriginContent, false);
+                    opts.notify.call(null, opts.language.failed, 'request_failed');
+                }
+            });
+        }
+
+        function getUrl() {
+            var domain = opts.domain || '';
+            var prefix = opts.prefix || 'laravel-sms';
+            if (opts.voice) {
+                return domain + '/' + prefix + '/voice-verify';
+            }
+
+            return domain + '/' + prefix + '/verify-code';
+        }
+
+        function getRequestData() {
+            var requestData = { _token: opts.token || '' };
+            var data = $.isPlainObject(opts.requestData) ? opts.requestData : {};
+            $.each(data, function (key) {
+                if (typeof data[key] === 'function') {
+                    requestData[key] = data[key].call(requestData);
+                } else {
+                    requestData[key] = data[key];
+                }
+            });
+
+            return requestData;
+        }
+
+        function timer(seconds) {
+            var btnText = opts.language.resendable;
+            btnText = typeof btnText === 'string' ? btnText : '';
+            if (seconds < 0) {
                 clearTimeout(timeId);
                 changeBtn(btnOriginContent, false);
-            }
-            _this = self;
-            btnOriginContent = _this.html() || _this.val() || '';
-            changeBtn('短信发送中...', true);
-            sendSms(opts);
-        });
-    };
-
-    function sendSms(opts) {
-        var url = getUrl(opts);
-        var requestData = getRequestData(opts);
-        $.ajax({
-            url  : url,
-            type : 'post',
-            data : requestData,
-            success : function (data) {
-               if (data.success) {
-                   timer(opts.interval);
-               } else {
-                   changeBtn(btnOriginContent, false);
-                   opts.alertMsg.call(null, data.message, data.type);
-               }
-            },
-            error: function(xhr, type){
-                changeBtn(btnOriginContent, false);
-                opts.alertMsg.call(null, '请求失败，请重试', 'request_failure');
-            }
-        });
-    }
-
-    function getUrl(opts) {
-        var domain = opts.domain || '';
-        var prefix = opts.prefix || 'laravel-sms';
-        if (opts.voice) {
-            return domain + '/' + prefix + '/voice-verify';
-        }
-        return domain + '/' + prefix + '/verify-code';
-    }
-
-    function getRequestData(opts) {
-        var requestData = {
-            _token: opts.token || ''
-        };
-        var data = $.isPlainObject(opts.requestData) ? opts.requestData : {};
-        for (var key in data) {
-            if (typeof data[key] === 'function') {
-                requestData[key] = data[key].call(requestData);
             } else {
-                requestData[key] = data[key];
+                timeId = setTimeout(function() {
+                    clearTimeout(timeId);
+                    changeBtn(btnText.replace('{{seconds}}', (seconds--) + ''), true);
+                    timer(seconds);
+                }, 1000);
             }
         }
-        return requestData;
-    }
 
-    function timer(seconds) {
-        if (seconds >= 0) {
-            timeId = setTimeout(function() {
-                changeBtn(seconds + ' 秒后再次发送', true);
-                seconds -= 1;
-                timer(seconds);
-            }, 1000);
-        } else {
-            clearTimeout(timeId);
-            changeBtn(btnOriginContent, false);
+        function changeBtn(content, disabled) {
+            self.html(content);
+            self.val(content);
+            self.prop('disabled', !!disabled);
         }
-    }
-
-    function changeBtn(content, disabled) {
-        _this.html(content);
-        _this.val(content);
-        _this.prop('disabled', !!disabled);
-    }
+    };
 
     $.fn.sms.defaults = {
         token       : null,
@@ -99,8 +92,13 @@
         domain      : null,
         prefix      : 'laravel-sms',
         requestData : null,
-        alertMsg    : function (msg, type) {
+        notify      : function (msg, type) {
             alert(msg);
+        },
+        language    : {
+            sending    : '短信发送中...',
+            failed     : '请求失败，请重试',
+            resendable : '{{seconds}} 秒后再次发送'
         }
     };
 })(window.jQuery || window.Zepto);

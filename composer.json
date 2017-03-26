@@ -1,9 +1,9 @@
 {
-    "name": "toplan/laravel-sms",
-    "description": "sms send package for laravel",
+    "name": "laravel-sms",
+    "description": "A mobile phone number validation solution based on laravel",
     "license": "MIT",
-    "version": "2.5.2",
-    "keywords": ["sms", "laravel sms", "laravel-sms"],
+    "version": "2.6.0",
+    "keywords": ["sms", "mobile", "phone", "laravel", "laravel-sms"],
     "authors": [
         {
             "name": "toplan",
@@ -12,7 +12,7 @@
     ],
     "require": {
         "php": ">=5.4.0",
-        "toplan/phpsms": ">=1.6.0"
+        "toplan/phpsms": "^1.7"
     },
     "autoload": {
         "classmap": [
@@ -21,6 +21,5 @@
         "psr-0": {
             "Toplan\\Sms": "src/"
         }
-    },
-    "minimum-stability": "stable"
+    }
 }

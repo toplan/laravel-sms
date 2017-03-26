@@ -1,7 +1,7 @@
 <?php
 
 Validator::extend('zh_mobile', function ($attribute, $value) {
-    return preg_match('/^(\+?0?86\-?)?((13\d|14[57]|15[^4,\D]|17[678]|18\d)\d{8}|170[059]\d{7})$/', $value);
+    return preg_match('/^(\+?0?86\-?)?((13\d|14[57]|15[^4,\D]|17[3678]|18\d)\d{8}|170[059]\d{7})$/', $value);
 });
 
 Validator::extend('confirm_mobile_not_change', function ($attribute, $value) {
@@ -13,7 +13,8 @@ Validator::extend('confirm_mobile_not_change', function ($attribute, $value) {
 Validator::extend('verify_code', function ($attribute, $value) {
     $state = SmsManager::retrieveState();
     if (isset($state['attempts'])) {
-        $maxAttempts = config('laravel-sms.verifyCode.maxAttempts', 0);
+        $maxAttempts = config('laravel-sms.verifyCode.maxAttempts',
+            config('laravel-sms.code.maxAttempts', 0));
         $attempts = $state['attempts'] + 1;
         SmsManager::updateState('attempts', $attempts);
         if ($maxAttempts > 0 && $attempts > $maxAttempts) {
