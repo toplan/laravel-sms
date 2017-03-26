@@ -24,7 +24,7 @@ class SmsManager
 
     const VOICE_VERIFY_TEMPLATE_KEY = 'voiceVerifyTemplateId';
 
-    const closurePattern = '/(SuperClosure\\\SerializableClosure){1}/';
+    const closurePattern = '/(SuperClosure\\\SerializableClosure)+/';
 
     /**
      * 存储器
@@ -244,9 +244,7 @@ class SmsManager
         $templates = $this->generateTemplates(self::VERIFY_SMS);
         $tplData = $this->generateTemplateData($code, $minutes, self::VERIFY_SMS);
 
-        $result = PhpSms::make($templates)->to($for)
-            ->data($tplData)->content($content)->send();
-
+        $result = PhpSms::make($templates)->to($for)->data($tplData)->content($content)->send();
         if ($result === null || $result === true || (isset($result['success']) && $result['success'])) {
             $this->state['sent'] = true;
             $this->state['to'] = $for;
@@ -274,9 +272,8 @@ class SmsManager
 
         $templates = $this->generateTemplates(self::VOICE_VERIFY);
         $tplData = $this->generateTemplateData($code, $minutes, self::VOICE_VERIFY);
-        $result = PhpSms::voice($code)->template($templates)
-            ->data($tplData)->to($for)->send();
 
+        $result = PhpSms::voice($code)->template($templates)->data($tplData)->to($for)->send();
         if ($result === null || $result === true || (isset($result['success']) && $result['success'])) {
             $this->state['sent'] = true;
             $this->state['to'] = $for;
@@ -552,7 +549,7 @@ class SmsManager
      */
     protected function generateSmsContent($code, $minutes)
     {
-        $content = config('laravel-sms.content', config('laravel-sms.verifySmsContent'));
+        $content = config('laravel-sms.verifySmsContent') ?: config('laravel-sms.content');
         if (is_string($content)) {
             $content = Util::unserializeClosure($content);
         }
@@ -611,7 +608,7 @@ class SmsManager
      */
     protected function generateTemplateData($code, $minutes, $type)
     {
-        $tplData = config('laravel-sms.data', config('laravel-sms.templateData'));
+        $tplData = config('laravel-sms.templateData') ?: config('laravel-sms.data');
         if (is_string($tplData)) {
             $tplData = Util::unserializeClosure($tplData);
         }

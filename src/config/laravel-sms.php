@@ -93,9 +93,7 @@ return [
     |   如: 'YunTongXun' => '短信模版id'
     |
     | - 数组
-    |   如: [
-    |           'Alidayu' => ['短信模版id', '语音模版id'],
-    |       ]
+    |   如: 'Alidayu' => ['短信模版id', '语音模版id'],
     |
     | - 匿名函数
     |   如: 'YunTongXun' => function ($input, $type) {

@@ -33,7 +33,6 @@
 # 公告
 
 - QQ群:159379848
-- 了解[捐赠](#donate)
 - 旧版本更新到2.6.0+版本时，请先删除原有的`config/laravel-sms.php`文件和`laravel-sms.js`文件(如果有用到)
 - 如果是Laravel 5.1版本，则需要在`config/laravel-sms.php`文件中注释掉`middleware`
 - 开发调试过程中，如果需要查看短信发送结果的详细信息，建议打开[短信队列](#短信队列)
@@ -454,7 +453,7 @@ SmsManager::forgetState();
 定义客户端数据（字段）的动态验证规则。
 ```php
 //方式1:
-//如果不设置name,那么name默认为当前访问路径的path部分
+//如果不设置name，那么name默认为当前访问路径的path部分
 SmsManager::storeRule('mobile', 'required|zh_mobile|unique:users,mobile,NULL,id,account_id,1');
 
 //方式2:
@@ -559,10 +558,3 @@ $('#sendVerifySmsButton').sms({
 # License
 
 MIT
-
-# Donate
-
-`laravel-sms`和`phpsms`都是MIT协议的开源项目，它们的发展离不开大家的支持和鼓励。
-如果你觉得它们给你带来了帮助，提高了你的开发效率，不妨打赏一点，给作者更大的动力。
-
-![支付宝](donate-alipay.jpg)
