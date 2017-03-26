@@ -13,7 +13,8 @@ Validator::extend('confirm_mobile_not_change', function ($attribute, $value) {
 Validator::extend('verify_code', function ($attribute, $value) {
     $state = SmsManager::retrieveState();
     if (isset($state['attempts'])) {
-        $maxAttempts = config('laravel-sms.verifyCode.maxAttempts', 0);
+        $maxAttempts = config('laravel-sms.verifyCode.maxAttempts',
+            config('laravel-sms.code.maxAttempts', 0));
         $attempts = $state['attempts'] + 1;
         SmsManager::updateState('attempts', $attempts);
         if ($maxAttempts > 0 && $attempts > $maxAttempts) {

@@ -218,9 +218,10 @@ class SmsManager
      */
     protected function verifyCode()
     {
-        if (config('laravel-sms.verifyCode.repeatIfValid', false)) {
+        $repeatIfValid = config('laravel-sms.verifyCode.repeatIfValid',
+            config('laravel-sms.code.repeatIfValid', false));
+        if ($repeatIfValid) {
             $state = $this->retrieveState();
-            //如果在未来60秒内都还有效，那么重复使用该验证码
             if (!(empty($state)) && $state['deadline'] >= time() + 60) {
                 return $state['code'];
             }
@@ -821,7 +822,8 @@ class SmsManager
      */
     protected static function generateCode($length = null, $characters = null)
     {
-        $length = (int) ($length ?: config('laravel-sms.verifyCode.length', 5));
+        $length = (int) ($length ?: config('laravel-sms.verifyCode.length',
+            config('laravel-sms.code.length', 5)));
         $characters = (string) ($characters ?: '0123456789');
         $charLength = strlen($characters);
         $randomString = '';
@@ -839,7 +841,8 @@ class SmsManager
      */
     protected static function getCodeValidMinutes()
     {
-        return (int) config('laravel-sms.verifyCode.validMinutes', 5);
+        return (int) config('laravel-sms.verifyCode.validMinutes',
+            config('laravel-sms.code.validMinutes', 5));
     }
 
     /**

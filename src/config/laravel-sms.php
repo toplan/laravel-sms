@@ -63,7 +63,7 @@ return [
     | - maxAttempts   验证码最大尝试验证次数，超过该数值验证码自动失效，0或负数则不启用
     |
     */
-    'verifyCode' => [
+    'code' => [
         'length'        => 5,
         'validMinutes'  => 5,
         'repeatIfValid' => false,
