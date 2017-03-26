@@ -104,7 +104,8 @@ php artisan vendor:publish
 
 ### 1. 声明
 
-当客户端向服务器端请求发送验证码短信/语音时，服务器端需要对接收到的数据(本库将其称为`field`)进行验证，只有在所有需验证的数据都通过了验证才会向第三方服务提供商发起请求。对于每项你想验证的`field`，不管是使用静态验证规则还是[动态验证规则](#4-动态验证规则)，都需要提前到配置文件(`config/laravel-sms.php`)中声明，并做好必要的配置。
+当客户端向服务器端请求发送验证码短信/语音时，服务器端需要对接收到的数据(本库将其称为`field`)进行验证，只有在所有需验证的数据都通过了验证才会向第三方服务提供商发起请求。
+对于每项你想验证的`field`，不管是使用静态验证规则还是[动态验证规则](#4-动态验证规则)，都需要提前到配置文件(`config/laravel-sms.php`)中声明，并做好必要的配置。
 
 > 本文档中所说的`服务器端`是我们自己的应用系统，而非第三方短信服务提供商。
 
@@ -113,10 +114,10 @@ php artisan vendor:publish
 
 | 配置项       | 必填  | 说明        |
 | ----------- | :---: | :---------: |
-| isMobile    | 否    | 该字段是否为手机号码    |
-| enable      | 是    | 发送前是否需要对该字段进行验证 |
-| default     | 否    | 该字段的默认静态验证规则 |
-| staticRules | 否    | 该字段的所有静态验证规则 |
+| isMobile    | 否    | 是否为手机号码    |
+| enable      | 是    | 是否需要进行验证 |
+| default     | 否    | 默认静态验证规则 |
+| staticRules | 否    | 所有静态验证规则 |
 
 #### 示例
 
@@ -124,13 +125,9 @@ php artisan vendor:publish
 'validation' => [
     //内置的mobile参数的验证配置
     'mobile' => [
-        //是否为手机号字段:
         'isMobile'    => true,
-        //是否开启该字段的检测:
         'enable'      => true,
-        //默认的静态验证规则:
         'default'     => 'mobile_required',
-        //静态验证规则:
         'staticRules' => [
             'mobile_required' => 'required|zh_mobile',
             ...
@@ -155,7 +152,7 @@ php artisan vendor:publish
 
 #### 服务器端
 
-[示例见此](# 3-服务器端合法性验证)
+[示例见此](#3-服务器端合法性验证)
 
 # 验证码模块
 
@@ -167,7 +164,7 @@ php artisan vendor:publish
 
 #### 短信内容
 
-如果你使用了内容短信(如云片网络,Luosimao)，则使用或修改'verifySmsContent'的值。
+如果你使用了内容短信，则需要设置`content`的值。
 > 配置文件为config/laravel-sms.php
 ```php
 'content' => function ($code, $minutes, $input) {
@@ -177,10 +174,10 @@ php artisan vendor:publish
 
 #### 模版id
 
-如果你使用了模板短信，需要到相应代理器中填写模板标示符。
+如果你使用了模板短信，需要配置到使用到的代理器的模板标示符。
 > 配置文件为config/laravel-sms.php
 ```php
-'template' => [
+'templates' => [
     'YunTongXun' => '短信模版id',
     'Alidayu'    => ['短信模版id', '语音模版id'],
 ]
@@ -188,10 +185,10 @@ php artisan vendor:publish
 
 #### 模版数据
 
-如果你使用了模板短信，你可以配置你准备使用哪些模版数据。
+如果你使用了模板短信，需要配置准备使用的模版数据。
 > 配置文件为config/laravel-sms.php
 ```php
-'templateData' => [
+'data' => [
     'code' => function ($code) {
         return $code;
     },
@@ -201,9 +198,9 @@ php artisan vendor:publish
 
 ### 2. [浏览器端]请求发送验证码短信
 
-该包已经封装好浏览器端的插件(兼容jquery/zepto)，只需要为发送按钮添加扩展方法即可实现发送短信。
+该包已经封装好浏览器端的基于jQuery(zepto)的发送插件，只需要为发送按钮添加扩展方法即可实现发送短信。
 
-> js文件在本库的js文件夹中，请复制到项目资源目录
+> js文件在本库的js文件夹中，请复制到项目资源目录。
 
 ```html
 <script src="/path/to/laravel-sms.js"></script>
@@ -226,7 +223,7 @@ $('#sendVerifySmsButton').sms({
 </script>
 ```
 
-> laravel-sms.js的更多用法请[见此](#laravel-smsjs)
+> laravel-sms.js 的更多用法请[见此](#laravel-smsjs)
 
 ### 3. [服务器端]合法性验证
 
@@ -265,6 +262,8 @@ if ($validator->fails()) {
 如果不填写参数`$ruleName`（不写冒号才表示不填写哦），系统会尝试设置其为前一个访问路径的path部分。
 
 # 数据库日志
+
+> 开发调试过程中，如果需要查看短信发送结果的详细信息，建议打开数据库日志。
 
 ### 1. 生成数据表
 
@@ -510,11 +509,16 @@ $all = SmsManager::input();
 
 ### 6. 其它
 
-### closure($closure)
+#### closure($closure)
 
 序列化闭包。
+```php
+SmsManager::closure(function () {
+    //do someting...
+});
+```
 
-### laravel-sms.js
+#### laravel-sms.js
 
 ```javascript
 $('#sendVerifySmsButton').sms({
