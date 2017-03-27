@@ -12,13 +12,6 @@ class SmsManagerServiceProvider extends ServiceProvider
     use DispatchesJobs;
 
     /**
-     * 懒加载
-     *
-     * @var bool
-     */
-    protected $defer = true;
-
-    /**
      * 启动服务
      */
     public function boot()
@@ -43,13 +36,9 @@ class SmsManagerServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->mergeConfigFrom(
-            __DIR__ . '/../../config/laravel-sms.php', 'laravel-sms'
-        );
+        $this->mergeConfigFrom(__DIR__ . '/../../config/laravel-sms.php', 'laravel-sms');
 
-        $this->app->singleton([
-            'Toplan\\Sms\\SmsManager' => 'laravel-sms',
-        ], function ($app) {
+        $this->app->singleton('Toplan\\Sms\\SmsManager', function ($app) {
             $token = $app->request->header('access-token', null);
             if (empty($token)) {
                 $token = $app->request->input('access_token', null);
@@ -121,6 +110,6 @@ class SmsManagerServiceProvider extends ServiceProvider
      */
     public function provides()
     {
-        return ['laravel-sms', 'Toplan\\Sms\\SmsManager'];
+        return ['Toplan\\Sms\\SmsManager'];
     }
 }
