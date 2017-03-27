@@ -33,16 +33,16 @@
 # 公告
 
 - QQ群:159379848
-- 旧版本更新到2.6.0+版本时，请先删除原有的`config/laravel-sms.php`文件和`laravel-sms.js`文件(如果有用到)
+- 旧版本更新到2.6.0+版本时，建议删除原有的`config/laravel-sms.php`文件和`laravel-sms.js`文件(如果有用到)
 - 如果是Laravel 5.1版本，则需要在`config/laravel-sms.php`文件中注释掉`middleware`
-- 开发调试过程中，如果需要查看短信发送结果的详细信息，建议打开[短信队列](#短信队列)
+- 开发调试过程中，如果需要查看短信发送结果的详细信息，建议打开[数据库日志](#数据库日志)
 
 # 安装
 
 在项目根目录下运行如下composer命令:
 ```php
-//安装2.0版本
-composer require toplan/laravel-sms:^2.6
+//推荐
+composer require toplan/laravel-sms:~2.6
 
 //安装开发中版本
 composer require toplan/laravel-sms:dev-master
@@ -547,7 +547,7 @@ $('#sendVerifySmsButton').sms({
         alert(msg);
     },
 
-    //多语言
+    //语言包
     language    : {
         sending    : '短信发送中...',
         failed     : '请求失败，请重试',
