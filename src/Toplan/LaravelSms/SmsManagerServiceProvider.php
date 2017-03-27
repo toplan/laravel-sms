@@ -12,42 +12,33 @@ class SmsManagerServiceProvider extends ServiceProvider
     use DispatchesJobs;
 
     /**
-     * bootstrap, add routes
+     * 启动服务
      */
     public function boot()
     {
-        //publish a config file
         $this->publishes([
             __DIR__ . '/../../config/laravel-sms.php' => config_path('laravel-sms.php'),
         ], 'config');
 
-        //publish migrations
         $this->publishes([
             __DIR__ . '/../../../migrations/' => database_path('/migrations'),
         ], 'migrations');
 
-        //route file
         require __DIR__ . '/routes.php';
 
-        //validations file
         require __DIR__ . '/validations.php';
+
+        $this->phpSms();
     }
 
     /**
-     * register the service provider
+     * 注册服务
      */
     public function register()
     {
-        // merge configs
-        $this->mergeConfigFrom(
-            __DIR__ . '/../../config/laravel-sms.php', 'laravel-sms'
-        );
+        $this->mergeConfigFrom(__DIR__ . '/../../config/laravel-sms.php', 'laravel-sms');
 
-        // initialize the PhpSms
-        $this->initPhpSms();
-
-        // store to container
-        $this->app->singleton('SmsManager', function ($app) {
+        $this->app->singleton('Toplan\\Sms\\SmsManager', function ($app) {
             $token = $app->request->header('access-token', null);
             if (empty($token)) {
                 $token = $app->request->input('access_token', null);
@@ -59,11 +50,10 @@ class SmsManagerServiceProvider extends ServiceProvider
     }
 
     /**
-     * Initialize the PhpSms
+     * 配置PhpSms
      */
-    protected function initPhpSms()
+    protected function phpSms()
     {
-        // define how to pushed to the queue system
         $queueJob = config('laravel-sms.queueJob', 'Toplan\Sms\SendReminderSms');
         PhpSms::queue(false, function ($sms) use ($queueJob) {
             if (!class_exists($queueJob)) {
@@ -72,7 +62,6 @@ class SmsManagerServiceProvider extends ServiceProvider
             $this->dispatch(new $queueJob($sms));
         });
 
-        // store sms data into the database before sending
         PhpSms::beforeSend(function ($task) {
             if (!config('laravel-sms.dbLogs', false)) {
                 return true;
@@ -90,7 +79,6 @@ class SmsManagerServiceProvider extends ServiceProvider
             $task->data($data);
         });
 
-        // update sms data in the database after sending
         PhpSms::afterSend(function ($task, $result) {
             if (!config('laravel-sms.dbLogs', false)) {
                 return true;
@@ -99,7 +87,7 @@ class SmsManagerServiceProvider extends ServiceProvider
             $finishedAt = explode(' ', $microTime)[1];
             $data = $task->data;
             $smsId = isset($data['smsId']) ? $data['smsId'] : 0;
-            // update database
+
             DB::beginTransaction();
             $dbData = [];
             $dbData['updated_at'] = date('Y-m-d H:i:s', $finishedAt);
@@ -113,10 +101,5 @@ class SmsManagerServiceProvider extends ServiceProvider
             DB::table('laravel_sms')->where('id', $smsId)->update($dbData);
             DB::commit();
         });
-    }
-
-    public function provides()
-    {
-        return array('SmsManager');
     }
 }
