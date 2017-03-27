@@ -41,7 +41,7 @@
 
 在项目根目录下运行如下composer命令:
 ```php
-//安装2.6版本(推荐)
+//安装2.0版本
 composer require toplan/laravel-sms:^2.6
 
 //安装开发中版本

@@ -102,14 +102,4 @@ class SmsManagerServiceProvider extends ServiceProvider
             DB::commit();
         });
     }
-
-    /**
-     * 获取提供的服务
-     *
-     * @return array
-     */
-    public function provides()
-    {
-        return ['Toplan\\Sms\\SmsManager'];
-    }
 }
