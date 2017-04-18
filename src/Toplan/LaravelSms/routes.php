@@ -2,7 +2,7 @@
 
 $attributes = array_merge([
     'prefix' => 'laravel-sms',
-], config('laravel-sms.routeAttributes', []));
+], config('laravel-sms.route.attributes', []));
 
 Route::group($attributes, function () {
     Route::get('info', 'Toplan\Sms\SmsController@getInfo');
