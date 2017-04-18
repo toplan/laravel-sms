@@ -11,7 +11,7 @@ return [
     | 如果是api应用建议`middleware`为`api`
     |
     */
-    'route'  =>  [
+    'route' => [
         'default'    => true, //开启默认路由
         'attributes' => [
             'prefix'     => 'laravel-sms',
