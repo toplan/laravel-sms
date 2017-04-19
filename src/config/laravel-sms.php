@@ -12,6 +12,8 @@ return [
     |
     */
     'routeAttributes' => [
+        //是否开启默认路由
+        'default'    => false,
         'prefix'     => 'laravel-sms',
         'middleware' => 'web',
     ],
