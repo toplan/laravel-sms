@@ -11,12 +11,11 @@ return [
     | 如果是api应用建议`middleware`为`api`
     |
     */
-    'route' => [
-        'default'    => true, //开启默认路由
-        'attributes' => [
-            'prefix'     => 'laravel-sms',
-            'middleware' => 'web',
-        ],
+    'routeAttributes' => [
+        //是否开启默认路由
+        'default'    => false,
+        'prefix'     => 'laravel-sms',
+        'middleware' => 'web',
     ],
 
     /*

@@ -24,7 +24,7 @@ class SmsManagerServiceProvider extends ServiceProvider
             __DIR__ . '/../../../migrations/' => database_path('/migrations'),
         ], 'migrations');
 
-        if (config('laravel-sms.route.default')) {
+        if (config('laravel-sms.routeAttributes.default')) {
             require __DIR__ . '/routes.php';
         }
 
