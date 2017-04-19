@@ -702,7 +702,7 @@ class SmsManager
         if ($className && is_string($className)) {
             return $className;
         }
-        $middleware = config('laravel-sms.routeAttributes.middleware', null);
+        $middleware = config('laravel-sms.route.attributes.middleware', null);
         if ($middleware === 'web' || (is_array($middleware) && in_array('web', $middleware))) {
             return 'Toplan\Sms\SessionStorage';
         }
