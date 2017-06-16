@@ -8,7 +8,7 @@ use Validator;
 
 class SmsManager
 {
-    const VERSION = '2.6.2';
+    const VERSION = '2.6.3';
 
     const STATE_KEY = '_state';
 
@@ -702,7 +702,7 @@ class SmsManager
         if ($className && is_string($className)) {
             return $className;
         }
-        $middleware = config('laravel-sms.routeAttributes.middleware', null);
+        $middleware = config('laravel-sms.route.middleware', null);
         if ($middleware === 'web' || (is_array($middleware) && in_array('web', $middleware))) {
             return 'Toplan\Sms\SessionStorage';
         }
@@ -874,6 +874,8 @@ class SmsManager
 
     /**
      * 合成结果数组
+     *
+     * todo 改为抛出异常,然后在控制器中catch
      *
      * @param bool   $pass
      * @param string $type

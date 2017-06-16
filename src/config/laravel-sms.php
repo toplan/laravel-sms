@@ -4,16 +4,17 @@
 return [
     /*
     |--------------------------------------------------------------------------
-    | 内置路由的属性
+    | 内置路由
     |--------------------------------------------------------------------------
     |
-    | 如果是web应用建议`middleware`为`web`
-    | 如果是api应用建议`middleware`为`api`
+    | 如果是 web 应用建议 middleware 为 ['web', ...]
+    | 如果是 api 应用建议 middleware 为 ['api', ...]
     |
     */
-    'routeAttributes' => [
+    'route' => [
+        'enable'     => true,
         'prefix'     => 'laravel-sms',
-        'middleware' => 'web',
+        'middleware' => ['web'],
     ],
 
     /*
@@ -144,7 +145,7 @@ return [
     | driver:
     | 存储方式,是一个实现了'Toplan\Sms\Storage'接口的类的类名,
     | 内置可选的值有'Toplan\Sms\SessionStorage'和'Toplan\Sms\CacheStorage',
-    | 如果不填写driver,那么系统会自动根据内置路由的属性(routeAttributes)中middleware的配置值选择存储器driver:
+    | 如果不填写driver,那么系统会自动根据内置路由的属性(route)中middleware的配置值选择存储器driver:
     | - 如果中间件含有'web',会选择使用'Toplan\Sms\SessionStorage'
     | - 如果中间件含有'api',会选择使用'Toplan\Sms\CacheStorage'
     |
