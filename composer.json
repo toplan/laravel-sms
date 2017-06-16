@@ -11,7 +11,7 @@
     ],
     "require": {
         "php": ">=5.4.0",
-        "toplan/phpsms": "~1.7"
+        "toplan/phpsms": "~1.8"
     },
     "autoload": {
         "classmap": [
