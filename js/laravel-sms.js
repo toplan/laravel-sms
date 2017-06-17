@@ -40,13 +40,8 @@
         }
 
         function getUrl() {
-            var domain = opts.domain || '';
-            var prefix = opts.prefix || 'laravel-sms';
-            if (opts.voice) {
-                return domain + '/' + prefix + '/voice-verify';
-            }
-
-            return domain + '/' + prefix + '/verify-code';
+            return opts.requestUrl ||
+              '/laravel-sms/' + (opts.voice ? 'voice-verify' : 'verify-code')
         }
 
         function getRequestData() {
@@ -89,8 +84,7 @@
         token       : null,
         interval    : 60,
         voice       : false,
-        domain      : null,
-        prefix      : 'laravel-sms',
+        requestUrl  : null,
         requestData : null,
         notify      : function (msg, type) {
             alert(msg);
