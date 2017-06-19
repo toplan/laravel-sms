@@ -76,7 +76,7 @@ return [
     | 验证码短信通用内容
     |--------------------------------------------------------------------------
     |
-    | 如需缓存配置，则需使用 `SmsManger::closure($closure)` 方法进行配置
+    | 如需缓存配置，则需使用 `Toplan\Sms\SmsManger::closure($closure)` 方法进行配置
     |
     */
     'content' => function ($code, $minutes, $input) {
@@ -101,7 +101,7 @@ return [
     |           return $input['isRegister'] ? 'registerTempId' : 'commonId';
     |       }
     |
-    | 如需缓存配置，则需使用 `SmsManger::closure($closure)` 方法对匿名函数进行配置
+    | 如需缓存配置，则需使用 `Toplan\Sms\SmsManger::closure($closure)` 方法对匿名函数进行配置
     |
     */
     'templates' => [
@@ -125,7 +125,7 @@ return [
     |           //不返回任何值，那么hello将会从模版数据中移除 :)
     |       }
     |
-    | 如需缓存配置，则需使用 `SmsManger::closure($closure)` 方法对匿名函数进行配置
+    | 如需缓存配置，则需使用 `Toplan\Sms\SmsManger::closure($closure)` 方法对匿名函数进行配置
     |
     */
     'data' => [

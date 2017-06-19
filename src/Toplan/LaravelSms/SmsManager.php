@@ -8,7 +8,7 @@ use Validator;
 
 class SmsManager
 {
-    const VERSION = '2.6.3';
+    const VERSION = '2.6.4';
 
     const STATE_KEY = '_state';
 

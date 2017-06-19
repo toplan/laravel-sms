@@ -8,7 +8,6 @@
 
 ### 1. 关于2.0
 `laravel-sms` 2.0是基于[toplan/phpsms](https://github.com/toplan/phpsms)开发的适用于`Laravel`框架的手机号验证解决方案。
-相较于1.0版本，2.0是使用新思路重构的版本，并且升级备用代理器机制为代理器均衡调度机制。
 `phpsms`为`laravel-sms`提供了全套的短信发送机制，而且`phpsms`也有自己的 service provider ，也就是说你完全可以在`Laravel`框架下无障碍的独立使用`phpsms`。
 这也是为什么使用`laravel-sms`会在项目中生成两个配置文件(`phpsms.php`和`laravel-sms.php`)的原因。
 
@@ -37,7 +36,7 @@
 # 公告
 
 - QQ群:159379848
-- 旧版本更新到2.6.0+版本时，建议删除原有的`config/laravel-sms.php`文件和`laravel-sms.js`文件(如果有用到)
+- 旧版本更新到2.6.4+版本时，建议更新原有的`config/laravel-sms.php`和`laravel-sms.js`文件(如果有用到)
 - 如果是Laravel 5.1版本，则需要在`config/laravel-sms.php`文件中注释掉`middleware`
 - 开发调试过程中，如果需要查看短信发送结果的详细信息，建议打开[数据库日志](#数据库日志)
 
@@ -160,9 +159,9 @@ php artisan vendor:publish --provider="Toplan\Sms\SmsManagerServiceProvider"
 
 # 验证码模块
 
-可以直接访问`host/laravel-sms/info`查看该模块是否可用，并可在该页面里观察验证码短信发送状态，方便你进行调试。
+可以直接访问`http[s]://your-domain/laravel-sms/info`查看该模块是否启用，并可在该页面里观察验证码短信发送状态，方便你进行调试。
 
-> 如果是api应用(无session)需要带上access token: host/laravel-sms/info?access_token=xxxx
+> 如果是api应用(无session)需要在上述地址后面加上`?access_token=xxxx`
 
 ### 1. [服务器端]配置短信内容/模板
 

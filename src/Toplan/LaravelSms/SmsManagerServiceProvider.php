@@ -72,9 +72,9 @@ class SmsManagerServiceProvider extends ServiceProvider
             $id = DB::table('laravel_sms')->insertGetId([
                 'to'         => $data['to'] ?: '',
                 'temp_id'    => json_encode($data['templates']),
-                'data'       => json_encode($data['templateData']),
+                'data'       => json_encode($data['data']),
                 'content'    => $data['content'] ?: '',
-                'voice_code' => $data['voiceCode'] ?: '',
+                'voice_code' => $data['code'] ?: '',
                 'created_at' => date('Y-m-d H:i:s', time()),
             ]);
             $data['smsId'] = $id;
@@ -82,13 +82,12 @@ class SmsManagerServiceProvider extends ServiceProvider
         });
 
         PhpSms::afterSend(function ($task, $result) {
-            if (!config('laravel-sms.dbLogs', false)) {
+            if (!config('laravel-sms.dbLogs', false) || !isset($data['smsId'])) {
                 return true;
             }
             $microTime = $result['time']['finished_at'];
             $finishedAt = explode(' ', $microTime)[1];
             $data = $task->data;
-            $smsId = isset($data['smsId']) ? $data['smsId'] : 0;
 
             DB::beginTransaction();
             $dbData = [];
@@ -97,10 +96,10 @@ class SmsManagerServiceProvider extends ServiceProvider
             if ($result['success']) {
                 $dbData['sent_time'] = $finishedAt;
             } else {
-                DB::table('laravel_sms')->where('id', $smsId)->increment('fail_times');
+                DB::table('laravel_sms')->where('id', $data['smsId'])->increment('fail_times');
                 $dbData['last_fail_time'] = $finishedAt;
             }
-            DB::table('laravel_sms')->where('id', $smsId)->update($dbData);
+            DB::table('laravel_sms')->where('id', $data['smsId'])->update($dbData);
             DB::commit();
         });
     }
