@@ -69,25 +69,29 @@ class SmsManagerServiceProvider extends ServiceProvider
                 return true;
             }
             $data = $task->data ?: [];
+            $to = is_array($data['to']) ? json_encode($data['to']) : $data['to'];
             $id = DB::table('laravel_sms')->insertGetId([
-                'to'         => $data['to'] ?: '',
+                'to'         => $to ?: '',
                 'temp_id'    => json_encode($data['templates']),
                 'data'       => json_encode($data['data']),
                 'content'    => $data['content'] ?: '',
                 'voice_code' => $data['code'] ?: '',
                 'created_at' => date('Y-m-d H:i:s', time()),
             ]);
-            $data['smsId'] = $id;
+            $data['_sms_id'] = $id;
             $task->data($data);
         });
 
         PhpSms::afterSend(function ($task, $result) {
-            if (!config('laravel-sms.dbLogs', false) || !isset($data['smsId'])) {
+            if (!config('laravel-sms.dbLogs', false)) {
                 return true;
             }
             $microTime = $result['time']['finished_at'];
             $finishedAt = explode(' ', $microTime)[1];
             $data = $task->data;
+            if (!isset($data['_sms_id'])) {
+                return true;
+            }
 
             DB::beginTransaction();
             $dbData = [];
@@ -96,10 +100,10 @@ class SmsManagerServiceProvider extends ServiceProvider
             if ($result['success']) {
                 $dbData['sent_time'] = $finishedAt;
             } else {
-                DB::table('laravel_sms')->where('id', $data['smsId'])->increment('fail_times');
+                DB::table('laravel_sms')->where('id', $data['_sms_id'])->increment('fail_times');
                 $dbData['last_fail_time'] = $finishedAt;
             }
-            DB::table('laravel_sms')->where('id', $data['smsId'])->update($dbData);
+            DB::table('laravel_sms')->where('id', $data['_sms_id'])->update($dbData);
             DB::commit();
         });
     }
