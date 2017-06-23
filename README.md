@@ -470,7 +470,8 @@ SmsManager::storeRule('mobile', [
 ]);
 ```
 
-> 存储的动态验证规则可通过访问`host/laravel-sms/info`查看。动态验证规则的名称最好不要和静态验证规则同名,因为静态验证规则的优先级更高。
+> 存储的动态验证规则可通过访问`http[s]://your-domain/laravel-sms/info`查看。
+> 动态验证规则的名称最好不要和静态验证规则同名,因为静态验证规则的优先级更高。
 
 #### retrieveRule($field[, $name])
 
@@ -504,7 +505,7 @@ SmsManager::forgetRules('mobile');
 
 #### input([$key][, $default])
 
-获取客户端传递来的数据。客户端数据会自动注入到配置文件(`laravel-sms.php`)中闭包函数的第三个参数中。
+获取客户端传递来的数据。客户端数据会自动注入到配置文件(`laravel-sms.php`)中闭包函数的`$input`参数中。
 ```php
 $mobileRuleName = SmsManager::input('mobile_rule');
 $all = SmsManager::input();
