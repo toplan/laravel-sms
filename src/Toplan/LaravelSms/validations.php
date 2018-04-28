@@ -1,7 +1,7 @@
 <?php
 
 Validator::extend('zh_mobile', function ($attribute, $value) {
-    return preg_match('/^(\+?0?86\-?)?((13\d|14[57]|15[^4,\D]|17[3678]|18\d)\d{8}|170[059]\d{7})$/', $value);
+    return preg_match('/^(\+?0?86\-?)?((13\d|14[57]|15[^4,\D]|166|17[0135678]|18\d|19[89])\d{8})$/', $value);
 });
 
 Validator::extend('confirm_mobile_not_change', function ($attribute, $value) {
